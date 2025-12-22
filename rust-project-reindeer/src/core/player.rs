@@ -1,6 +1,6 @@
-use godot::{classes::{Camera3D, CharacterBody3D, ICharacterBody3D, Input, InputEvent, InputEventMouseMotion, input::MouseMode}, global::move_toward, prelude::*};
+use godot::{classes::{Camera3D, CharacterBody3D, ICharacterBody3D, Input, InputEvent, InputEventMouseMotion, OmniLight3D, input::MouseMode, light_3d::Param}, global::move_toward, prelude::*};
 
-use crate::input_map::{MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP};
+use crate::input_map::{MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT};
 
 
 #[derive(GodotClass)]
@@ -15,6 +15,14 @@ pub struct Player {
     #[init(node = "%Camera3D")]
     camera : OnReady<Gd<Camera3D>>,
 
+    #[var]
+    #[init(node = "%RedLight")]
+    red_light : OnReady<Gd<OmniLight3D>>,
+
+    #[var(get, set = set_light_on)]
+    #[init(val = false)]
+    light_on : bool,
+
     base : Base<CharacterBody3D>,
 }
 
@@ -25,6 +33,8 @@ impl ICharacterBody3D for Player {
         let mut input = Input::singleton();
 
         input.set_mouse_mode(MouseMode::CAPTURED);
+
+        self.set_light_on(false);
     }
     
 
@@ -74,7 +84,15 @@ impl ICharacterBody3D for Player {
 
     
     fn unhandled_input(&mut self, event : Gd<InputEvent>) {
-        // Mouse motion
+        // Check cancel
+        if event.is_action_pressed("ui_cancel") {
+            let mut input = Input::singleton();
+
+            input.set_mouse_mode(MouseMode::VISIBLE);
+            return;
+        }
+
+        // Else, check mouse motion
         let input_event_mouse_motion_result = event.clone().try_cast::<InputEventMouseMotion>();
         if let Ok(input_event_mouse_motion) = input_event_mouse_motion_result {
             let event_relative = input_event_mouse_motion.get_relative();
@@ -93,11 +111,23 @@ impl ICharacterBody3D for Player {
             return;
         }
 
-        // Else, check cancel
-        if event.is_action_pressed("ui_cancel") {
-            let mut input = Input::singleton();
-
-            input.set_mouse_mode(MouseMode::VISIBLE);
+        // Else, check light input
+        if event.is_action_pressed(TOGGLE_LIGHT) {
+            let toggled = !self.light_on;
+            self.set_light_on(toggled);
+            return;
         }
+    }
+}
+
+
+#[godot_api]
+impl Player {
+    #[func]
+    pub fn set_light_on(&mut self, value : bool) {
+        self.light_on = value;
+
+        let energy = if value { 10.0 } else { 0.0 };
+        self.red_light.set_param(Param::ENERGY, energy);
     }
 }
