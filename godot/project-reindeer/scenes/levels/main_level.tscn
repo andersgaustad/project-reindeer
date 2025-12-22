@@ -1,0 +1,57 @@
+[gd_scene load_steps=10 format=3 uid="uid://bhaqw7kkuvp2d"]
+
+[ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_lx3qq"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]
+size = Vector3(60, 2, 60)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wkbr6"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_wkbr6"]
+material = SubResource("StandardMaterial3D_wkbr6")
+size = Vector3(60, 2, 60)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lx3qq"]
+size = Vector3(1, 0.2, 1)
+
+[sub_resource type="MultiMesh" id="MultiMesh_ojqrr"]
+transform_format = 1
+mesh = SubResource("BoxMesh_lx3qq")
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lx3qq"]
+
+[sub_resource type="Sky" id="Sky_ojqrr"]
+sky_material = SubResource("ProceduralSkyMaterial_lx3qq")
+
+[sub_resource type="Environment" id="Environment_lx3qq"]
+background_mode = 2
+sky = SubResource("Sky_ojqrr")
+ambient_light_source = 3
+ambient_light_color = Color(1, 1, 1, 1)
+reflected_light_source = 2
+
+[node name="Ground" type="MainLevel"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_wkbr6")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_wkbr6")
+
+[node name="Center" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
+
+[node name="MultiTileSpawner" type="MultiMeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.096241, 0)
+multimesh = SubResource("MultiMesh_ojqrr")
+
+[node name="Tile" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.3825364, 0)
+mesh = SubResource("BoxMesh_lx3qq")
+
+[node name="Player" parent="." instance=ExtResource("1_lx3qq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.847598, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_lx3qq")
