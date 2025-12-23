@@ -31,6 +31,10 @@ ambient_light_color = Color(1, 1, 1, 1)
 reflected_light_source = 2
 
 [node name="Ground" type="MainLevel"]
+dim_x = 10
+dim_y = 10
+color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
+color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_wkbr6")
@@ -41,7 +45,7 @@ mesh = SubResource("BoxMesh_wkbr6")
 [node name="Center" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
 
-[node name="MultiTileSpawner" type="MultiMeshInstance3D" parent="."]
+[node name="TileSpawner" type="MultiMeshInstance3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.096241, 0)
 multimesh = SubResource("MultiMesh_ojqrr")
