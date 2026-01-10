@@ -23,6 +23,10 @@ pub struct MainLevel {
     color_b : Color,
 
     #[var]
+    #[init(node = "%Center")]
+    center : OnReady<Gd<Node3D>>,
+
+    #[var]
     #[init(node = "%TileSpawner")]
     tile_spawner : OnReady<Gd<MultiMeshInstance3D>>,
 
@@ -50,6 +54,15 @@ impl MainLevel {
             return;
         };
 
+        let aabb = mesh.get_aabb();
+        let tile_size = aabb.size;
+
+        let x_size = tile_size.x;
+        let y_size = tile_size.z;
+
+        let x_offset = - (self.dim_x - 1) as f32 * x_size / 2.0;
+        let y_offset = - (self.dim_y - 1) as f32 * y_size / 2.0;
+
         let mut material = StandardMaterial3D::new_gd();
         material.set_albedo(Color::WHITE);
         material.set_flag(Flags::ALBEDO_FROM_VERTEX_COLOR, true);
@@ -71,7 +84,12 @@ impl MainLevel {
                 y += 1;
             }
 
-            let vector = Vector3::new(x as f32, 1.0, y as f32);
+            let pos_x = x as f32 + x_offset;
+            let pos_y = y as f32 + y_offset;
+
+            godot_print!("X={}, Y={} -> X={}, Y={}", x, y, pos_x, pos_y);
+
+            let vector = Vector3::new(pos_x, 1.0, pos_y);
             let basis = Basis::default();
             let transform = Transform3D::new(basis, vector);
 
