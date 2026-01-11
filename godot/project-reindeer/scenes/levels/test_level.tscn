@@ -1,0 +1,76 @@
+[gd_scene load_steps=13 format=3 uid="uid://0cjr7haepmj7"]
+
+[ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_jbqir"]
+[ext_resource type="PackedScene" uid="uid://cf6pe3rqrjv1y" path="res://art/kenney_holiday-kit/Models/GLB format/rocks-small.glb" id="2_v45ci"]
+[ext_resource type="PackedScene" uid="uid://dgwvpyn6iu48u" path="res://art/kenney_holiday-kit/Models/GLB format/rocks-medium.glb" id="3_48ne7"]
+[ext_resource type="PackedScene" uid="uid://dbvukqa6nm5yt" path="res://art/kenney_holiday-kit/Models/GLB format/rocks-large.glb" id="4_6xh4u"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]
+size = Vector3(60, 2, 60)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wkbr6"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_wkbr6"]
+material = SubResource("StandardMaterial3D_wkbr6")
+size = Vector3(60, 2, 60)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lx3qq"]
+size = Vector3(2, 0.2, 2)
+
+[sub_resource type="MultiMesh" id="MultiMesh_ojqrr"]
+transform_format = 1
+mesh = SubResource("BoxMesh_lx3qq")
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lx3qq"]
+
+[sub_resource type="Sky" id="Sky_ojqrr"]
+sky_material = SubResource("ProceduralSkyMaterial_lx3qq")
+
+[sub_resource type="Environment" id="Environment_lx3qq"]
+background_mode = 2
+sky = SubResource("Sky_ojqrr")
+ambient_light_source = 3
+ambient_light_color = Color(1, 1, 1, 1)
+reflected_light_source = 2
+
+[node name="Ground" type="MainLevel"]
+dim_x = 10
+dim_y = 10
+color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
+color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_wkbr6")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_wkbr6")
+
+[node name="Center" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="TileSpawner" type="MultiMeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+multimesh = SubResource("MultiMesh_ojqrr")
+
+[node name="Tile" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9467349, 0)
+mesh = SubResource("BoxMesh_lx3qq")
+
+[node name="Player" parent="." instance=ExtResource("1_jbqir")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.847598, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_lx3qq")
+
+[node name="rocks-small2" parent="." instance=ExtResource("2_v45ci")]
+transform = Transform3D(0.99418855, 0, 0.10765232, 0, 1, 0, -0.10765232, 0, 0.99418855, 0, 2.336431, 0)
+visible = false
+
+[node name="rocks-medium2" parent="." instance=ExtResource("3_48ne7")]
+transform = Transform3D(0.99840355, 0, 0.056483682, 0, 1, 0, -0.056483682, 0, 0.99840355, 0, 2.2606938, 0)
+visible = false
+
+[node name="rocks-large2" parent="." instance=ExtResource("4_6xh4u")]
+transform = Transform3D(0.665, 0, 0, 0, 0.665, 0, 0, 0, 0.665, 0, 2.1415298, 0)

@@ -1,4 +1,4 @@
-use godot::{classes::{IStaticBody3D, MultiMeshInstance3D, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, multi_mesh::TransformFormat}, prelude::*};
+use godot::{classes::{IStaticBody3D, Mesh, MultiMesh, MultiMeshInstance3D, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, multi_mesh::TransformFormat}, prelude::*};
 
 
 #[derive(GodotClass)]
@@ -54,14 +54,10 @@ impl MainLevel {
             return;
         };
 
-        let aabb = mesh.get_aabb();
-        let tile_size = aabb.size;
+        let offset = self.get_top_corner_offset_from_cached(&mesh);
 
-        let x_size = tile_size.x;
-        let y_size = tile_size.z;
-
-        let x_offset = - (self.dim_x - 1) as f32 * x_size / 2.0;
-        let y_offset = - (self.dim_y - 1) as f32 * y_size / 2.0;
+        let x_offset = offset.x;
+        let y_offset = offset.y;
 
         let mut material = StandardMaterial3D::new_gd();
         material.set_albedo(Color::WHITE);
@@ -87,8 +83,6 @@ impl MainLevel {
             let pos_x = x as f32 + x_offset;
             let pos_y = y as f32 + y_offset;
 
-            godot_print!("X={}, Y={} -> X={}, Y={}", x, y, pos_x, pos_y);
-
             let vector = Vector3::new(pos_x, 1.0, pos_y);
             let basis = Basis::default();
             let transform = Transform3D::new(basis, vector);
@@ -111,4 +105,45 @@ impl MainLevel {
         self.update_with_current_dimensions();
     }
 
+
+    fn get_top_corner_offset(&self) -> Option<TopCornerOffsetInfoFull> {
+        let multimesh = self.tile_spawner.get_multimesh()?;
+        let mesh = multimesh.get_mesh()?;
+        let offset = self.get_top_corner_offset_from_cached(&mesh);
+
+        let result = TopCornerOffsetInfoFull {
+            multimesh,
+            mesh,
+            offset,
+        };
+
+        Some(result)
+    }
+
+
+    fn get_top_corner_offset_from_cached(&self, mesh : &Gd<Mesh>) -> Vector2 {
+        let aabb = mesh.get_aabb();
+        let tile_size = aabb.size;
+
+        let x_size = tile_size.x;
+        let y_size = tile_size.z;
+
+        let x_offset = - (self.dim_x - 1) as f32 * x_size / 2.0;
+        let y_offset = - (self.dim_y - 1) as f32 * y_size / 2.0;
+
+        let result = Vector2::new(x_offset, y_offset);
+
+        result
+    }
 }
+
+
+// Utility
+
+struct TopCornerOffsetInfoFull {
+    multimesh : Gd<MultiMesh>,
+    mesh : Gd<Mesh>,
+
+    offset : Vector2,
+}
+
