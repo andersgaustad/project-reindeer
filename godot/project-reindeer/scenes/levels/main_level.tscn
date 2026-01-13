@@ -31,8 +31,7 @@ ambient_light_color = Color(1, 1, 1, 1)
 reflected_light_source = 2
 
 [node name="Ground" type="MainLevel"]
-dim_x = 10
-dim_y = 10
+maze_file = "res://resources/default_maps/test_map.txt"
 color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
 color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
 

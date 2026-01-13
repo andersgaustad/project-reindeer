@@ -409,6 +409,16 @@ impl Maze {
         let distance = vector.manhattan_distance();
         distance
     }
+
+
+    pub fn rust_get_x(&self) -> usize {
+        self.dim_x
+    }
+
+
+    pub fn rust_get_y(&self) -> usize {
+        self.dim_y
+    }
 }
 
 
