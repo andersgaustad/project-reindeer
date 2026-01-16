@@ -1,6 +1,6 @@
 use godot::{classes::{Camera3D, CharacterBody3D, ICharacterBody3D, Input, InputEvent, InputEventMouseMotion, OmniLight3D, input::MouseMode, light_3d::Param}, global::move_toward, prelude::*};
 
-use crate::input_map::{MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT};
+use crate::input_map::{MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_VISIBILITY};
 
 
 #[derive(GodotClass)]
@@ -16,12 +16,20 @@ pub struct Player {
     camera : OnReady<Gd<Camera3D>>,
 
     #[var]
+    #[init(node = "%Body")]
+    body : OnReady<Gd<Node3D>>,
+
+    #[var]
     #[init(node = "%RedLight")]
     red_light : OnReady<Gd<OmniLight3D>>,
 
     #[var(get, set = set_light_on)]
     #[init(val = false)]
     light_on : bool,
+
+    #[var(get, set = set_body_visible)]
+    #[init(val = true)]
+    body_visible : bool,
 
     base : Base<CharacterBody3D>,
 }
@@ -111,9 +119,16 @@ impl ICharacterBody3D for Player {
             return;
         }
 
+        // Else, check visibility
+        if event.is_action_pressed(TOGGLE_VISIBILITY) {
+            let toggled = !self.get_body_visible();
+            self.set_body_visible(toggled);
+            return;
+        }
+
         // Else, check light input
         if event.is_action_pressed(TOGGLE_LIGHT) {
-            let toggled = !self.light_on;
+            let toggled = !self.get_light_on();
             self.set_light_on(toggled);
             return;
         }
@@ -129,5 +144,13 @@ impl Player {
 
         let energy = if value { 10.0 } else { 0.0 };
         self.red_light.set_param(Param::ENERGY, energy);
+    }
+
+
+    #[func]
+    pub fn set_body_visible(&mut self, value : bool) {
+        self.body_visible = value;
+
+        self.body.set_visible(value);
     }
 }

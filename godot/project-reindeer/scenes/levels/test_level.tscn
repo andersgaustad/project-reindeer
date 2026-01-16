@@ -1,5 +1,6 @@
-[gd_scene load_steps=13 format=3 uid="uid://0cjr7haepmj7"]
+[gd_scene load_steps=15 format=3 uid="uid://0cjr7haepmj7"]
 
+[ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://art/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="1_48ne7"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_jbqir"]
 [ext_resource type="PackedScene" uid="uid://cf6pe3rqrjv1y" path="res://art/kenney_holiday-kit/Models/GLB format/rocks-small.glb" id="2_v45ci"]
 [ext_resource type="PackedScene" uid="uid://dgwvpyn6iu48u" path="res://art/kenney_holiday-kit/Models/GLB format/rocks-medium.glb" id="3_48ne7"]
@@ -21,6 +22,12 @@ size = Vector3(2, 0.2, 2)
 transform_format = 1
 mesh = SubResource("BoxMesh_lx3qq")
 
+[sub_resource type="MultiMesh" id="MultiMesh_6xh4u"]
+transform_format = 1
+instance_count = 1
+mesh = ExtResource("1_48ne7")
+buffer = PackedFloat32Array(64, 25, 0.115499996, 0.132, 0.15949999, 1, 1, 0.89285713, 63.598076, 26.5, 0.115499996, 0.132)
+
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lx3qq"]
 
 [sub_resource type="Sky" id="Sky_ojqrr"]
@@ -34,8 +41,6 @@ ambient_light_color = Color(1, 1, 1, 1)
 reflected_light_source = 2
 
 [node name="Ground" type="MainLevel"]
-dim_x = 10
-dim_y = 10
 color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
 color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
 
@@ -53,6 +58,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 multimesh = SubResource("MultiMesh_ojqrr")
+
+[node name="RockSpawner" type="MultiMeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+multimesh = SubResource("MultiMesh_6xh4u")
 
 [node name="Tile" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9467349, 0)
@@ -73,4 +82,4 @@ transform = Transform3D(0.99840355, 0, 0.056483682, 0, 1, 0, -0.056483682, 0, 0.
 visible = false
 
 [node name="rocks-large2" parent="." instance=ExtResource("4_6xh4u")]
-transform = Transform3D(0.665, 0, 0, 0, 0.665, 0, 0, 0, 0.665, 0, 2.1415298, 0)
+transform = Transform3D(0.6649395, 0, -0.008971506, 0, 0.665, 0, 0.008971506, 0, 0.6649395, 0, 2.1415298, 0)

@@ -1,6 +1,6 @@
-use godot::{classes::{FileAccess, IStaticBody3D, Mesh, MultiMesh, MultiMeshInstance3D, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat}, prelude::*};
+use godot::{classes::{FileAccess, IStaticBody3D, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat}, prelude::*};
 
-use crate::core::maze::maze::Maze;
+use crate::core::{common::{raffler::Raffler, rock_type::RockType}, maze::maze::{Maze, Tile}, random};
 
 
 #[derive(GodotClass)]
@@ -22,6 +22,12 @@ pub struct MainLevel {
     #[init(val = Color::DARK_GREEN)]
     color_b : Color,
 
+    #[export_group(name = "Random")]
+    #[export]
+    #[var]
+    #[init(val = "Reindeer".into())]
+    random_seed : GString,
+
     #[var]
     #[init(node = "%Center")]
     center : OnReady<Gd<Node3D>>,
@@ -30,6 +36,20 @@ pub struct MainLevel {
     #[init(node = "%TileSpawner")]
     tile_spawner : OnReady<Gd<MultiMeshInstance3D>>,
 
+    #[var]
+    #[init(node = "%RockSmallSpawner")]
+    rock_small_spawner : OnReady<Gd<MultiMeshInstance3D>>,
+
+    #[var]
+    #[init(node = "%RockMediumSpawner")]
+    rock_medium_spawner : OnReady<Gd<MultiMeshInstance3D>>,
+
+    #[var]
+    #[init(node = "%RockLargeSpawner")]
+    rock_large_spawner : OnReady<Gd<MultiMeshInstance3D>>,
+
+    rng : Gd<RandomNumberGenerator>,
+
     base : Base<StaticBody3D>,
 }
 
@@ -37,6 +57,10 @@ pub struct MainLevel {
 #[godot_api]
 impl IStaticBody3D for MainLevel {
     fn ready(&mut self) {
+        let seed = self.random_seed.hash_u32();
+        let seed_u64 = u64::from(seed);
+        self.rng.set_seed(seed_u64);
+
         let maze_file = self.get_maze_file();
         self.set_maze_file(maze_file);
     }
@@ -75,21 +99,58 @@ impl MainLevel {
         self.maze = maze_opt;
 
         let multimesh_opt = self.tile_spawner.get_multimesh();
-        let Some(mut multimesh) = multimesh_opt else {
+        let Some(mut tile_multimesh) = multimesh_opt else {
             return;
         };
-        let Some(mut mesh) = multimesh.get_mesh() else {
+        let Some(mut tile_mesh) = tile_multimesh.get_mesh() else {
+            return;
+        };
+
+        let Some(mut small_rock_multimesh) = self.rock_small_spawner.get_multimesh() else {
+            return;
+        };
+        let Some(mut medium_rock_multimesh) = self.rock_medium_spawner.get_multimesh() else {
+            return;
+        };
+        let Some(mut large_rock_multimesh) = self.rock_large_spawner.get_multimesh() else {
             return;
         };
 
 
         if let Some(maze) = self.maze.clone() {
             let bound_maze = maze.bind();
-            let dim_x = bound_maze.rust_get_x();
-            let dim_y = bound_maze.rust_get_y();
-            drop(bound_maze);
+            let dim_x = bound_maze.rust_get_dim_x();
+            let dim_y = bound_maze.rust_get_dim_y();
+            let n_walls = bound_maze.rust_get_n_walls();
 
-            let offset = self.get_top_corner_offset_from_cached(&mesh, dim_x, dim_y);
+            let mut n_small_rocks = 0;
+            let mut n_medium_rocks = 0;
+            let mut n_large_rocks = 0;
+
+            for _ in 0..n_walls {
+                let random = self.rng.randi() % 3;
+                
+                match random {
+                    0 => n_small_rocks += 1,
+                    1 => n_medium_rocks += 1,
+                    2 => n_large_rocks += 1,
+
+                    _ => {
+                        godot_error!("Random number is somehow out of range?!");
+                    }
+                }
+            }
+
+            let mut rock_size_raffler = {
+                let mut items_and_counts = Vec::with_capacity(n_walls);
+                items_and_counts.push((RockType::Small, n_small_rocks));
+                items_and_counts.push((RockType::Medium, n_medium_rocks));
+                items_and_counts.push((RockType::Large, n_large_rocks));
+
+                Raffler::new(items_and_counts, self.rng.clone())
+            };
+
+            let offset = self.get_top_corner_offset_from_cached(&tile_mesh, dim_x, dim_y);
 
             let dim_x = dim_x as i32;
             let dim_y = dim_y as i32;
@@ -101,14 +162,28 @@ impl MainLevel {
             material.set_albedo(Color::WHITE);
             material.set_flag(Flags::ALBEDO_FROM_VERTEX_COLOR, true);
 
-            mesh.surface_set_material(0, &material);
+            tile_mesh.surface_set_material(0, &material);
 
             let n_tiles = dim_x * dim_y;
 
-            multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
-            multimesh.set_use_colors(true);
+            tile_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
+            tile_multimesh.set_use_colors(true);
 
-            multimesh.set_instance_count(n_tiles);
+            tile_multimesh.set_instance_count(n_tiles);
+
+
+            // Rocks spawners
+
+            small_rock_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
+            small_rock_multimesh.set_instance_count(n_small_rocks as i32);
+
+            medium_rock_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
+            medium_rock_multimesh.set_instance_count(n_medium_rocks as i32);
+
+            large_rock_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
+            large_rock_multimesh.set_instance_count(n_large_rocks as i32);
+
+            let mut rock_positions = Vec::with_capacity(n_small_rocks + n_medium_rocks + n_large_rocks);
 
             let mut x = 0;
             let mut y = 0;
@@ -117,6 +192,8 @@ impl MainLevel {
                     x = 0;
                     y += 1;
                 }
+
+                // Base
 
                 let pos_x = x as f32 + x_offset;
                 let pos_y = y as f32 + y_offset;
@@ -127,15 +204,97 @@ impl MainLevel {
 
                 let color = if (x + y) % 2 == 0 { self.color_a } else { self.color_b };
 
-                multimesh.set_instance_transform(i, transform);
-                multimesh.set_instance_color(i, color);
+                tile_multimesh.set_instance_transform(i, transform);
+                tile_multimesh.set_instance_color(i, color);
+
+                // Wall?
+
+                let array = bound_maze.rust_get_array();
+                let tile_opt = (|| {
+                    let index_usize = usize::try_from(i).ok()?;
+                    let tile = array.get(index_usize);
+
+                    tile
+                })();
+
+                if let Some(tile) = tile_opt {
+                    if tile == &Tile::Wall {
+                        godot_print!("Putting rock at {:?}", &vector);
+                        rock_positions.push(vector);
+                    }
+                };
 
                 x += 1;
             }
 
+            random::shuffle_with_rng(&mut rock_positions, self.rng.clone());
+            let mut iter = rock_positions.into_iter();
+
+            for i in 0..n_small_rocks {
+                let mut position = iter.next().unwrap();
+                position.y += 0.1; // TODO
+
+                let rotated_radians = self.rng.randf_range(0.0, 2.0 * std::f32::consts::PI);
+
+                let basis = 
+                    Basis::default()
+                    .rotated(Vector3::new(0.0, 1.0, 0.0), rotated_radians);
+                let transform = Transform3D::new(basis, position);
+
+                small_rock_multimesh.set_instance_transform(i as i32, transform);
+            }
+
+            for i in 0..n_medium_rocks {
+                let mut position = iter.next().unwrap();
+                position.y += 0.1; // TODO
+
+                let rotated_radians = self.rng.randf_range(0.0, 2.0 * std::f32::consts::PI);
+
+                let basis = 
+                    Basis::default()
+                    .rotated(Vector3::new(0.0, 1.0, 0.0), rotated_radians);
+                let transform = Transform3D::new(basis, position);
+
+                medium_rock_multimesh.set_instance_transform(i as i32, transform);
+            }
+
+            for i in 0..n_large_rocks {
+                let mut position = iter.next().unwrap();
+                position.y += 0.1; // TODO
+
+                let rotated_radians = self.rng.randf_range(0.0, 2.0 * std::f32::consts::PI);
+
+                let basis = 
+                    Basis::default()
+                    .scaled(Vector3::new(0.65, 0.65, 0.65))
+                    .rotated(Vector3::new(0.0, 1.0, 0.0), rotated_radians);
+                
+                let transform = Transform3D::new(basis, position);
+
+                large_rock_multimesh.set_instance_transform(i as i32, transform);
+            }
+
         } else {
             // Reset
-            multimesh.set_instance_count(0);
+            let multimeshes = [
+                &mut tile_multimesh,
+                &mut small_rock_multimesh,
+                &mut medium_rock_multimesh,
+                &mut large_rock_multimesh,
+            ];
+
+            for multimesh in multimeshes {
+                multimesh.set_instance_count(0);
+            }
+        }
+    }
+
+
+    fn get_rock_spawner_from_type(&self, rock_type : RockType) -> Gd<MultiMeshInstance3D> {
+        match rock_type {
+            RockType::Small => self.get_rock_small_spawner(),
+            RockType::Medium => self.get_rock_medium_spawner(),
+            RockType::Large => self.get_rock_large_spawner(),
         }
     }
 
@@ -146,8 +305,8 @@ impl MainLevel {
         
         let maze = self.maze.clone()?;
         let bound = maze.bind();
-        let dim_x = bound.rust_get_x();
-        let dim_y = bound.rust_get_y();
+        let dim_x = bound.rust_get_dim_x();
+        let dim_y = bound.rust_get_dim_y();
         drop(bound);
 
         let offset = self.get_top_corner_offset_from_cached(&mesh, dim_x, dim_y);

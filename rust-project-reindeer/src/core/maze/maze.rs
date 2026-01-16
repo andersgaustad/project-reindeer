@@ -18,6 +18,8 @@ pub struct Maze {
 
     dim_y : usize,
 
+    n_walls : usize,
+
     start_coordinate : Coordinate,
 
     end_coordinate : Coordinate,
@@ -47,6 +49,8 @@ impl Maze {
         let mut dim_x = 0;
         let mut dim_y = 0;
 
+        let mut n_walls = 0;
+
         let mut start_coordinate_opt = None;
         let mut end_coordinate_opt = None;
 
@@ -68,7 +72,13 @@ impl Maze {
 
                 let parsed_tile_info = ParsedTile::try_from(&c).ok()?;
 
-                array.push(parsed_tile_info.tile);
+                let tile = parsed_tile_info.tile;
+                let is_wall = tile == Tile::Wall;
+                if is_wall {
+                    n_walls += 1;
+                }
+
+                array.push(tile);
 
                 if parsed_tile_info.is_start_coordinate {
                     start_coordinate_opt = Some(Coordinate::new(x, y));
@@ -95,6 +105,7 @@ impl Maze {
                 array,
                 dim_x,
                 dim_y,
+                n_walls,
                 start_coordinate,
                 end_coordinate,
                 reindeer,
@@ -411,13 +422,23 @@ impl Maze {
     }
 
 
-    pub fn rust_get_x(&self) -> usize {
+    pub fn rust_get_array(&self) -> & Vec<Tile> {
+        &self.array
+    }
+
+
+    pub fn rust_get_dim_x(&self) -> usize {
         self.dim_x
     }
 
 
-    pub fn rust_get_y(&self) -> usize {
+    pub fn rust_get_dim_y(&self) -> usize {
         self.dim_y
+    }
+
+
+    pub fn rust_get_n_walls(&self) -> usize {
+        self.n_walls
     }
 }
 
