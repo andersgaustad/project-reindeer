@@ -1,6 +1,6 @@
 use godot::{classes::{FileAccess, IStaticBody3D, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat}, prelude::*};
 
-use crate::core::{common::{raffler::Raffler, rock_type::RockType}, maze::maze::{Maze, Tile}, random};
+use crate::core::{common::raffler::Raffler, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::maze::{Maze, Tile}, random};
 
 
 #[derive(GodotClass)]
@@ -38,15 +38,15 @@ pub struct MainLevel {
 
     #[var]
     #[init(node = "%RockSmallSpawner")]
-    rock_small_spawner : OnReady<Gd<MultiMeshInstance3D>>,
+    rock_small_spawner : OnReady<Gd<RockSpawner>>,
 
     #[var]
     #[init(node = "%RockMediumSpawner")]
-    rock_medium_spawner : OnReady<Gd<MultiMeshInstance3D>>,
+    rock_medium_spawner : OnReady<Gd<RockSpawner>>,
 
     #[var]
     #[init(node = "%RockLargeSpawner")]
-    rock_large_spawner : OnReady<Gd<MultiMeshInstance3D>>,
+    rock_large_spawner : OnReady<Gd<RockSpawner>>,
 
     rng : Gd<RandomNumberGenerator>,
 
@@ -185,6 +185,10 @@ impl MainLevel {
 
             let mut rock_positions = Vec::with_capacity(n_small_rocks + n_medium_rocks + n_large_rocks);
 
+            let size = tile_mesh.get_aabb().size;
+            let size_x = size.x;
+            let size_y = size.z;
+
             let mut x = 0;
             let mut y = 0;
             for i in 0..n_tiles {
@@ -195,8 +199,8 @@ impl MainLevel {
 
                 // Base
 
-                let pos_x = x as f32 + x_offset;
-                let pos_y = y as f32 + y_offset;
+                let pos_x = (x as f32) * size_x + x_offset;
+                let pos_y = (y as f32) * size_y + y_offset;
 
                 let vector = Vector3::new(pos_x, 1.0, pos_y);
                 let basis = Basis::default();
@@ -234,12 +238,8 @@ impl MainLevel {
                 let mut position = iter.next().unwrap();
                 position.y += 0.1; // TODO
 
-                let rotated_radians = self.rng.randf_range(0.0, 2.0 * std::f32::consts::PI);
-
-                let basis = 
-                    Basis::default()
-                    .rotated(Vector3::new(0.0, 1.0, 0.0), rotated_radians);
-                let transform = Transform3D::new(basis, position);
+                let transform = self.rock_small_spawner.bind().create_rock_transform(position, self.rng.clone());
+                godot_print!("Transform is {:?}", &transform);
 
                 small_rock_multimesh.set_instance_transform(i as i32, transform);
             }
@@ -248,12 +248,7 @@ impl MainLevel {
                 let mut position = iter.next().unwrap();
                 position.y += 0.1; // TODO
 
-                let rotated_radians = self.rng.randf_range(0.0, 2.0 * std::f32::consts::PI);
-
-                let basis = 
-                    Basis::default()
-                    .rotated(Vector3::new(0.0, 1.0, 0.0), rotated_radians);
-                let transform = Transform3D::new(basis, position);
+                let transform = self.rock_medium_spawner.bind().create_rock_transform(position, self.rng.clone());
 
                 medium_rock_multimesh.set_instance_transform(i as i32, transform);
             }
@@ -262,14 +257,7 @@ impl MainLevel {
                 let mut position = iter.next().unwrap();
                 position.y += 0.1; // TODO
 
-                let rotated_radians = self.rng.randf_range(0.0, 2.0 * std::f32::consts::PI);
-
-                let basis = 
-                    Basis::default()
-                    .scaled(Vector3::new(0.65, 0.65, 0.65))
-                    .rotated(Vector3::new(0.0, 1.0, 0.0), rotated_radians);
-                
-                let transform = Transform3D::new(basis, position);
+                let transform = self.rock_large_spawner.bind().create_rock_transform(position, self.rng.clone());
 
                 large_rock_multimesh.set_instance_transform(i as i32, transform);
             }
@@ -290,7 +278,7 @@ impl MainLevel {
     }
 
 
-    fn get_rock_spawner_from_type(&self, rock_type : RockType) -> Gd<MultiMeshInstance3D> {
+    fn get_rock_spawner_from_type(&self, rock_type : RockType) -> Gd<RockSpawner> {
         match rock_type {
             RockType::Small => self.get_rock_small_spawner(),
             RockType::Medium => self.get_rock_medium_spawner(),
@@ -325,6 +313,8 @@ impl MainLevel {
 
     fn get_top_corner_offset_from_cached(&self, mesh : &Gd<Mesh>, dim_x : usize, dim_y : usize) -> Vector2 {
         let aabb = mesh.get_aabb();
+        godot_print!("AABB of mesh is {:?}", &aabb);
+
         let tile_size = aabb.size;
 
         let x_size = tile_size.x;

@@ -1,4 +1,5 @@
 pub mod common;
+pub mod environment;
 pub mod levels;
 pub mod maze;
 pub mod player;
