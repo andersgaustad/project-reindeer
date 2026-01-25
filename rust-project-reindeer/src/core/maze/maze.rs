@@ -3,7 +3,7 @@ use std::{cmp::Ordering, collections::{HashMap, HashSet}, fmt::{Display, Write}}
 use godot::prelude::*;
 use strum::{EnumCount, IntoEnumIterator};
 
-use crate::core::{common::{acknowledger::Acknowledger, coordinate::{Coordinate, IHasCoordinates}, direction::Direction}, maze::{maze_find_paths_communicator::MazeFindPathsCommunicator, maze_tile_state::MazeTileState, path_info::PathInfo}};
+use crate::core::{common::{acknowledger::Communicator, coordinate::{Coordinate, IHasCoordinates}, direction::Direction}, maze::{maze_find_paths_communicator::MazeFindPathsCommunicator, maze_tile_state::MazeTileState, path_info::PathInfo}};
 
 
 const ROTATION_COST : usize = 1000;
@@ -144,7 +144,7 @@ impl Maze {
 
             let start_idx = start_state.coordinate.try_to_index(map_dim_x, map_dim_y).unwrap();
 
-            let acknowledger = Acknowledger::new_gd();
+            let acknowledger = Communicator::new_gd();
             communicator.signals().update_idx().emit(
                 start_idx as i32,
                 MazeTileState::Committed,
@@ -152,7 +152,7 @@ impl Maze {
                 &acknowledger
             );
             // AWAIT
-            let _await = acknowledger.signals().ok().to_fallible_future().await;
+            let _await = acknowledger.signals().done().to_fallible_future().await;
             // AWAIT
 
             let mut to_visit = vec![start_state.clone()];
@@ -172,7 +172,7 @@ impl Maze {
                 let current_idx = current_coordinate.try_to_index(map_dim_x, map_dim_y).unwrap();
 
                 // Notify active and sync
-                let acknowledger = Acknowledger::new_gd();
+                let acknowledger = Communicator::new_gd();
                 communicator.signals().update_idx().emit(
                     current_idx as i32,
                     MazeTileState::Active,
@@ -180,7 +180,7 @@ impl Maze {
                     &acknowledger
                 );
                 // AWAIT
-                let _await = acknowledger.signals().ok().to_fallible_future().await;
+                let _await = acknowledger.signals().done().to_fallible_future().await;
                 // AWAIT
 
 
@@ -243,7 +243,7 @@ impl Maze {
                     let candidate_index = candidate_coordinate.try_to_index(map_dim_x, map_dim_y).unwrap();
 
                     // Notify touched
-                    let acknowledger = Acknowledger::new_gd();
+                    let acknowledger = Communicator::new_gd();
                     communicator.signals().update_idx().emit(
                         candidate_index as i32,
                         MazeTileState::Touched,
@@ -251,7 +251,7 @@ impl Maze {
                         &acknowledger
                     );
                     // AWAIT
-                    let _await = acknowledger.signals().ok().to_fallible_future().await;
+                    let _await = acknowledger.signals().done().to_fallible_future().await;
                     // AWAIT
 
 
@@ -267,7 +267,7 @@ impl Maze {
                     let skip_overshooting_cost = REMEMBER_BEST_PATH && cost_to_move_here_from_current > score_opt.unwrap_or(IMPLIED_UNVISITED_COST);
                     if cost_to_move_cmp != Ordering::Less || skip_overshooting_cost {
                         // Notify non-committed by reverting to default state
-                        let acknowledger = Acknowledger::new_gd();
+                        let acknowledger = Communicator::new_gd();
                         communicator.signals().update_idx().emit(
                             candidate_index as i32,
                             MazeTileState::Normal,
@@ -275,7 +275,7 @@ impl Maze {
                             &acknowledger
                         );
                         // AWAIT
-                        let _await = acknowledger.signals().ok().to_fallible_future().await;
+                        let _await = acknowledger.signals().done().to_fallible_future().await;
                         // AWAIT
 
 
@@ -285,7 +285,7 @@ impl Maze {
                     // Else, we should have found new optimal path
 
                     // Notify candidate committed
-                    let acknowledger = Acknowledger::new_gd();
+                    let acknowledger = Communicator::new_gd();
                     communicator.signals().update_idx().emit(
                         candidate_index as i32,
                         MazeTileState::Committed,
@@ -293,7 +293,7 @@ impl Maze {
                         &acknowledger
                     );
                     // AWAIT
-                    let _await = acknowledger.signals().ok().to_fallible_future().await;
+                    let _await = acknowledger.signals().done().to_fallible_future().await;
                     // AWAIT
 
                     coordinate_state_to_cost.insert(candidate.clone(), cost_to_move_here_from_current);
@@ -327,7 +327,7 @@ impl Maze {
                 }
 
                 // Finally, notify and mark current as normal
-                let acknowledger = Acknowledger::new_gd();
+                let acknowledger = Communicator::new_gd();
                 communicator.signals().update_idx().emit(
                     current_idx as i32,
                     MazeTileState::Normal,
@@ -335,7 +335,7 @@ impl Maze {
                     &acknowledger
                 );
                 // AWAIT
-                let _await = acknowledger.signals().ok().to_fallible_future().await;
+                let _await = acknowledger.signals().done().to_fallible_future().await;
                 // AWAIT
             }
 
@@ -439,6 +439,11 @@ impl Maze {
 
     pub fn rust_get_n_walls(&self) -> usize {
         self.n_walls
+    }
+
+
+    pub fn rust_get_reindeer_start_coordinate(&self) -> &Coordinate {
+        &self.start_coordinate
     }
 }
 

@@ -1,11 +1,12 @@
 use godot::{classes::{FileAccess, IStaticBody3D, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat}, prelude::*};
 
-use crate::core::{environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::maze::{Maze, Tile}};
+use crate::core::{environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, reindeer::Reindeer}};
 
 
 #[derive(GodotClass)]
 #[class(init, base=StaticBody3D)]
 pub struct MainLevel {
+    #[export_group(name = "Maze")]
     #[export(file = "*.txt")]
     #[var(get, set = set_maze_file)]
     maze_file : GString,
@@ -22,6 +23,11 @@ pub struct MainLevel {
     #[init(val = Color::DARK_GREEN)]
     color_b : Color,
 
+    #[export]
+    #[var]
+    #[init(val = 1.0)]
+    maze_floor_height : f32,
+
     #[export_group(name = "Random")]
     #[export]
     #[var]
@@ -31,6 +37,10 @@ pub struct MainLevel {
     #[var]
     #[init(node = "%Center")]
     center : OnReady<Gd<Node3D>>,
+
+    #[var]
+    #[init(node = "%Reindeer")]
+    maze_reindeer : OnReady<Gd<Reindeer>>,
 
     #[var]
     #[init(node = "%TileSpawner")]
@@ -126,11 +136,7 @@ impl MainLevel {
             let mut medium_rock_positions = Vec::new();
             let mut large_rock_positions = Vec::new();
 
-
-            let offset = self.get_top_corner_offset_from_cached(&tile_mesh, dim_x, dim_y);
-
-            let dim_x = dim_x as i32;
-            let dim_y = dim_y as i32;
+            let offset = Self::get_top_corner_offset_from_mesh(dim_x, dim_y, &tile_mesh);
 
             let x_offset = offset.x;
             let y_offset = offset.y;
@@ -141,7 +147,10 @@ impl MainLevel {
 
             tile_mesh.surface_set_material(0, &material);
 
-            let n_tiles = dim_x * dim_y;
+            let dim_x_i32 = dim_x as i32;
+            let dim_y_i32 = dim_y as i32;
+
+            let n_tiles = dim_x_i32 * dim_y_i32;
 
             tile_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
             tile_multimesh.set_use_colors(true);
@@ -152,22 +161,24 @@ impl MainLevel {
             let size = tile_mesh.get_aabb().size;
             let size_x = size.x;
             let size_y = size.z;
-            let height = size.y;
+            let tile_height = size.y;
 
             let mut x = 0;
             let mut y = 0;
             for i in 0..n_tiles {
-                if x >= dim_x {
+                if x >= dim_x_i32 {
                     x = 0;
                     y += 1;
                 }
 
                 // Base
 
-                let pos_x = (x as f32) * size_x + x_offset;
-                let pos_y = (y as f32) * size_y + y_offset;
+                let position = Self::get_tile_position_from_cached(x, y, dim_x, dim_y, &tile_mesh);
 
-                let vector = Vector3::new(pos_x, 1.0, pos_y);
+                let pos_x = position.coordinates.x;
+                let pos_y = position.coordinates.y;
+
+                let vector = Vector3::new(pos_x, self.maze_floor_height, pos_y);
                 let basis = Basis::default();
                 let transform = Transform3D::new(basis, vector);
 
@@ -209,13 +220,14 @@ impl MainLevel {
                 (&mut self.rock_large_spawner, &mut large_rock_multimesh, large_rock_positions),
             ];
 
+            // Spawn all rocks
             for (spawner, multimesh, positions) in rock_multimeshes_and_positions {
                 let n_rocks_of_type = positions.len();
                 multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
                 multimesh.set_instance_count(n_rocks_of_type as i32);
 
                 for (i, mut position) in positions.into_iter().enumerate() {
-                    position.y += height;
+                    position.y += tile_height;
 
                     let transform = spawner.bind().create_rock_transform(position, self.rng.clone());
 
@@ -223,6 +235,27 @@ impl MainLevel {
                 }
             }
 
+            let reindeer_start = maze.bind().rust_get_reindeer_start_coordinate().clone();
+            let x = reindeer_start.x as i32;
+            let y = reindeer_start.y as i32;
+
+            let position_info = Self::get_tile_position_from_cached(
+                x,
+                y,
+                dim_x,
+                dim_y,
+                &tile_mesh
+            );
+
+            let position = Vector3::new(
+                position_info.coordinates.x,
+                self.maze_floor_height + position_info.height,
+                position_info.coordinates.y
+            );
+
+            let reindeer = &mut self.maze_reindeer;
+            reindeer.set_position(position);
+            reindeer.show();
 
         } else {
             // Reset
@@ -236,6 +269,8 @@ impl MainLevel {
             for multimesh in multimeshes {
                 multimesh.set_instance_count(0);
             }
+
+            self.maze_reindeer.hide();
         }
     }
 
@@ -259,7 +294,7 @@ impl MainLevel {
         let dim_y = bound.rust_get_dim_y();
         drop(bound);
 
-        let offset = self.get_top_corner_offset_from_cached(&mesh, dim_x, dim_y);
+        let offset = Self::get_top_corner_offset_from_mesh(dim_x, dim_y, &mesh);
 
         let result = TopCornerOffsetInfoFull {
             multimesh,
@@ -273,7 +308,7 @@ impl MainLevel {
     }
 
 
-    fn get_top_corner_offset_from_cached(&self, mesh : &Gd<Mesh>, dim_x : usize, dim_y : usize) -> Vector2 {
+    fn get_top_corner_offset_from_mesh(dim_x : usize, dim_y : usize, mesh : &Gd<Mesh>) -> Vector2 {
         let aabb = mesh.get_aabb();
 
         let tile_size = aabb.size;
@@ -294,6 +329,65 @@ impl MainLevel {
 
         result
     }
+
+
+    fn get_tile_position(&self, x : i32, y : i32) -> Option<TileCenterPosition> {
+        let multimesh = self.tile_spawner.get_multimesh()?;
+        let mesh = multimesh.get_mesh()?;
+        
+        let maze = self.maze.clone()?;
+        let bound = maze.bind();
+        let dim_x = bound.rust_get_dim_x();
+        let dim_y = bound.rust_get_dim_y();
+        drop(bound);
+
+        let position = Self::get_tile_position_from_cached(
+            x,
+            y,
+            dim_x,
+            dim_y,
+            &mesh
+        );
+
+        Some(position)
+    }
+
+
+    fn get_tile_position_from_cached(
+        x : i32,
+        y : i32,
+        dim_x : usize,
+        dim_y : usize,
+        mesh : &Gd<Mesh>
+
+    ) -> TileCenterPosition {
+        let offset = Self::get_top_corner_offset_from_mesh(dim_x, dim_y, mesh);
+        let offset_x = offset.x;
+        let offset_y = offset.y;
+
+        let size = mesh.get_aabb().size;
+        let size_x = size.x;
+        let height = size.y;
+        let size_y = size.z;
+
+        let coordinates_and_sizes_and_offsets = [
+            (x, size_x, offset_x),
+            (y, size_y, offset_y),
+        ];
+
+        let coordinate_array : [f32; 2] = coordinates_and_sizes_and_offsets.map(|(coordinate, size, offset)| {
+            (coordinate as f32) * size + offset
+        });
+
+        let coordinates = Vector2::from_array(coordinate_array);
+
+        let result = TileCenterPosition {
+            coordinates,
+            height,
+        };
+
+        result
+    }
 }
 
 
@@ -307,3 +401,8 @@ struct TopCornerOffsetInfoFull {
     offset : Vector2,
 }
 
+
+struct TileCenterPosition {
+    coordinates : Vector2,
+    height : f32,
+}

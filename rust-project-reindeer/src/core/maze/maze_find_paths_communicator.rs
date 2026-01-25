@@ -1,6 +1,6 @@
 use godot::prelude::*;
 
-use crate::core::{common::{acknowledger::Acknowledger, direction::Direction}, maze::{maze_tile_state::MazeTileState, path_info::PathInfo}};
+use crate::core::{common::{acknowledger::Communicator, direction::Direction}, maze::{maze_tile_state::MazeTileState, path_info::PathInfo}};
 
 
 #[derive(GodotClass)]
@@ -13,7 +13,7 @@ pub struct MazeFindPathsCommunicator {
 #[godot_api]
 impl MazeFindPathsCommunicator {
     #[signal]
-    pub fn update_idx(idx : i32, state : MazeTileState, direction : Direction, acknowledger : Gd<Acknowledger>);
+    pub fn update_idx(idx : i32, state : MazeTileState, direction : Direction, acknowledger : Gd<Communicator>);
 
     #[signal]
     pub fn commit_found_path(path_info : Gd<PathInfo>);

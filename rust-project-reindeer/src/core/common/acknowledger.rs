@@ -3,13 +3,13 @@ use godot::prelude::*;
 
 #[derive(GodotClass)]
 #[class(init, base=RefCounted)]
-pub struct Acknowledger {
+pub struct Communicator {
     base : Base<RefCounted>,
 }
 
 
 #[godot_api]
-impl Acknowledger {
+impl Communicator {
     #[signal]
-    pub fn ok();
+    pub fn done();
 }

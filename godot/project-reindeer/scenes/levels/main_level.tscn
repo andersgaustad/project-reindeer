@@ -1,5 +1,6 @@
-[gd_scene load_steps=16 format=3 uid="uid://bhaqw7kkuvp2d"]
+[gd_scene load_steps=17 format=3 uid="uid://bhaqw7kkuvp2d"]
 
+[ext_resource type="PackedScene" uid="uid://dffs3axw6pbr3" path="res://scenes/reindeer.tscn" id="1_geiq8"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_lx3qq"]
 [ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://art/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="2_hn3as"]
 [ext_resource type="ArrayMesh" uid="uid://csowy0rx5hhrb" path="res://art/kenney_holiday-kit/Models/OBJ format/rocks-medium.obj" id="3_geiq8"]
@@ -59,6 +60,10 @@ mesh = SubResource("BoxMesh_wkbr6")
 [node name="Center" type="Node3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="Reindeer" parent="." instance=ExtResource("1_geiq8")]
+unique_name_in_owner = true
+visible = false
 
 [node name="Player" parent="." instance=ExtResource("1_lx3qq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.847598, 0)
