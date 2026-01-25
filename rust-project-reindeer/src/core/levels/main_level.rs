@@ -1,6 +1,6 @@
 use godot::{classes::{FileAccess, IStaticBody3D, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat}, prelude::*};
 
-use crate::core::{common::raffler::Raffler, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::maze::{Maze, Tile}, random};
+use crate::core::{environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::maze::{Maze, Tile}};
 
 
 #[derive(GodotClass)]
@@ -121,34 +121,11 @@ impl MainLevel {
             let bound_maze = maze.bind();
             let dim_x = bound_maze.rust_get_dim_x();
             let dim_y = bound_maze.rust_get_dim_y();
-            let n_walls = bound_maze.rust_get_n_walls();
 
-            let mut n_small_rocks = 0;
-            let mut n_medium_rocks = 0;
-            let mut n_large_rocks = 0;
+            let mut small_rock_positions = Vec::new();
+            let mut medium_rock_positions = Vec::new();
+            let mut large_rock_positions = Vec::new();
 
-            for _ in 0..n_walls {
-                let random = self.rng.randi() % 3;
-                
-                match random {
-                    0 => n_small_rocks += 1,
-                    1 => n_medium_rocks += 1,
-                    2 => n_large_rocks += 1,
-
-                    _ => {
-                        godot_error!("Random number is somehow out of range?!");
-                    }
-                }
-            }
-
-            let mut rock_size_raffler = {
-                let mut items_and_counts = Vec::with_capacity(n_walls);
-                items_and_counts.push((RockType::Small, n_small_rocks));
-                items_and_counts.push((RockType::Medium, n_medium_rocks));
-                items_and_counts.push((RockType::Large, n_large_rocks));
-
-                Raffler::new(items_and_counts, self.rng.clone())
-            };
 
             let offset = self.get_top_corner_offset_from_cached(&tile_mesh, dim_x, dim_y);
 
@@ -172,22 +149,10 @@ impl MainLevel {
             tile_multimesh.set_instance_count(n_tiles);
 
 
-            // Rocks spawners
-
-            small_rock_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
-            small_rock_multimesh.set_instance_count(n_small_rocks as i32);
-
-            medium_rock_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
-            medium_rock_multimesh.set_instance_count(n_medium_rocks as i32);
-
-            large_rock_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
-            large_rock_multimesh.set_instance_count(n_large_rocks as i32);
-
-            let mut rock_positions = Vec::with_capacity(n_small_rocks + n_medium_rocks + n_large_rocks);
-
             let size = tile_mesh.get_aabb().size;
             let size_x = size.x;
             let size_y = size.z;
+            let height = size.y;
 
             let mut x = 0;
             let mut y = 0;
@@ -223,44 +188,41 @@ impl MainLevel {
 
                 if let Some(tile) = tile_opt {
                     if tile == &Tile::Wall {
-                        godot_print!("Putting rock at {:?}", &vector);
-                        rock_positions.push(vector);
+                        let rock_type = RockType::get_random(self.rng.clone());
+                        let rock_array = match rock_type {
+                            RockType::Small => &mut small_rock_positions,
+                            RockType::Medium => &mut medium_rock_positions,
+                            RockType::Large => &mut large_rock_positions,
+                        };
+
+                        rock_array.push(vector);
                     }
                 };
 
                 x += 1;
             }
 
-            random::shuffle_with_rng(&mut rock_positions, self.rng.clone());
-            let mut iter = rock_positions.into_iter();
+            // Initialize rock spawners
+            let rock_multimeshes_and_positions = [
+                (&mut self.rock_small_spawner, &mut small_rock_multimesh, small_rock_positions),
+                (&mut self.rock_medium_spawner, &mut medium_rock_multimesh, medium_rock_positions),
+                (&mut self.rock_large_spawner, &mut large_rock_multimesh, large_rock_positions),
+            ];
 
-            for i in 0..n_small_rocks {
-                let mut position = iter.next().unwrap();
-                position.y += 0.1; // TODO
+            for (spawner, multimesh, positions) in rock_multimeshes_and_positions {
+                let n_rocks_of_type = positions.len();
+                multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
+                multimesh.set_instance_count(n_rocks_of_type as i32);
 
-                let transform = self.rock_small_spawner.bind().create_rock_transform(position, self.rng.clone());
-                godot_print!("Transform is {:?}", &transform);
+                for (i, mut position) in positions.into_iter().enumerate() {
+                    position.y += height;
 
-                small_rock_multimesh.set_instance_transform(i as i32, transform);
+                    let transform = spawner.bind().create_rock_transform(position, self.rng.clone());
+
+                    multimesh.set_instance_transform(i as i32, transform);
+                }
             }
 
-            for i in 0..n_medium_rocks {
-                let mut position = iter.next().unwrap();
-                position.y += 0.1; // TODO
-
-                let transform = self.rock_medium_spawner.bind().create_rock_transform(position, self.rng.clone());
-
-                medium_rock_multimesh.set_instance_transform(i as i32, transform);
-            }
-
-            for i in 0..n_large_rocks {
-                let mut position = iter.next().unwrap();
-                position.y += 0.1; // TODO
-
-                let transform = self.rock_large_spawner.bind().create_rock_transform(position, self.rng.clone());
-
-                large_rock_multimesh.set_instance_transform(i as i32, transform);
-            }
 
         } else {
             // Reset
@@ -313,7 +275,6 @@ impl MainLevel {
 
     fn get_top_corner_offset_from_cached(&self, mesh : &Gd<Mesh>, dim_x : usize, dim_y : usize) -> Vector2 {
         let aabb = mesh.get_aabb();
-        godot_print!("AABB of mesh is {:?}", &aabb);
 
         let tile_size = aabb.size;
 
