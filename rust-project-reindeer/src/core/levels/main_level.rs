@@ -1,6 +1,6 @@
 use godot::{classes::{FileAccess, IStaticBody3D, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat}, prelude::*};
 
-use crate::core::{environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, reindeer::Reindeer}};
+use crate::core::{common::direction::Direction, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, reindeer::Reindeer}};
 
 
 #[derive(GodotClass)]
@@ -235,6 +235,8 @@ impl MainLevel {
                 }
             }
 
+            // Reindeer
+
             let reindeer_start = maze.bind().rust_get_reindeer_start_coordinate().clone();
             let x = reindeer_start.x as i32;
             let y = reindeer_start.y as i32;
@@ -255,6 +257,7 @@ impl MainLevel {
 
             let reindeer = &mut self.maze_reindeer;
             reindeer.set_position(position);
+            reindeer.bind_mut().set_reindeer_rotation(Direction::North);
             reindeer.show();
 
         } else {
