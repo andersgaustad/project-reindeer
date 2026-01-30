@@ -1,8 +1,9 @@
-[gd_scene load_steps=18 format=3 uid="uid://bhaqw7kkuvp2d"]
+[gd_scene load_steps=19 format=3 uid="uid://bhaqw7kkuvp2d"]
 
 [ext_resource type="PackedScene" uid="uid://dffs3axw6pbr3" path="res://scenes/reindeer.tscn" id="1_geiq8"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_lx3qq"]
 [ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://art/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="2_hn3as"]
+[ext_resource type="PackedScene" uid="uid://c0hahcleepgei" path="res://scenes/present.tscn" id="2_tkkka"]
 [ext_resource type="ArrayMesh" uid="uid://csowy0rx5hhrb" path="res://art/kenney_holiday-kit/Models/OBJ format/rocks-medium.obj" id="3_geiq8"]
 [ext_resource type="ArrayMesh" uid="uid://bqqf0uncmoovq" path="res://art/kenney_holiday-kit/Models/OBJ format/rocks-large.obj" id="4_tkkka"]
 
@@ -65,6 +66,10 @@ unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="Reindeer" parent="." instance=ExtResource("1_geiq8")]
+unique_name_in_owner = true
+visible = false
+
+[node name="Present" parent="." instance=ExtResource("2_tkkka")]
 unique_name_in_owner = true
 visible = false
 

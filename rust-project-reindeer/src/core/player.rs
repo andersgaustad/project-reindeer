@@ -1,6 +1,6 @@
 use godot::{classes::{Camera3D, CharacterBody3D, ICharacterBody3D, Input, InputEvent, InputEventMouseMotion, OmniLight3D, input::MouseMode, light_3d::Param}, global::move_toward, prelude::*};
 
-use crate::input_map::{MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_VISIBILITY};
+use crate::input_map::{MOUSE_LEFT, MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_VISIBILITY};
 
 
 #[derive(GodotClass)]
@@ -93,10 +93,15 @@ impl ICharacterBody3D for Player {
     
     fn unhandled_input(&mut self, event : Gd<InputEvent>) {
         // Check cancel
+        let mut input = Input::singleton();
         if event.is_action_pressed("ui_cancel") {
-            let mut input = Input::singleton();
-
             input.set_mouse_mode(MouseMode::VISIBLE);
+            return;
+        }
+
+        // Else, check mouse click
+        if event.is_action_pressed(MOUSE_LEFT) {
+            input.set_mouse_mode(MouseMode::CAPTURED);
             return;
         }
 

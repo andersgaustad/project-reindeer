@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://c0hahcleepgei"]
+
+[ext_resource type="PackedScene" uid="uid://cw18jmhk50e76" path="res://art/kenney_holiday-kit/Models/GLB format/present-a-round.glb" id="1_n7t4p"]
+
+[node name="Present" type="Node3D"]
+
+[node name="PresentModel" parent="." instance=ExtResource("1_n7t4p")]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)

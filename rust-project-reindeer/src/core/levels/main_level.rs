@@ -1,6 +1,6 @@
-use godot::{classes::{FileAccess, IStaticBody3D, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use godot::{classes::{FileAccess, IStaticBody3D, InputEvent, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 
-use crate::core::{common::{acknowledger::Communicator, direction::Direction}, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}};
+use crate::{core::{common::{acknowledger::Communicator, direction::Direction}, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
 
 
 #[derive(GodotClass)]
@@ -47,6 +47,10 @@ pub struct MainLevel {
     maze_reindeer : OnReady<Gd<Reindeer>>,
 
     #[var]
+    #[init(node = "%Present")]
+    present : OnReady<Gd<Node3D>>,
+
+    #[var]
     #[init(node = "%TileSpawner")]
     tile_spawner : OnReady<Gd<MultiMeshInstance3D>>,
 
@@ -77,6 +81,14 @@ impl IStaticBody3D for MainLevel {
 
         let maze_file = self.get_maze_file();
         self.set_maze_file(maze_file);
+    }
+
+
+    fn unhandled_input(&mut self, event: Gd<InputEvent>) {
+        if event.is_action_pressed(DEBUG) {
+            self.run_maze_solver();
+            return;
+        }
     }
 }
 
@@ -264,9 +276,30 @@ impl MainLevel {
             reindeer.bind_mut().set_reindeer_rotation(Direction::North);
             reindeer.show();
 
-            // TESTING
-            let t = self.base().get_tree().unwrap().create_timer(5.0).unwrap();
-            t.signals().timeout().connect_other(self, Self::run_maze_solver);
+
+            // Present
+
+            let present_coordinate = maze.bind().rust_get_end_coordinate().clone();
+            let x = present_coordinate.x as i32;
+            let y = present_coordinate.y as i32;
+
+            let position_info = Self::get_tile_position_from_cached(
+                x,
+                y,
+                dim_x,
+                dim_y,
+                &tile_mesh
+            );
+
+            let position = Vector3::new(
+                position_info.coordinates.x,
+                self.maze_floor_height + position_info.height,
+                position_info.coordinates.y
+            );
+
+            let present = &mut self.present;
+            present.set_position(position);
+            present.show();
 
         } else {
             // Reset
@@ -282,6 +315,7 @@ impl MainLevel {
             }
 
             self.maze_reindeer.hide();
+            self.present.hide();
         }
     }
 

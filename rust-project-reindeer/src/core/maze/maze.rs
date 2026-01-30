@@ -462,6 +462,11 @@ impl Maze {
     pub fn rust_get_reindeer_start_coordinate(&self) -> &Coordinate {
         &self.start_coordinate
     }
+
+
+    pub fn rust_get_end_coordinate(&self) -> &Coordinate {
+        &self.end_coordinate
+    }
 }
 
 
