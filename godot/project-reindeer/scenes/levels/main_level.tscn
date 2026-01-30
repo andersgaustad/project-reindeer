@@ -50,6 +50,7 @@ mesh = ExtResource("4_tkkka")
 maze_file = "res://resources/default_maps/test_map.txt"
 color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
 color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
+maze_update_delay = 0.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_wkbr6")

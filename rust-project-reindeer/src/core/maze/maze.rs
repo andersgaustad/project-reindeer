@@ -117,7 +117,8 @@ impl Maze {
     }
 
 
-    fn find_paths(&self) -> Gd<MazeFindPathsCommunicator> {
+    #[func]
+    pub fn find_paths(&self) -> Gd<MazeFindPathsCommunicator> {
         const REMEMBER_BEST_PATH : bool = true;
         const IMPLIED_UNVISITED_COST : usize = usize::MAX;
 
@@ -134,6 +135,9 @@ impl Maze {
         let interface = communicator.clone();
 
         godot::task::spawn(async move {
+            // AWAIT
+            let _await = communicator.signals().start().to_fallible_future().await;
+            // AWAIT
 
             let start_direction = reindeer.direction;
 

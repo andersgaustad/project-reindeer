@@ -12,9 +12,21 @@ pub struct MazeFindPathsCommunicator {
 
 #[godot_api]
 impl MazeFindPathsCommunicator {
+    // Signals
+    #[signal]
+    pub fn start();
+
     #[signal]
     pub fn update_idx(idx : i32, state : MazeTileState, direction : Direction, acknowledger : Gd<Communicator>);
 
     #[signal]
     pub fn commit_found_path(path_info : Gd<PathInfo>);
+
+    
+    // Methods
+
+    #[func]
+    pub fn start(&mut self) {
+        self.signals().start().emit();
+    }
 }

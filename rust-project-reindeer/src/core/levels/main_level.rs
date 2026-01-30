@@ -1,6 +1,6 @@
-use godot::{classes::{FileAccess, IStaticBody3D, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat}, prelude::*};
+use godot::{classes::{FileAccess, IStaticBody3D, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 
-use crate::core::{common::direction::Direction, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, reindeer::Reindeer}};
+use crate::core::{common::{acknowledger::Communicator, direction::Direction}, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}};
 
 
 #[derive(GodotClass)]
@@ -27,6 +27,11 @@ pub struct MainLevel {
     #[var]
     #[init(val = 1.0)]
     maze_floor_height : f32,
+
+    #[export]
+    #[var]
+    #[init(val = 0.05)]
+    maze_update_delay : f64,
 
     #[export_group(name = "Random")]
     #[export]
@@ -260,6 +265,10 @@ impl MainLevel {
             reindeer.bind_mut().set_reindeer_rotation(Direction::North);
             reindeer.show();
 
+            // TESTING
+            let t = self.base().get_tree().unwrap().create_timer(5.0).unwrap();
+            t.signals().timeout().connect_other(self, Self::run_maze_solver);
+
         } else {
             // Reset
             let multimeshes = [
@@ -275,6 +284,79 @@ impl MainLevel {
 
             self.maze_reindeer.hide();
         }
+    }
+
+
+    #[func]
+    fn run_maze_solver(&mut self) {
+        godot_print!("Started maze solver...");
+        let Some(mut maze) = self.maze.clone() else {
+            return;
+        };
+
+        let mut handle = maze.bind_mut().find_paths();
+
+        handle
+            .signals()
+            .update_idx()
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(self, Self::on_maze_update_idx);
+
+        handle
+            .signals()
+            .commit_found_path()
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(self, Self::on_maze_commit_found_path);
+
+
+        handle.bind_mut().start();
+    }
+
+
+    #[func]
+    fn on_maze_update_idx(&mut self, idx : i32, state : MazeTileState, direction : Direction, acknowledger : Gd<Communicator>) {
+        let Some(mut multimesh) = self.tile_spawner.get_multimesh() else {
+            godot_print!("Expected multimesh!");
+            return;
+        };
+
+        match state {
+            MazeTileState::Normal => {
+                multimesh.set_instance_color(idx, Color::WHITE);
+            },
+            MazeTileState::Touched => {
+                multimesh.set_instance_color(idx, Color::LIGHT_YELLOW);
+            },
+            MazeTileState::Committed => {
+                multimesh.set_instance_color(idx, Color::ORANGE);
+            },
+            MazeTileState::Active => {
+                multimesh.set_instance_color(idx, Color::GREEN);
+            },
+        }
+
+        let mut scene_tree = self.base().get_tree().expect("Failed getting scene tree??");
+        let timer = scene_tree.create_timer(self.maze_update_delay).expect("Failed creating timer??");
+
+        timer
+            .signals()
+            .timeout()
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_gd(
+                &acknowledger,
+                |ack| {
+                    ack.signals().done().emit();
+                }
+            );
+    }
+
+
+    #[func]
+    fn on_maze_commit_found_path(&mut self, path_info : Gd<PathInfo>) {
+        godot_print!("Found path!");
     }
 
 
