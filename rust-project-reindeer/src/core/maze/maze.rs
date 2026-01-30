@@ -3,7 +3,7 @@ use std::{cmp::Ordering, collections::{HashMap, HashSet}, fmt::{Display, Write}}
 use godot::prelude::*;
 use strum::{EnumCount, IntoEnumIterator};
 
-use crate::core::{common::{acknowledger::Communicator, coordinate::{Coordinate, IHasCoordinates}, direction::Direction}, maze::{maze_find_paths_communicator::MazeFindPathsCommunicator, maze_tile_state::MazeTileState, path_info::PathInfo}};
+use crate::core::{common::{acknowledger::Communicator, coordinate::{Coordinate, IHasCoordinates}, direction::Direction}, maze::{maze_find_paths_communicator::MazeFindPathsCommunicator, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo}};
 
 
 const ROTATION_COST : usize = 1000;
@@ -118,7 +118,7 @@ impl Maze {
 
 
     #[func]
-    pub fn find_paths(&self) -> Gd<MazeFindPathsCommunicator> {
+    pub fn find_paths(&self, maze_solver_info : Gd<MazeSolverInfo>) -> Gd<MazeFindPathsCommunicator> {
         const REMEMBER_BEST_PATH : bool = true;
         const IMPLIED_UNVISITED_COST : usize = usize::MAX;
 
@@ -130,6 +130,8 @@ impl Maze {
         let reindeer = self.reindeer.clone();
         let start_coordinate = self.start_coordinate.clone();
         let end_coordinate = self.end_coordinate.clone();
+
+        let waiting_flag_bits = maze_solver_info.bind().wait_on_state;
 
         let communicator = MazeFindPathsCommunicator::new_gd();
         let interface = communicator.clone();
@@ -155,9 +157,11 @@ impl Maze {
                 start_direction,
                 &acknowledger
             );
-            // AWAIT
-            let _await = acknowledger.signals().done().to_fallible_future().await;
-            // AWAIT
+            if MazeTileState::Committed.is_set_flag_in_bits(waiting_flag_bits) {
+                // AWAIT
+                let _await = acknowledger.signals().done().to_fallible_future().await;
+                // AWAIT
+            }
 
             let mut to_visit = vec![start_state.clone()];
 
@@ -183,9 +187,11 @@ impl Maze {
                     current_direction,
                     &acknowledger
                 );
-                // AWAIT
-                let _await = acknowledger.signals().done().to_fallible_future().await;
-                // AWAIT
+                if MazeTileState::Active.is_set_flag_in_bits(waiting_flag_bits) {
+                    // AWAIT
+                    let _await = acknowledger.signals().done().to_fallible_future().await;
+                    // AWAIT
+                }
 
 
                 // Unwrapping this as if this is an option then I have done something wrong
@@ -254,10 +260,11 @@ impl Maze {
                         candidate_direction.clone(),
                         &acknowledger
                     );
-                    // AWAIT
-                    let _await = acknowledger.signals().done().to_fallible_future().await;
-                    // AWAIT
-
+                    if MazeTileState::Touched.is_set_flag_in_bits(waiting_flag_bits) {
+                        // AWAIT
+                        let _await = acknowledger.signals().done().to_fallible_future().await;
+                        // AWAIT
+                    }
 
                     let cost_to_move_here_from_current = cost_to_get_here + additional_cost;
                     let cost_to_move_here_otherwise = coordinate_state_to_cost.get(&candidate).unwrap_or(&IMPLIED_UNVISITED_COST);
@@ -278,9 +285,11 @@ impl Maze {
                             candidate_direction.clone(),
                             &acknowledger
                         );
-                        // AWAIT
-                        let _await = acknowledger.signals().done().to_fallible_future().await;
-                        // AWAIT
+                        if MazeTileState::Normal.is_set_flag_in_bits(waiting_flag_bits) {
+                            // AWAIT
+                            let _await = acknowledger.signals().done().to_fallible_future().await;
+                            // AWAIT
+                        }
 
 
                         continue;
@@ -296,9 +305,11 @@ impl Maze {
                         candidate_direction.clone(),
                         &acknowledger
                     );
-                    // AWAIT
-                    let _await = acknowledger.signals().done().to_fallible_future().await;
-                    // AWAIT
+                    if MazeTileState::Committed.is_set_flag_in_bits(waiting_flag_bits) {
+                        // AWAIT
+                        let _await = acknowledger.signals().done().to_fallible_future().await;
+                        // AWAIT
+                    }
 
                     coordinate_state_to_cost.insert(candidate.clone(), cost_to_move_here_from_current);
         
@@ -338,9 +349,11 @@ impl Maze {
                     current_direction,
                     &acknowledger
                 );
-                // AWAIT
-                let _await = acknowledger.signals().done().to_fallible_future().await;
-                // AWAIT
+                if MazeTileState::Normal.is_set_flag_in_bits(waiting_flag_bits) {
+                    // AWAIT
+                    let _await = acknowledger.signals().done().to_fallible_future().await;
+                    // AWAIT
+                }
             }
 
             if let Some(score) = score_opt {

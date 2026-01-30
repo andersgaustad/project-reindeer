@@ -1,6 +1,6 @@
 use godot::{classes::{FileAccess, IStaticBody3D, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 
-use crate::core::{common::{acknowledger::Communicator, direction::Direction}, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}};
+use crate::core::{common::{acknowledger::Communicator, direction::Direction}, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}};
 
 
 #[derive(GodotClass)]
@@ -30,8 +30,7 @@ pub struct MainLevel {
 
     #[export]
     #[var]
-    #[init(val = 0.05)]
-    maze_update_delay : f64,
+    maze_solver_info : Option<Gd<MazeSolverInfo>>,
 
     #[export_group(name = "Random")]
     #[export]
@@ -294,7 +293,8 @@ impl MainLevel {
             return;
         };
 
-        let mut handle = maze.bind_mut().find_paths();
+        let maze_solver_info = self.get_maze_solver_info_or_default();
+        let mut handle = maze.bind_mut().find_paths(maze_solver_info);
 
         handle
             .signals()
@@ -337,8 +337,9 @@ impl MainLevel {
             },
         }
 
+        let delay = self.get_maze_solver_info_or_default().bind().wait_delay;
         let mut scene_tree = self.base().get_tree().expect("Failed getting scene tree??");
-        let timer = scene_tree.create_timer(self.maze_update_delay).expect("Failed creating timer??");
+        let timer = scene_tree.create_timer(delay).expect("Failed creating timer??");
 
         timer
             .signals()
@@ -472,6 +473,11 @@ impl MainLevel {
         };
 
         result
+    }
+
+
+    pub fn get_maze_solver_info_or_default(&self) -> Gd<MazeSolverInfo> {
+        self.maze_solver_info.clone().unwrap_or_default()
     }
 }
 
