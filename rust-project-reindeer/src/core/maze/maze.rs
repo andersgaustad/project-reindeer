@@ -6,9 +6,6 @@ use strum::{EnumCount, IntoEnumIterator};
 use crate::core::{common::{acknowledger::Communicator, coordinate::{Coordinate, IHasCoordinates}, direction::Direction}, maze::{maze_find_paths_communicator::MazeFindPathsCommunicator, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo}};
 
 
-const ROTATION_COST : usize = 1000;
-
-
 #[derive(GodotClass)]
 #[class(no_init, base=RefCounted)]
 pub struct Maze {
@@ -232,7 +229,7 @@ impl Maze {
                             direction: new_target_rotation,
                         };
 
-                        let target_cost = rotation_cost(rotation_steps);
+                        let target_cost = rotation_cost(rotation_steps, maze_solver_info.clone());
 
                         let candidate_and_cost = (target, target_cost);
 
@@ -266,7 +263,7 @@ impl Maze {
                         // AWAIT
                     }
 
-                    let cost_to_move_here_from_current = cost_to_get_here + additional_cost;
+                    let cost_to_move_here_from_current = cost_to_get_here + (usize::try_from(additional_cost).unwrap());
                     let cost_to_move_here_otherwise = coordinate_state_to_cost.get(&candidate).unwrap_or(&IMPLIED_UNVISITED_COST);
         
                     let cost_to_move_cmp = cost_to_move_here_from_current.cmp(&cost_to_move_here_otherwise);
@@ -470,14 +467,15 @@ impl Maze {
 }
 
 
-fn rotation_cost(rotations : usize) -> usize {
+fn rotation_cost(rotations : usize, maze_solver_info : Gd<MazeSolverInfo>) -> u32 {
+    let one_rotation = maze_solver_info.bind().get_rotation_cost();
     let clamped = rotations % Direction::COUNT;
     match clamped {
         0 => 0,
 
-        1 | 3 => ROTATION_COST,
+        1 | 3 => one_rotation,
 
-        2 => 2 * ROTATION_COST,
+        2 => 2 * one_rotation,
 
         // Should never happen
         _ => {

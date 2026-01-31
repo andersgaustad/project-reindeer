@@ -21,5 +21,11 @@ pub struct MazeSolverInfo {
     #[init(val = 0.02)]
     pub wait_delay : f64,
 
+    #[export]
+    #[var]
+    #[init(val = 1000)]
+    // Note: Rotation cost of 0 might make spinning in place repeatedly a viable tactic?
+    pub rotation_cost : u32,
+
     base : Base<Resource>,
 }
