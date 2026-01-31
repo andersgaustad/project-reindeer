@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://de6802kitph1x"]
+
+[ext_resource type="Material" uid="uid://bebd4jwbim5si" path="res://shading/glass_shader_material.tres" id="1_6fntc"]
+[ext_resource type="ArrayMesh" uid="uid://b8rqem4inq5es" path="res://art/kenney_holiday-kit/Models/OBJ format/reindeer.obj" id="1_aak55"]
+
+[node name="Reindeer" type="Reindeer"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.16125429)
+material_override = ExtResource("1_6fntc")
+mesh = ExtResource("1_aak55")

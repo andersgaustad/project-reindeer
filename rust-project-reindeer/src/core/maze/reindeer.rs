@@ -1,4 +1,4 @@
-use godot::prelude::*;
+use godot::{classes::MeshInstance3D, prelude::*};
 
 use crate::core::common::direction::Direction;
 
@@ -13,7 +13,7 @@ pub struct Reindeer {
 
     #[var]
     #[init(node = "%Body")]
-    body : OnReady<Gd<Node3D>>,
+    body : OnReady<Gd<MeshInstance3D>>,
 
     base : Base<Node3D>
 }

@@ -1,6 +1,6 @@
 use godot::{classes::{FileAccess, IStaticBody3D, InputEvent, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{common::{acknowledger::Communicator, direction::Direction}, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
+use crate::{core::{common::{acknowledger::Communicator, coordinate::Coordinate, direction::Direction}, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
 
 
 #[derive(GodotClass)]
@@ -47,6 +47,10 @@ pub struct MainLevel {
     maze_reindeer : OnReady<Gd<Reindeer>>,
 
     #[var]
+    #[init(node = "%GhostReindeer")]
+    maze_ghost_reindeer : OnReady<Gd<Reindeer>>,
+
+    #[var]
     #[init(node = "%Present")]
     present : OnReady<Gd<Node3D>>,
 
@@ -78,6 +82,9 @@ impl IStaticBody3D for MainLevel {
         let seed = self.random_seed.hash_u32();
         let seed_u64 = u64::from(seed);
         self.rng.set_seed(seed_u64);
+
+        self.maze_reindeer.hide();
+        self.maze_ghost_reindeer.hide();
 
         let maze_file = self.get_maze_file();
         self.set_maze_file(maze_file);
@@ -324,6 +331,7 @@ impl MainLevel {
     fn run_maze_solver(&mut self) {
         godot_print!("Started maze solver...");
         let Some(mut maze) = self.maze.clone() else {
+            godot_error!("Could not get Maze!!");
             return;
         };
 
@@ -368,6 +376,32 @@ impl MainLevel {
             },
             MazeTileState::Active => {
                 multimesh.set_instance_color(idx, Color::GREEN);
+
+                if let Some(maze) = self.maze.clone() {
+                    if let Ok(idx_usize) = usize::try_from(idx) {
+                        let dim_x = maze.bind().rust_get_dim_x();
+                        let coordinate_opt = Coordinate::try_from_value(idx_usize, dim_x);
+                        if let Some(coordinate) = coordinate_opt {
+                            let x = coordinate.x as i32;
+                            let y = coordinate.y as i32;
+                            let tile_center_position_opt = self.get_tile_position(x, y);
+                            if let Some(tile_center_position) = tile_center_position_opt {
+                                let TileCenterPosition {
+                                    coordinates : position,
+                                    height
+                                } = tile_center_position;
+
+                                let position_3d = Vector3::new(position.x, self.maze_floor_height + height, position.y);
+
+                                // Move ghost reindeer
+                                let ghost_reindeer = &mut self.maze_ghost_reindeer;
+                                ghost_reindeer.set_position(position_3d);
+                                ghost_reindeer.bind_mut().set_reindeer_rotation(direction);
+                                ghost_reindeer.show();
+                            }
+                        }
+                    }
+                }
             },
         }
 
