@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://witthts5yiqt"]
 
-[ext_resource type="PackedScene" uid="uid://dgg8edtdb530x" path="res://art/kenney_holiday-kit/Models/GLB format/reindeer.glb" id="1_3vyb7"]
+[ext_resource type="PackedScene" uid="uid://dgg8edtdb530x" path="res://assets/source/kenney_holiday-kit/Models/GLB format/reindeer.glb" id="1_3vyb7"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_v6fml"]
 size = Vector3(0.36431885, 0.96551514, 0.899292)

@@ -1,6 +1,6 @@
 [gd_scene load_steps=13 format=3 uid="uid://0cjr7haepmj7"]
 
-[ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://art/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="1_48ne7"]
+[ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="1_48ne7"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_jbqir"]
 [ext_resource type="PackedScene" uid="uid://c0hahcleepgei" path="res://scenes/present.tscn" id="3_fr1um"]
 

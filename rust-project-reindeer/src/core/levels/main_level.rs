@@ -1,6 +1,6 @@
 use godot::{classes::{FileAccess, IStaticBody3D, InputEvent, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{common::{acknowledger::Communicator, coordinate::Coordinate, direction::Direction}, environment::{rock_spawner::RockSpawner, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
+use crate::{core::{common::{acknowledger::Communicator, coordinate::Coordinate, direction::Direction}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
 
 
 #[derive(GodotClass)]
@@ -60,15 +60,15 @@ pub struct MainLevel {
 
     #[var]
     #[init(node = "%RockSmallSpawner")]
-    rock_small_spawner : OnReady<Gd<RockSpawner>>,
+    rock_small_spawner : OnReady<Gd<EnchancedMultiMeshInstance3D>>,
 
     #[var]
     #[init(node = "%RockMediumSpawner")]
-    rock_medium_spawner : OnReady<Gd<RockSpawner>>,
+    rock_medium_spawner : OnReady<Gd<EnchancedMultiMeshInstance3D>>,
 
     #[var]
     #[init(node = "%RockLargeSpawner")]
-    rock_large_spawner : OnReady<Gd<RockSpawner>>,
+    rock_large_spawner : OnReady<Gd<EnchancedMultiMeshInstance3D>>,
 
     rng : Gd<RandomNumberGenerator>,
 
@@ -252,7 +252,7 @@ impl MainLevel {
                 for (i, mut position) in positions.into_iter().enumerate() {
                     position.y += tile_height;
 
-                    let transform = spawner.bind().create_rock_transform(position, self.rng.clone());
+                    let transform = spawner.bind().create_object_transform(position, self.rng.clone());
 
                     multimesh.set_instance_transform(i as i32, transform);
                 }
@@ -429,7 +429,7 @@ impl MainLevel {
     }
 
 
-    fn get_rock_spawner_from_type(&self, rock_type : RockType) -> Gd<RockSpawner> {
+    fn get_rock_spawner_from_type(&self, rock_type : RockType) -> Gd<EnchancedMultiMeshInstance3D> {
         match rock_type {
             RockType::Small => self.get_rock_small_spawner(),
             RockType::Medium => self.get_rock_medium_spawner(),

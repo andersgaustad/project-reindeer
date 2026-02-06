@@ -1,12 +1,13 @@
-[gd_scene load_steps=20 format=3 uid="uid://bhaqw7kkuvp2d"]
+[gd_scene load_steps=22 format=3 uid="uid://bhaqw7kkuvp2d"]
 
 [ext_resource type="PackedScene" uid="uid://dffs3axw6pbr3" path="res://scenes/reindeers/reindeer.tscn" id="1_geiq8"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_lx3qq"]
 [ext_resource type="PackedScene" uid="uid://de6802kitph1x" path="res://scenes/reindeers/ghost_reindeer.tscn" id="2_8lk3y"]
-[ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://art/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="2_hn3as"]
+[ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="2_hn3as"]
 [ext_resource type="PackedScene" uid="uid://c0hahcleepgei" path="res://scenes/present.tscn" id="2_tkkka"]
-[ext_resource type="ArrayMesh" uid="uid://csowy0rx5hhrb" path="res://art/kenney_holiday-kit/Models/OBJ format/rocks-medium.obj" id="3_geiq8"]
-[ext_resource type="ArrayMesh" uid="uid://bqqf0uncmoovq" path="res://art/kenney_holiday-kit/Models/OBJ format/rocks-large.obj" id="4_tkkka"]
+[ext_resource type="ArrayMesh" uid="uid://csowy0rx5hhrb" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-medium.obj" id="3_geiq8"]
+[ext_resource type="ArrayMesh" uid="uid://bqqf0uncmoovq" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-large.obj" id="4_tkkka"]
+[ext_resource type="ArrayMesh" uid="uid://ncp03n34vna4" path="res://assets/extracted/Sketchfab_Scene_Arrow_Material_001_0.res" id="8_h35hl"]
 
 [sub_resource type="MazeSolverInfo" id="MazeSolverInfo_geiq8"]
 
@@ -50,6 +51,11 @@ mesh = ExtResource("3_geiq8")
 transform_format = 1
 mesh = ExtResource("4_tkkka")
 
+[sub_resource type="MultiMesh" id="MultiMesh_c7w6w"]
+transform_format = 1
+use_colors = true
+mesh = ExtResource("8_h35hl")
+
 [node name="Ground" type="MainLevel"]
 maze_file = "res://resources/default_maps/test_map.txt"
 color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
@@ -90,16 +96,23 @@ environment = SubResource("Environment_lx3qq")
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_ojqrr")
 
-[node name="RockSmallSpawner" type="RockSpawner" parent="Spawners"]
+[node name="RockSmallSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners"]
+yaw_random_rotation = true
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_8lk3y")
 
-[node name="RockMediumSpawner" type="RockSpawner" parent="Spawners"]
-rock_scale = Vector3(0.9, 0.9, 0.9)
+[node name="RockMediumSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners"]
+mesh_scale = Vector3(0.9, 0.9, 0.9)
+yaw_random_rotation = true
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_h35hl")
 
-[node name="RockLargeSpawner" type="RockSpawner" parent="Spawners"]
-rock_scale = Vector3(0.65, 0.65, 0.65)
+[node name="RockLargeSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners"]
+mesh_scale = Vector3(0.65, 0.65, 0.65)
+yaw_random_rotation = true
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_kwk8y")
+
+[node name="ArrowSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners"]
+unique_name_in_owner = true
+multimesh = SubResource("MultiMesh_c7w6w")
