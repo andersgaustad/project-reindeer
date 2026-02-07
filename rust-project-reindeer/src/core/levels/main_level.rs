@@ -70,6 +70,10 @@ pub struct MainLevel {
     #[init(node = "%RockLargeSpawner")]
     rock_large_spawner : OnReady<Gd<EnchancedMultiMeshInstance3D>>,
 
+    #[var]
+    #[init(node = "%ArrowSpawner")]
+    arrow_spawner : OnReady<Gd<EnchancedMultiMeshInstance3D>>,
+
     rng : Gd<RandomNumberGenerator>,
 
     base : Base<StaticBody3D>,
@@ -425,6 +429,76 @@ impl MainLevel {
 
     #[func]
     fn on_maze_commit_found_path(&mut self, path_info : Gd<PathInfo>) {
+        self.maze_ghost_reindeer.hide();
+
+        let bound = path_info.bind();
+        let paths = bound.rust_get_paths();
+
+        let Some(first_path) = paths.first() else {
+            godot_print!("TODO: No paths found!");
+            return;
+        };
+        
+        let first_path = first_path.iter().rev().collect::<Vec<&Coordinate>>();
+
+        godot_print!("Path: {:?}", &first_path);
+
+        let n_arrows = first_path.len().checked_sub(1).unwrap_or(0);
+
+        // Configure arrow spawner
+
+        let Some(mut arrow_multimesh) = self.arrow_spawner.get_multimesh() else {
+            godot_error!("Could not find Arrow Spawner MultiMesh!");
+            return;
+        };
+
+        arrow_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
+        arrow_multimesh.set_use_colors(true);
+
+        arrow_multimesh.set_instance_count(n_arrows.try_into().unwrap());
+
+
+        for i in 0..n_arrows {
+            let Some(current) = first_path.get(i) else {
+                break;
+            };
+
+            let Some(next) = first_path.get(i + 1) else {
+                break;
+            };
+
+            let x = current.x;
+            let y = current.y;
+
+            let Some(tile_position) = self.get_tile_position(
+                x.try_into().unwrap(),
+                y.try_into().unwrap()
+            
+            ) else {
+                continue;
+            };
+
+            let position_coordinates = tile_position.coordinates;
+            let tile_height = tile_position.height;
+
+            let position = Vector3::new(position_coordinates.x, tile_height + self.maze_floor_height, position_coordinates.y);
+
+            let mut transform = self.arrow_spawner.bind().create_object_transform(position, self.rng.clone());
+
+            let direction_from_current_to_next_opt = next.try_get_direction_of_other(current);
+            if let Some(direction_from_current_to_next) = direction_from_current_to_next_opt {
+                let alignment = self.arrow_spawner.bind().rust_get_mesh_directional_alignment();
+                let rotations = alignment.clockwise_rotations_to(&direction_from_current_to_next);
+
+                let rotations_in_radians = std::f32::consts::FRAC_PI_2 * (rotations as f32);
+
+                let new_basis = transform.basis.rotated(Vector3::UP, rotations_in_radians);
+                // transform.basis = new_basis;
+            }
+
+            arrow_multimesh.set_instance_transform(i.try_into().unwrap(), transform);
+        }
+
         godot_print!("Found path!");
     }
 

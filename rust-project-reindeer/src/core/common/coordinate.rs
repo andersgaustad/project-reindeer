@@ -78,6 +78,13 @@ impl From<&Direction> for Coordinate {
 }
 
 
+impl From<Direction> for Coordinate {
+    fn from(value : Direction) -> Self {
+        Self::from(&value)
+    }
+}
+
+
 impl Display for Coordinate {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let as_string = format!("({},{})", self.x, self.y);
@@ -209,6 +216,44 @@ impl<'a> Coordinate {
         }
 
         coordinates
+    }
+
+
+    pub fn try_get_direction_of_other(&self, other : &Self) -> Option<Direction> {
+        let vector = self.clone() - other.clone();
+
+        let x = vector.x;
+        let y = vector.y;
+
+        let horizontally_aligned = y == 0;
+        let vertically_aligned = x == 0;
+
+        let exactly_one_shared_axis = horizontally_aligned ^ vertically_aligned;
+        if !exactly_one_shared_axis {
+            return None;
+        }
+
+        // Else
+
+        if horizontally_aligned {
+            if x > 0 {
+                return Some(Direction::East);
+
+            } else if x < 0 {
+                return Some(Direction::West);
+            }
+        }
+
+        if vertically_aligned {
+            if y > 0 {
+                return Some(Direction::South);
+
+            } else if y < 0 {
+                return Some(Direction::North);
+            }
+        }
+
+        None
     }
 
 

@@ -1,5 +1,7 @@
 use godot::{classes::{MultiMeshInstance3D, RandomNumberGenerator}, prelude::*};
 
+use crate::core::common::direction::Direction;
+
 
 #[derive(GodotClass)]
 #[class(init, base=MultiMeshInstance3D)]
@@ -10,6 +12,10 @@ pub struct EnchancedMultiMeshInstance3D {
 
     #[export]
     mesh_rotation_degrees : Vector3,
+
+    #[export]
+    #[init(val = Direction::East)]
+    mesh_directional_alignment : Direction,
 
     #[export_group(name = "Random Rotation")]
     #[export]
@@ -38,19 +44,23 @@ impl EnchancedMultiMeshInstance3D {
 
     ) -> Transform3D {
         let axis_and_rotation_radians = [
-            (Vector3::RIGHT, self.pitch_random_rotation),
-            (Vector3::UP, self.yaw_random_rotation),
-            (Vector3::BACK, self.roll_random_rotation)
+            (Vector3::RIGHT, self.mesh_rotation_degrees.x, self.pitch_random_rotation),
+            (Vector3::UP, self.mesh_rotation_degrees.y, self.yaw_random_rotation),
+            (Vector3::BACK, self.mesh_rotation_degrees.z, self.roll_random_rotation)
 
-        ].map(|(axis, rotate_random)| {
-            let rotation_radians = if rotate_random {
-                rng.randf_range(0.0, std::f32::consts::TAU)
+        ].map(|(axis, base_degrees, rotate_random)| {
+            const TAU : f32 = std::f32::consts::TAU;
+
+            let base_radians = base_degrees * TAU / 360.0;
+
+            let added_random_radians = if rotate_random {
+                rng.randf_range(0.0, TAU)
 
             } else {
                 0.0
             };
 
-            (axis, rotation_radians)
+            (axis, base_radians + added_random_radians)
         });
 
         let mut basis = Basis::default();
@@ -62,5 +72,10 @@ impl EnchancedMultiMeshInstance3D {
         let transform = Transform3D::new(basis, position);
 
         transform
-    }   
+    }
+
+
+    pub fn rust_get_mesh_directional_alignment(&self) -> Direction {
+        self.mesh_directional_alignment
+    }
 }

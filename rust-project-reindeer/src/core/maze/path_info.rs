@@ -27,4 +27,14 @@ impl PathInfo {
             }
         })
     }
+
+
+    pub fn rust_get_paths(&self) -> &Vec<Vec<Coordinate>> {
+        &self.paths
+    }
+
+
+    pub fn rust_get_score(&self) -> usize {
+        self.score
+    }
 }

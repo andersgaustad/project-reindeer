@@ -1,8 +1,9 @@
-[gd_scene load_steps=13 format=3 uid="uid://0cjr7haepmj7"]
+[gd_scene load_steps=14 format=3 uid="uid://0cjr7haepmj7"]
 
 [ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="1_48ne7"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_jbqir"]
 [ext_resource type="PackedScene" uid="uid://c0hahcleepgei" path="res://scenes/present.tscn" id="3_fr1um"]
+[ext_resource type="ArrayMesh" uid="uid://ncp03n34vna4" path="res://assets/extracted/Sketchfab_Scene_Arrow_Material_001_0.res" id="4_v45ci"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]
 size = Vector3(60, 2, 60)
@@ -78,3 +79,8 @@ mesh = ExtResource("1_48ne7")
 
 [node name="Present" parent="." instance=ExtResource("3_fr1um")]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 5.0413613, 0)
+visible = false
+
+[node name="ArrowMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.4, 0, 0, 0, -1.7484556e-08, -0.4, 0, 0.4, -1.7484556e-08, 0, 5, 0)
+mesh = ExtResource("4_v45ci")

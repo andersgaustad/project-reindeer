@@ -10,6 +10,7 @@
 [ext_resource type="ArrayMesh" uid="uid://ncp03n34vna4" path="res://assets/extracted/Sketchfab_Scene_Arrow_Material_001_0.res" id="8_h35hl"]
 
 [sub_resource type="MazeSolverInfo" id="MazeSolverInfo_geiq8"]
+wait_on_state = 0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]
 size = Vector3(60, 2, 60)
@@ -114,5 +115,7 @@ unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_kwk8y")
 
 [node name="ArrowSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners"]
+mesh_scale = Vector3(0.4, 0.4, 0.4)
+mesh_rotation_degrees = Vector3(90, 0, 0)
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_c7w6w")
