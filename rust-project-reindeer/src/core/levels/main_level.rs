@@ -32,6 +32,11 @@ pub struct MainLevel {
     #[var]
     maze_solver_info : Option<Gd<MazeSolverInfo>>,
 
+    #[export]
+    #[var]
+    #[init(val = Color::GREEN)]
+    arrow_color : Color,
+
     #[export_group(name = "Random")]
     #[export]
     #[var]
@@ -438,10 +443,6 @@ impl MainLevel {
             godot_print!("TODO: No paths found!");
             return;
         };
-        
-        let first_path = first_path.iter().rev().collect::<Vec<&Coordinate>>();
-
-        godot_print!("Path: {:?}", &first_path);
 
         let n_arrows = first_path.len().checked_sub(1).unwrap_or(0);
 
@@ -457,6 +458,16 @@ impl MainLevel {
 
         arrow_multimesh.set_instance_count(n_arrows.try_into().unwrap());
 
+        let mut material = StandardMaterial3D::new_gd();
+        material.set_albedo(Color::WHITE);
+        material.set_flag(Flags::ALBEDO_FROM_VERTEX_COLOR, true);
+
+        let Some(mut arrow_mesh) = arrow_multimesh.get_mesh() else {
+            godot_error!("Could not get Arrow Mesh!");
+            return;
+        };
+
+        arrow_mesh.surface_set_material(0, &material);
 
         for i in 0..n_arrows {
             let Some(current) = first_path.get(i) else {
@@ -488,15 +499,18 @@ impl MainLevel {
             let direction_from_current_to_next_opt = next.try_get_direction_of_other(current);
             if let Some(direction_from_current_to_next) = direction_from_current_to_next_opt {
                 let alignment = self.arrow_spawner.bind().rust_get_mesh_directional_alignment();
-                let rotations = alignment.clockwise_rotations_to(&direction_from_current_to_next);
+                let rotations = alignment.counter_clockwise_rotations_to(&direction_from_current_to_next);
 
                 let rotations_in_radians = std::f32::consts::FRAC_PI_2 * (rotations as f32);
 
                 let new_basis = transform.basis.rotated(Vector3::UP, rotations_in_radians);
-                // transform.basis = new_basis;
+                transform.basis = new_basis;
             }
 
-            arrow_multimesh.set_instance_transform(i.try_into().unwrap(), transform);
+            let i_i32 = i32::try_from(i).unwrap();
+
+            arrow_multimesh.set_instance_transform(i_i32, transform);
+            arrow_multimesh.set_instance_color(i_i32, self.arrow_color);
         }
 
         godot_print!("Found path!");

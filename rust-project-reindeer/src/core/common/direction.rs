@@ -48,6 +48,11 @@ impl Direction {
     }
 
 
+    pub fn counter_clockwise_rotations_to(&self, other : &Self) -> usize {
+        Direction::COUNT - self.clockwise_rotations_to(other)
+    }
+
+
     pub fn to_vector(&self) -> Coordinate {
         Coordinate::from(self)
     }

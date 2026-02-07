@@ -374,10 +374,22 @@ impl Maze {
                     &key_got_here_from_value_map
 
                 ).into_iter().map(|coordinate_and_directions| {
-                    let mut coordinates = coordinate_and_directions.into_iter().map(|coordinate_and_direction| {
-                        coordinate_and_direction.coordinate
-                    }).collect::<Vec<_>>();
+                    let mut coordinates = Vec::with_capacity(coordinate_and_directions.len());
+                    for coordinate_and_direction in coordinate_and_directions {
+                        let coordinate = coordinate_and_direction.coordinate;
 
+                        let exists = coordinates.last().map_or(
+                            false,
+                            |last| {
+                                &coordinate == last
+                            }
+                        );
+                        
+                        if !exists {
+                            coordinates.push(coordinate);
+                        }
+                    }
+                    
                     coordinates.reverse();
 
                     coordinates
@@ -394,13 +406,10 @@ impl Maze {
 
 
     fn reconstruct_path_from_end_reversed(&self, end_state : CoordinateAndDirecton, key_got_here_from_value_map : &HashMap<CoordinateAndDirecton, HashSet<CoordinateAndDirecton>>) -> Vec<Vec<CoordinateAndDirecton>> {
-        //println!("Backtracking from {}", end_coordinate.to_display_shifted());
-
         let mut path = vec![end_state.clone()];
         let mut current = end_state;
 
         while let Some(current_predecessors) = key_got_here_from_value_map.get(&current) {
-            //println!("Predecessors of {} : {:#?}", current.to_display_shifted(), current_predecessors.iter().map(|orig| orig.to_display_shifted()).collect::<Vec<_>>());
             if current_predecessors.len() == 1 {
                 // Single predecessor
                 let predecessor = current_predecessors.iter().next().unwrap();
@@ -411,7 +420,6 @@ impl Maze {
             } else {
                 // Multiple predecessors
                 let mut all_paths = Vec::with_capacity(current_predecessors.len());
-                path.pop();
                 for predecessor in current_predecessors {
                     let sub_paths = self.reconstruct_path_from_end_reversed(predecessor.clone(), key_got_here_from_value_map);
                     for sub_path in sub_paths {
@@ -593,7 +601,7 @@ impl Default for Reindeer {
 
 // CoordinateAndDirection
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 struct CoordinateAndDirecton {
     coordinate : Coordinate,
     direction : Direction,
