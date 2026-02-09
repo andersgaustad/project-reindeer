@@ -7,9 +7,10 @@
 [ext_resource type="PackedScene" uid="uid://c0hahcleepgei" path="res://scenes/present.tscn" id="2_tkkka"]
 [ext_resource type="ArrayMesh" uid="uid://csowy0rx5hhrb" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-medium.obj" id="3_geiq8"]
 [ext_resource type="ArrayMesh" uid="uid://bqqf0uncmoovq" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-large.obj" id="4_tkkka"]
-[ext_resource type="ArrayMesh" uid="uid://ncp03n34vna4" path="res://assets/extracted/Sketchfab_Scene_Arrow_Material_001_0.res" id="8_h35hl"]
+[ext_resource type="ArrayMesh" uid="uid://faqe8o8sn8t6" path="res://assets/extracted/Sketchfab_Scene_Arrow_Material_001_0.res" id="8_h35hl"]
 
 [sub_resource type="MazeSolverInfo" id="MazeSolverInfo_geiq8"]
+rotation_cost = 0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]
 size = Vector3(60, 2, 60)

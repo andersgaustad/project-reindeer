@@ -351,14 +351,14 @@ impl MainLevel {
             .signals()
             .update_idx()
             .builder()
-            .flags(ConnectFlags::DEFERRED)
+            //.flags(ConnectFlags::DEFERRED)
             .connect_other_mut(self, Self::on_maze_update_idx);
 
         handle
             .signals()
             .commit_found_path()
             .builder()
-            .flags(ConnectFlags::DEFERRED)
+            //.flags(ConnectFlags::DEFERRED)
             .connect_other_mut(self, Self::on_maze_commit_found_path);
 
 
@@ -369,7 +369,7 @@ impl MainLevel {
     #[func]
     fn on_maze_update_idx(&mut self, idx : i32, state : MazeTileState, direction : Direction, acknowledger : Gd<Communicator>) {
         let Some(mut multimesh) = self.tile_spawner.get_multimesh() else {
-            godot_print!("Expected multimesh!");
+            godot_error!("Expected multimesh!");
             return;
         };
 
@@ -422,7 +422,7 @@ impl MainLevel {
             .signals()
             .timeout()
             .builder()
-            .flags(ConnectFlags::DEFERRED)
+            .flags(ConnectFlags::ONE_SHOT)
             .connect_other_gd(
                 &acknowledger,
                 |ack| {
@@ -434,6 +434,7 @@ impl MainLevel {
 
     #[func]
     fn on_maze_commit_found_path(&mut self, path_info : Gd<PathInfo>) {
+        godot_print!("Path commited!");
         self.maze_ghost_reindeer.hide();
 
         let bound = path_info.bind();

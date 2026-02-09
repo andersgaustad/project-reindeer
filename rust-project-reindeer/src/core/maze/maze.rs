@@ -133,6 +133,8 @@ impl Maze {
         let communicator = MazeFindPathsCommunicator::new_gd();
         let interface = communicator.clone();
 
+        let rotations_are_free = maze_solver_info.bind().get_rotation_cost() == 0;
+
         godot::task::spawn(async move {
             // AWAIT
             let _await = communicator.signals().start().to_fallible_future().await;
@@ -149,16 +151,17 @@ impl Maze {
 
             let acknowledger = Communicator::new_gd();
             communicator.signals().update_idx().emit(
-                start_idx as i32,
+                i32::try_from(start_idx).unwrap(),
                 MazeTileState::Committed,
                 start_direction,
                 &acknowledger
             );
             if MazeTileState::Committed.is_set_flag_in_bits(waiting_flag_bits) {
                 // AWAIT
-                let _await = acknowledger.signals().done().to_fallible_future().await;
+                let _await = acknowledger.bind().await_done().await;
                 // AWAIT
             }
+            drop(acknowledger);
 
             let mut to_visit = vec![start_state.clone()];
 
@@ -179,16 +182,18 @@ impl Maze {
                 // Notify active and sync
                 let acknowledger = Communicator::new_gd();
                 communicator.signals().update_idx().emit(
-                    current_idx as i32,
+                    i32::try_from(current_idx).unwrap(),
                     MazeTileState::Active,
                     current_direction,
                     &acknowledger
                 );
+                
                 if MazeTileState::Active.is_set_flag_in_bits(waiting_flag_bits) {
                     // AWAIT
-                    let _await = acknowledger.signals().done().to_fallible_future().await;
+                    let _await = acknowledger.bind().await_done().await;
                     // AWAIT
                 }
+                drop(acknowledger);
 
 
                 // Unwrapping this as if this is an option then I have done something wrong
@@ -201,7 +206,38 @@ impl Maze {
                     }
                 }
 
-                let valid_candidates_and_costs = {
+
+                let valid_candidates_and_costs = if rotations_are_free {
+                    // Special scenario - rotation cost is 0
+                    // Tracking predecessors when rotation cost is 0 will result in an infinite loop under normal circumstances 
+                    // There will always be a "free" action of moving from rotation A to B
+                    // Fixing this by skipping rotations and dealing with all neighbors instead regardless of orientation
+
+                    let results = Direction::iter().filter_map(|direction| {
+                        let move_target = current_coordinate.clone() + direction.to_vector();
+
+                        let bound = gd.bind();
+                        let (_, tile) = bound.get_index_and_content_by_coordinate(&move_target)?;
+                        if tile != &Tile::Ground {
+                            return None;
+                        }
+
+                        let target = CoordinateAndDirecton {
+                            coordinate : move_target,
+                            direction
+                        };
+
+                        let target_cost = 1;
+
+                        Some((target, target_cost))
+
+                    }).collect::<Vec<_>>();
+
+                    results
+                    
+                } else {
+                    // Generic scenario (rotations are not free) - we can either continue in our current direction or rotate
+
                     let mut results = Vec::new();
 
                     // Move options
@@ -252,23 +288,24 @@ impl Maze {
                     // Notify touched
                     let acknowledger = Communicator::new_gd();
                     communicator.signals().update_idx().emit(
-                        candidate_index as i32,
+                        i32::try_from(candidate_index).unwrap(),
                         MazeTileState::Touched,
                         candidate_direction.clone(),
                         &acknowledger
                     );
                     if MazeTileState::Touched.is_set_flag_in_bits(waiting_flag_bits) {
                         // AWAIT
-                        let _await = acknowledger.signals().done().to_fallible_future().await;
+                        let _await = acknowledger.bind().await_done().await;
                         // AWAIT
                     }
+                    drop(acknowledger);
 
                     let cost_to_move_here_from_current = cost_to_get_here + (usize::try_from(additional_cost).unwrap());
                     let cost_to_move_here_otherwise = coordinate_state_to_cost.get(&candidate).unwrap_or(&IMPLIED_UNVISITED_COST);
         
                     let cost_to_move_cmp = cost_to_move_here_from_current.cmp(&cost_to_move_here_otherwise);
                     
-                    if cost_to_move_cmp == Ordering::Equal {                       
+                    if cost_to_move_cmp == Ordering::Equal && additional_cost != 0 {                       
                         add_predecessor(candidate.clone(), current.clone(), false, &mut key_got_here_from_value_map);
                     }
         
@@ -277,16 +314,17 @@ impl Maze {
                         // Notify non-committed by reverting to default state
                         let acknowledger = Communicator::new_gd();
                         communicator.signals().update_idx().emit(
-                            candidate_index as i32,
+                            i32::try_from(candidate_index).unwrap(),
                             MazeTileState::Normal,
                             candidate_direction.clone(),
                             &acknowledger
                         );
                         if MazeTileState::Normal.is_set_flag_in_bits(waiting_flag_bits) {
                             // AWAIT
-                            let _await = acknowledger.signals().done().to_fallible_future().await;
+                            let _await = acknowledger.bind().await_done().await;
                             // AWAIT
                         }
+                        drop(acknowledger);
 
 
                         continue;
@@ -297,16 +335,17 @@ impl Maze {
                     // Notify candidate committed
                     let acknowledger = Communicator::new_gd();
                     communicator.signals().update_idx().emit(
-                        candidate_index as i32,
+                        i32::try_from(candidate_index).unwrap(),
                         MazeTileState::Committed,
                         candidate_direction.clone(),
                         &acknowledger
                     );
                     if MazeTileState::Committed.is_set_flag_in_bits(waiting_flag_bits) {
                         // AWAIT
-                        let _await = acknowledger.signals().done().to_fallible_future().await;
+                        let _await = acknowledger.bind().await_done().await;
                         // AWAIT
                     }
+                    drop(acknowledger);
 
                     coordinate_state_to_cost.insert(candidate.clone(), cost_to_move_here_from_current);
         
@@ -348,9 +387,10 @@ impl Maze {
                 );
                 if MazeTileState::Normal.is_set_flag_in_bits(waiting_flag_bits) {
                     // AWAIT
-                    let _await = acknowledger.signals().done().to_fallible_future().await;
+                    let _await = acknowledger.bind().await_done().await;
                     // AWAIT
                 }
+                drop(acknowledger);
             }
 
             if let Some(score) = score_opt {
