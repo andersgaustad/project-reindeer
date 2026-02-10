@@ -1,6 +1,6 @@
 use godot::{classes::{FileAccess, IStaticBody3D, InputEvent, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{common::{acknowledger::Communicator, coordinate::Coordinate, direction::Direction}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
+use crate::{core::{common::{communicator::Communicator, coordinate::Coordinate, direction::Direction}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
 
 
 #[derive(GodotClass)]
@@ -422,7 +422,7 @@ impl MainLevel {
             .signals()
             .timeout()
             .builder()
-            .flags(ConnectFlags::ONE_SHOT)
+            .flags(ConnectFlags::DEFERRED | ConnectFlags::ONE_SHOT)
             .connect_other_gd(
                 &acknowledger,
                 |ack| {

@@ -1,3 +1,5 @@
+use std::future::Future;
+
 use godot::{classes::object::ConnectFlags, prelude::*};
 
 
@@ -31,24 +33,29 @@ impl Communicator {
             .builder()
             .flags(ConnectFlags::ONE_SHOT)
             .connect_self_mut(
-                |me| {
-                    me.is_done = true;
-                }
+                Self::mark_as_done
             );
         
         communicator
     }
 
 
-    pub async fn await_done(&self) {
+    fn mark_as_done(&mut self) {
+        self.is_done = true;
+    }
+    
+
+    pub fn get_done_future(&self) -> Option<impl Future<Output = ()>> {
         if self.is_done {
-            return;
+            return None;
         }
 
+        // Else
         let me = self.to_gd();
+        let future = async move {
+            let _await = me.signals().done().to_fallible_future().await;
+        };
 
-        // AWAIT
-        let _await = me.signals().done().to_fallible_future().await;
-        // AWAIT
+        Some(future)
     }
 }

@@ -1,6 +1,6 @@
 use godot::prelude::*;
 
-use crate::core::{common::{acknowledger::Communicator, direction::Direction}, maze::{maze_tile_state::MazeTileState, path_info::PathInfo}};
+use crate::core::{common::{communicator::Communicator, direction::Direction}, maze::{maze_tile_state::MazeTileState, path_info::PathInfo}};
 
 
 #[derive(GodotClass)]

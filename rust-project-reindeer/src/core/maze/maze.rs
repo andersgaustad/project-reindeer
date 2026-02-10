@@ -1,9 +1,9 @@
-use std::{cmp::Ordering, collections::{HashMap, HashSet}, fmt::{Display, Write}};
+use std::{cmp::Ordering, collections::{HashMap, HashSet}, fmt::{Debug, Display, Write}, pin::pin};
 
 use godot::prelude::*;
 use strum::{EnumCount, IntoEnumIterator};
 
-use crate::core::{common::{acknowledger::Communicator, coordinate::{Coordinate, IHasCoordinates}, direction::Direction}, maze::{maze_find_paths_communicator::MazeFindPathsCommunicator, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo}};
+use crate::core::{common::{communicator::Communicator, coordinate::{Coordinate, IHasCoordinates}, direction::Direction}, maze::{maze_find_paths_communicator::MazeFindPathsCommunicator, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo}};
 
 
 #[derive(GodotClass)]
@@ -149,19 +149,15 @@ impl Maze {
 
             let start_idx = start_state.coordinate.try_to_index(map_dim_x, map_dim_y).unwrap();
 
-            let acknowledger = Communicator::new_gd();
-            communicator.signals().update_idx().emit(
-                i32::try_from(start_idx).unwrap(),
-                MazeTileState::Committed,
+            // AWAIT
+            let _await = Self::wait_for_update_idx(
+                communicator.clone(),
+                start_idx,
                 start_direction,
-                &acknowledger
-            );
-            if MazeTileState::Committed.is_set_flag_in_bits(waiting_flag_bits) {
-                // AWAIT
-                let _await = acknowledger.bind().await_done().await;
-                // AWAIT
-            }
-            drop(acknowledger);
+                MazeTileState::Committed,
+                waiting_flag_bits
+            ).await;
+            // AWAIT
 
             let mut to_visit = vec![start_state.clone()];
 
@@ -180,21 +176,15 @@ impl Maze {
                 let current_idx = current_coordinate.try_to_index(map_dim_x, map_dim_y).unwrap();
 
                 // Notify active and sync
-                let acknowledger = Communicator::new_gd();
-                communicator.signals().update_idx().emit(
-                    i32::try_from(current_idx).unwrap(),
-                    MazeTileState::Active,
+                // AWAIT
+                let _await = Self::wait_for_update_idx(
+                    communicator.clone(),
+                    current_idx,
                     current_direction,
-                    &acknowledger
-                );
-                
-                if MazeTileState::Active.is_set_flag_in_bits(waiting_flag_bits) {
-                    // AWAIT
-                    let _await = acknowledger.bind().await_done().await;
-                    // AWAIT
-                }
-                drop(acknowledger);
-
+                    MazeTileState::Active,
+                    waiting_flag_bits
+                ).await;
+                // AWAIT
 
                 // Unwrapping this as if this is an option then I have done something wrong
                 let cost_to_get_here = *coordinate_state_to_cost.get(&current).unwrap();
@@ -265,7 +255,7 @@ impl Maze {
                             direction: new_target_rotation,
                         };
 
-                        let target_cost = rotation_cost(rotation_steps, maze_solver_info.clone());
+                        let target_cost = Self::rotation_cost(rotation_steps, maze_solver_info.clone());
 
                         let candidate_and_cost = (target, target_cost);
 
@@ -286,19 +276,15 @@ impl Maze {
                     let candidate_index = candidate_coordinate.try_to_index(map_dim_x, map_dim_y).unwrap();
 
                     // Notify touched
-                    let acknowledger = Communicator::new_gd();
-                    communicator.signals().update_idx().emit(
-                        i32::try_from(candidate_index).unwrap(),
+                    // AWAIT
+                    let _await = Self::wait_for_update_idx(
+                        communicator.clone(),
+                        candidate_index,
+                        current_direction,
                         MazeTileState::Touched,
-                        candidate_direction.clone(),
-                        &acknowledger
-                    );
-                    if MazeTileState::Touched.is_set_flag_in_bits(waiting_flag_bits) {
-                        // AWAIT
-                        let _await = acknowledger.bind().await_done().await;
-                        // AWAIT
-                    }
-                    drop(acknowledger);
+                        waiting_flag_bits
+                    ).await;
+                    // AWAIT
 
                     let cost_to_move_here_from_current = cost_to_get_here + (usize::try_from(additional_cost).unwrap());
                     let cost_to_move_here_otherwise = coordinate_state_to_cost.get(&candidate).unwrap_or(&IMPLIED_UNVISITED_COST);
@@ -306,26 +292,22 @@ impl Maze {
                     let cost_to_move_cmp = cost_to_move_here_from_current.cmp(&cost_to_move_here_otherwise);
                     
                     if cost_to_move_cmp == Ordering::Equal && additional_cost != 0 {                       
-                        add_predecessor(candidate.clone(), current.clone(), false, &mut key_got_here_from_value_map);
+                        Self::add_predecessor(candidate.clone(), current.clone(), false, &mut key_got_here_from_value_map);
                     }
         
                     let skip_overshooting_cost = REMEMBER_BEST_PATH && cost_to_move_here_from_current > score_opt.unwrap_or(IMPLIED_UNVISITED_COST);
                     if cost_to_move_cmp != Ordering::Less || skip_overshooting_cost {
                         // Notify non-committed by reverting to default state
-                        let acknowledger = Communicator::new_gd();
-                        communicator.signals().update_idx().emit(
-                            i32::try_from(candidate_index).unwrap(),
-                            MazeTileState::Normal,
-                            candidate_direction.clone(),
-                            &acknowledger
-                        );
-                        if MazeTileState::Normal.is_set_flag_in_bits(waiting_flag_bits) {
-                            // AWAIT
-                            let _await = acknowledger.bind().await_done().await;
-                            // AWAIT
-                        }
-                        drop(acknowledger);
 
+                        // AWAIT
+                        let _await = Self::wait_for_update_idx(
+                            communicator.clone(),
+                            candidate_index,
+                            candidate_direction.clone(),
+                            MazeTileState::Normal,
+                            waiting_flag_bits
+                        ).await;
+                        // AWAIT
 
                         continue;
                     }
@@ -333,25 +315,21 @@ impl Maze {
                     // Else, we should have found new optimal path
 
                     // Notify candidate committed
-                    let acknowledger = Communicator::new_gd();
-                    communicator.signals().update_idx().emit(
-                        i32::try_from(candidate_index).unwrap(),
-                        MazeTileState::Committed,
+                    // AWAIT
+                    let _await = Self::wait_for_update_idx(
+                        communicator.clone(),
+                        candidate_index,
                         candidate_direction.clone(),
-                        &acknowledger
-                    );
-                    if MazeTileState::Committed.is_set_flag_in_bits(waiting_flag_bits) {
-                        // AWAIT
-                        let _await = acknowledger.bind().await_done().await;
-                        // AWAIT
-                    }
-                    drop(acknowledger);
+                        MazeTileState::Committed,
+                        waiting_flag_bits
+                    ).await;
+                    // AWAIT
 
                     coordinate_state_to_cost.insert(candidate.clone(), cost_to_move_here_from_current);
         
                     to_visit.push(candidate);
         
-                    add_predecessor(candidate, current, true, &mut key_got_here_from_value_map);
+                    Self::add_predecessor(candidate, current, true, &mut key_got_here_from_value_map);
 
                     any_new_coordinate_added = true;
                 }
@@ -378,19 +356,15 @@ impl Maze {
                 }
 
                 // Finally, notify and mark current as normal
-                let acknowledger = Communicator::new_gd();
-                communicator.signals().update_idx().emit(
-                    current_idx as i32,
-                    MazeTileState::Normal,
+                // AWAIT
+                let _await = Self::wait_for_update_idx(
+                    communicator.clone(),
+                    current_idx,
                     current_direction,
-                    &acknowledger
-                );
-                if MazeTileState::Normal.is_set_flag_in_bits(waiting_flag_bits) {
-                    // AWAIT
-                    let _await = acknowledger.bind().await_done().await;
-                    // AWAIT
-                }
-                drop(acknowledger);
+                    MazeTileState::Normal,
+                    waiting_flag_bits
+                ).await;
+                // AWAIT
             }
 
             if let Some(score) = score_opt {
@@ -512,40 +486,75 @@ impl Maze {
     pub fn rust_get_end_coordinate(&self) -> &Coordinate {
         &self.end_coordinate
     }
-}
 
 
-fn rotation_cost(rotations : usize, maze_solver_info : Gd<MazeSolverInfo>) -> u32 {
-    let one_rotation = maze_solver_info.bind().get_rotation_cost();
-    let clamped = rotations % Direction::COUNT;
-    match clamped {
-        0 => 0,
+    fn rotation_cost(rotations : usize, maze_solver_info : Gd<MazeSolverInfo>) -> u32 {
+        let one_rotation = maze_solver_info.bind().get_rotation_cost();
+        let clamped = rotations % Direction::COUNT;
+        match clamped {
+            0 => 0,
 
-        1 | 3 => one_rotation,
+            1 | 3 => one_rotation,
 
-        2 => 2 * one_rotation,
+            2 => 2 * one_rotation,
 
-        // Should never happen
-        _ => {
-            panic!("Got {} rotations - should not have been possible!", &clamped);
+            // Should never happen
+            _ => {
+                panic!("Got {} rotations - should not have been possible!", &clamped);
+            }
+        }
+    }
+
+
+    fn add_predecessor(target : CoordinateAndDirecton, new_predecessor : CoordinateAndDirecton, strictly_better_cost : bool, key_got_here_from_value_map : &mut HashMap<CoordinateAndDirecton, HashSet<CoordinateAndDirecton>>) {
+        if target == new_predecessor {
+            return;
+        }
+
+        if strictly_better_cost {
+            key_got_here_from_value_map.insert(target, HashSet::from([new_predecessor]));
+
+        } else {
+            key_got_here_from_value_map.entry(target).or_insert(HashSet::new()).insert(new_predecessor);
+
+        }
+    }
+
+
+    async fn wait_for_update_idx<T>(
+        communicator : Gd<MazeFindPathsCommunicator>,
+        idx : T,
+        direction : Direction,
+        maze_tile_state : MazeTileState,
+        waiting_flag_bits : u32,
+    )
+    where
+    T : TryInto<i32>,
+    <T as TryInto<i32>>::Error : Debug,
+    {
+        let acknowledger = Communicator::new_gd();
+        communicator.signals().update_idx().emit(
+            idx.try_into().unwrap(),
+            maze_tile_state,
+            direction,
+            &acknowledger
+        );
+        if maze_tile_state.is_set_flag_in_bits(waiting_flag_bits) {
+            // AWAIT
+            let future_opt = acknowledger.bind().get_done_future();
+            if let Some(future) = future_opt {
+                future.await;
+            }
+            // AWAIT
         }
     }
 }
 
 
-fn add_predecessor(target : CoordinateAndDirecton, new_predecessor : CoordinateAndDirecton, strictly_better_cost : bool, key_got_here_from_value_map : &mut HashMap<CoordinateAndDirecton, HashSet<CoordinateAndDirecton>>) {
-    if target == new_predecessor {
-        return;
-    }
 
-    if strictly_better_cost {
-        key_got_here_from_value_map.insert(target, HashSet::from([new_predecessor]));
 
-    } else {
-        key_got_here_from_value_map.entry(target).or_insert(HashSet::new()).insert(new_predecessor);
 
-    }
-}
+
 
 
 // ParsedTile
