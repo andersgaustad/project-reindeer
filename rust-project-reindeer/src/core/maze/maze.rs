@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::{HashMap, HashSet}, fmt::{Debug, Display, Write}, pin::pin};
+use std::{cmp::Ordering, collections::{HashMap, HashSet}, fmt::{Debug, Display, Write}};
 
 use godot::prelude::*;
 use strum::{EnumCount, IntoEnumIterator};
@@ -40,7 +40,7 @@ impl IHasCoordinates for Maze {
 
 #[godot_api]
 impl Maze {
-    pub fn try_new_gd_from_str(s : &str) -> Option<Gd<Self>> {
+    pub fn try_new_gd_from_str(s : &str) -> Result<Gd<Self>, NewMazeError> {
         let mut array = Vec::new();
 
         let mut dim_x = 0;
@@ -59,15 +59,27 @@ impl Maze {
                 continue;
             }
 
-            let y = isize::try_from(dim_y).ok()?;
+            let y = NewMazeError::parse_integer(dim_y)?; 
             dim_y += 1;
 
             let mut local_dim_x = 0;
             for c in line.chars() {
-                let x = isize::try_from(local_dim_x).ok()?;
+                let x = NewMazeError::parse_integer(local_dim_x)?;
                 local_dim_x += 1;
 
-                let parsed_tile_info = ParsedTile::try_from(&c).ok()?;
+                let line_and_column_index_opt = (|| {
+                    let x = i32::try_from(x).ok()?;
+                    let y = i32::try_from(y).ok()?;
+
+                    Some((x, y))
+                })();
+
+                let parsed_tile_info = ParsedTile::try_from(&c).map_err(|_| {
+                    NewMazeError {
+                        error:format!("Unrecognized token '{}'!",c),
+                        line_and_column_index_opt
+                    }
+                })?;
 
                 let tile = parsed_tile_info.tile;
                 let is_wall = tile == Tile::Wall;
@@ -78,24 +90,55 @@ impl Maze {
                 array.push(tile);
 
                 if parsed_tile_info.is_start_coordinate {
+                    if start_coordinate_opt.is_some() {
+                        return Err(
+                            NewMazeError {
+                                error : "Found multiple start coordinates!".to_string(),
+                                line_and_column_index_opt
+                            }
+                        );
+                    }
                     start_coordinate_opt = Some(Coordinate::new(x, y));
-
                 }
                 if parsed_tile_info.is_end_coordinate {
+                    if end_coordinate_opt.is_some() {
+                        return Err(
+                            NewMazeError {
+                                error : "Found multiple end coordinates!".to_string(),
+                                line_and_column_index_opt
+                            }
+                        );
+                    }
                     end_coordinate_opt = Some(Coordinate::new(x, y));
                 }
+
             }
 
             if dim_x == 0 {
                 dim_x = local_dim_x;
 
             } else if local_dim_x != dim_x {
-                return None;
+                return Err(
+                    NewMazeError {
+                        error : format!("Misalignment error! Line {} has {} chars, but previous one(s) have {}!", y + 1, local_dim_x, dim_x),
+                        line_and_column_index_opt : None,
+                    }
+                );
             }
         }
 
-        let start_coordinate = start_coordinate_opt?;
-        let end_coordinate = end_coordinate_opt?;
+        let start_coordinate = start_coordinate_opt.ok_or_else(|| {
+            NewMazeError {
+                error : "Found no start coordinate!".to_string(),
+                line_and_column_index_opt : None
+            }
+        })?;
+        let end_coordinate = end_coordinate_opt.ok_or_else(|| {
+            NewMazeError {
+                error : "Found no end coordinate!".to_string(),
+                line_and_column_index_opt : None
+            }
+        })?;
 
         let gd = Gd::from_init_fn(|base| {
             Self {
@@ -110,7 +153,7 @@ impl Maze {
             }
         });
 
-        Some(gd)
+        Ok(gd)
     }
 
 
@@ -690,5 +733,27 @@ impl Display for MazeDisplayer<'_> {
         }
 
         Ok(())
+    }
+}
+
+
+// NewMazeError
+
+pub struct NewMazeError {
+    pub error : String,
+    pub line_and_column_index_opt : Option<(i32, i32)>,
+}
+
+
+impl NewMazeError {
+    fn parse_integer<T>(to_parse : T) -> Result<isize, Self>
+    where isize : TryFrom<T>
+    {
+        isize::try_from(to_parse).map_err(|_| {
+            Self {
+                error : "Integer error: Maze is too large??".to_string(),
+                line_and_column_index_opt : None
+            }
+        })
     }
 }

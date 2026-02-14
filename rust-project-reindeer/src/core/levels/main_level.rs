@@ -119,7 +119,7 @@ impl MainLevel {
             return;
         }
         
-        self.update_maze(None);
+        self.set_maze(None);
 
         if self.maze_file.is_empty() {
             return;
@@ -131,13 +131,13 @@ impl MainLevel {
         };
 
         let text = file_access.get_as_text().to_string();
-        let maze_opt = Maze::try_new_gd_from_str(&text);
+        let maze_opt = Maze::try_new_gd_from_str(&text).ok();
 
-        self.update_maze(maze_opt);
+        self.set_maze(maze_opt);
     }
 
 
-    fn update_maze(&mut self, maze_opt : Option<Gd<Maze>>) {
+    pub fn set_maze(&mut self, maze_opt : Option<Gd<Maze>>) {
         self.maze = maze_opt;
 
         let multimesh_opt = self.tile_spawner.get_multimesh();
@@ -183,6 +183,8 @@ impl MainLevel {
             let dim_y_i32 = dim_y as i32;
 
             let n_tiles = dim_x_i32 * dim_y_i32;
+
+            tile_multimesh.set_instance_count(0);
 
             tile_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
             tile_multimesh.set_use_colors(true);
@@ -255,6 +257,7 @@ impl MainLevel {
             // Spawn all rocks
             for (spawner, multimesh, positions) in rock_multimeshes_and_positions {
                 let n_rocks_of_type = positions.len();
+                multimesh.set_instance_count(0);
                 multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
                 multimesh.set_instance_count(n_rocks_of_type as i32);
 
@@ -453,6 +456,8 @@ impl MainLevel {
             godot_error!("Could not find Arrow Spawner MultiMesh!");
             return;
         };
+
+        arrow_multimesh.set_instance_count(0);
 
         arrow_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
         arrow_multimesh.set_use_colors(true);

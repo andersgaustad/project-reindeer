@@ -33,15 +33,12 @@ impl Communicator {
             .builder()
             .flags(ConnectFlags::ONE_SHOT)
             .connect_self_mut(
-                Self::mark_as_done
+                |me| {
+                    me.is_done = true;
+                }
             );
         
         communicator
-    }
-
-
-    fn mark_as_done(&mut self) {
-        self.is_done = true;
     }
     
 

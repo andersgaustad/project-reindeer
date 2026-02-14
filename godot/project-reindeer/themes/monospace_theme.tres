@@ -1,0 +1,6 @@
+[gd_resource type="Theme" load_steps=2 format=3 uid="uid://c8od8x740s487"]
+
+[ext_resource type="FontFile" uid="uid://c32cp4lupcblh" path="res://assets/source/AsteriskMono_Font_1_0/OpenType (.otf)/AsteriskMono-Regular.otf" id="1_ekb7w"]
+
+[resource]
+TextEdit/fonts/font = ExtResource("1_ekb7w")
