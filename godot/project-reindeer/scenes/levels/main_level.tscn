@@ -56,20 +56,19 @@ transform_format = 1
 use_colors = true
 mesh = ExtResource("8_h35hl")
 
-[node name="Ground" type="MainLevel"]
-maze_file = "res://resources/default_maps/test_map.txt"
+[node name="Ground" type="MainLevel" node_paths=PackedStringArray("maze_top_left_corner")]
 color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
 color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
+maze_top_left_corner = NodePath("MazeTopLeft")
 maze_solver_info = SubResource("MazeSolverInfo_geiq8")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_wkbr6")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="GroundMesh" type="MeshInstance3D" parent="."]
 mesh = SubResource("BoxMesh_wkbr6")
 
-[node name="Center" type="Node3D" parent="."]
-unique_name_in_owner = true
+[node name="MazeTopLeft" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="Reindeer" parent="." instance=ExtResource("1_geiq8")]

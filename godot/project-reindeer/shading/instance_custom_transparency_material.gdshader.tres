@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bf3qfq8dsqcbq"]
+
+[ext_resource type="Shader" uid="uid://dcp71ajhdn6v8" path="res://shading/instance_custom_transparency_material.gdshader" id="1_7nv1m"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_7nv1m")

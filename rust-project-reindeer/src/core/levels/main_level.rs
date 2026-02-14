@@ -1,18 +1,12 @@
-use godot::{classes::{FileAccess, IStaticBody3D, InputEvent, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, file_access::ModeFlags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use godot::{classes::{IStaticBody3D, InputEvent, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{common::{communicator::Communicator, coordinate::Coordinate, direction::Direction}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
+use crate::{core::{common::{communicator::Communicator, coordinate::Coordinate, direction::Direction, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
 
 
 #[derive(GodotClass)]
 #[class(init, base=StaticBody3D)]
 pub struct MainLevel {
     #[export_group(name = "Maze")]
-    #[export(file = "*.txt")]
-    #[var(get, set = set_maze_file)]
-    maze_file : GString,
-
-    maze : Option<Gd<Maze>>,
-
     #[export]
     #[var]
     #[init(val = Color::DARK_RED)]
@@ -25,8 +19,7 @@ pub struct MainLevel {
 
     #[export]
     #[var]
-    #[init(val = 1.0)]
-    maze_floor_height : f32,
+    maze_top_left_corner : Option<Gd<Node3D>>,
 
     #[export]
     #[var]
@@ -37,15 +30,18 @@ pub struct MainLevel {
     #[init(val = Color::GREEN)]
     arrow_color : Color,
 
+    #[export_group(name = "Zones")]
+    #[export]
+    clearing_ring : Option<Gd<Padding>>,
+
+    #[export]
+    forest_ring : Option<Gd<Padding>>,
+
     #[export_group(name = "Random")]
     #[export]
     #[var]
     #[init(val = "Reindeer".into())]
     random_seed : GString,
-
-    #[var]
-    #[init(node = "%Center")]
-    center : OnReady<Gd<Node3D>>,
 
     #[var]
     #[init(node = "%Reindeer")]
@@ -81,6 +77,8 @@ pub struct MainLevel {
 
     rng : Gd<RandomNumberGenerator>,
 
+    maze_info : Option<MazeInfo>,
+
     base : Base<StaticBody3D>,
 }
 
@@ -95,8 +93,8 @@ impl IStaticBody3D for MainLevel {
         self.maze_reindeer.hide();
         self.maze_ghost_reindeer.hide();
 
-        let maze_file = self.get_maze_file();
-        self.set_maze_file(maze_file);
+        let maze = std::mem::take(&mut self.maze_info).map(|info| info.maze);
+        self.set_maze(maze);
     }
 
 
@@ -112,33 +110,8 @@ impl IStaticBody3D for MainLevel {
 #[godot_api]
 impl MainLevel {
     #[func]
-    pub fn set_maze_file(&mut self, value : GString) {
-        self.maze_file = value;
-
-        if !self.base().is_node_ready() {
-            return;
-        }
-        
-        self.set_maze(None);
-
-        if self.maze_file.is_empty() {
-            return;
-        }
-
-        // Else
-        let Some(file_access) = FileAccess::open(&self.maze_file, ModeFlags::READ) else {
-            return;
-        };
-
-        let text = file_access.get_as_text().to_string();
-        let maze_opt = Maze::try_new_gd_from_str(&text).ok();
-
-        self.set_maze(maze_opt);
-    }
-
-
     pub fn set_maze(&mut self, maze_opt : Option<Gd<Maze>>) {
-        self.maze = maze_opt;
+        self.maze_info = None;
 
         let multimesh_opt = self.tile_spawner.get_multimesh();
         let Some(mut tile_multimesh) = multimesh_opt else {
@@ -159,7 +132,7 @@ impl MainLevel {
         };
 
 
-        if let Some(maze) = self.maze.clone() {
+        if let Some(maze) = maze_opt.clone() {
             let bound_maze = maze.bind();
             let dim_x = bound_maze.rust_get_dim_x();
             let dim_y = bound_maze.rust_get_dim_y();
@@ -167,11 +140,6 @@ impl MainLevel {
             let mut small_rock_positions = Vec::new();
             let mut medium_rock_positions = Vec::new();
             let mut large_rock_positions = Vec::new();
-
-            let offset = Self::get_top_corner_offset_from_mesh(dim_x, dim_y, &tile_mesh);
-
-            let x_offset = offset.x;
-            let y_offset = offset.y;
 
             let mut material = StandardMaterial3D::new_gd();
             material.set_albedo(Color::WHITE);
@@ -191,11 +159,18 @@ impl MainLevel {
 
             tile_multimesh.set_instance_count(n_tiles);
 
-
             let size = tile_mesh.get_aabb().size;
-            let size_x = size.x;
-            let size_y = size.z;
             let tile_height = size.y;
+
+            let dim_x_f32 = dim_x as f32;
+            let dim_y_f32 = dim_y as f32;
+
+            let bounding_box_size = Vector2::new(
+                dim_x_f32 * size.x,
+                dim_y_f32 * size.z
+            );
+
+            let maze_top_left_corner_offset = self.get_maze_top_left_corner_position_or_default();
 
             let mut x = 0;
             let mut y = 0;
@@ -207,16 +182,16 @@ impl MainLevel {
 
                 // Base
 
-                let position = Self::get_tile_position_from_cached(x, y, dim_x, dim_y, &tile_mesh);
+                let position = Self::get_tile_position_from_cached(x, y, &tile_mesh);
 
                 let pos_x = position.coordinates.x;
                 let pos_y = position.coordinates.y;
 
-                let vector = Vector3::new(pos_x, self.maze_floor_height, pos_y);
+                let vector = Vector3::new(pos_x, 0.0, pos_y) + maze_top_left_corner_offset;
                 let basis = Basis::default();
                 let transform = Transform3D::new(basis, vector);
 
-                let color = if (x + y) % 2 == 0 { self.color_a } else { self.color_b };
+                let color = if i % 2 == 0 { self.color_a } else { self.color_b };
 
                 tile_multimesh.set_instance_transform(i, transform);
                 tile_multimesh.set_instance_color(i, color);
@@ -279,16 +254,15 @@ impl MainLevel {
             let position_info = Self::get_tile_position_from_cached(
                 x,
                 y,
-                dim_x,
-                dim_y,
                 &tile_mesh
             );
 
             let position = Vector3::new(
                 position_info.coordinates.x,
-                self.maze_floor_height + position_info.height,
+                position_info.height,
                 position_info.coordinates.y
-            );
+
+            ) + maze_top_left_corner_offset;
 
             let reindeer = &mut self.maze_reindeer;
             reindeer.set_position(position);
@@ -305,20 +279,29 @@ impl MainLevel {
             let position_info = Self::get_tile_position_from_cached(
                 x,
                 y,
-                dim_x,
-                dim_y,
                 &tile_mesh
             );
 
             let position = Vector3::new(
                 position_info.coordinates.x,
-                self.maze_floor_height + position_info.height,
+                position_info.height,
                 position_info.coordinates.y
-            );
+
+            ) + maze_top_left_corner_offset;
 
             let present = &mut self.present;
             present.set_position(position);
             present.show();
+
+            drop(bound_maze);
+
+            // Finally, set
+            let maze_info = MazeInfo {
+                maze,
+                size : bounding_box_size
+            };
+
+            self.maze_info = Some(maze_info);
 
         } else {
             // Reset
@@ -336,36 +319,6 @@ impl MainLevel {
             self.maze_reindeer.hide();
             self.present.hide();
         }
-    }
-
-
-    #[func]
-    fn run_maze_solver(&mut self) {
-        godot_print!("Started maze solver...");
-        let Some(mut maze) = self.maze.clone() else {
-            godot_error!("Could not get Maze!!");
-            return;
-        };
-
-        let maze_solver_info = self.get_maze_solver_info_or_default();
-        let mut handle = maze.bind_mut().find_paths(maze_solver_info);
-
-        handle
-            .signals()
-            .update_idx()
-            .builder()
-            //.flags(ConnectFlags::DEFERRED)
-            .connect_other_mut(self, Self::on_maze_update_idx);
-
-        handle
-            .signals()
-            .commit_found_path()
-            .builder()
-            //.flags(ConnectFlags::DEFERRED)
-            .connect_other_mut(self, Self::on_maze_commit_found_path);
-
-
-        handle.bind_mut().start();
     }
 
 
@@ -389,7 +342,9 @@ impl MainLevel {
             MazeTileState::Active => {
                 multimesh.set_instance_color(idx, Color::GREEN);
 
-                if let Some(maze) = self.maze.clone() {
+                if let Some(maze_info) = self.maze_info.as_ref() {
+                    let maze = maze_info.maze.clone();
+
                     if let Ok(idx_usize) = usize::try_from(idx) {
                         let dim_x = maze.bind().rust_get_dim_x();
                         let coordinate_opt = Coordinate::try_from_value(idx_usize, dim_x);
@@ -403,7 +358,12 @@ impl MainLevel {
                                     height
                                 } = tile_center_position;
 
-                                let position_3d = Vector3::new(position.x, self.maze_floor_height + height, position.y);
+                                let position_3d = Vector3::new(
+                                    position.x,
+                                    height,
+                                    position.y
+
+                                ) + self.get_maze_top_left_corner_position_or_default();
 
                                 // Move ghost reindeer
                                 let ghost_reindeer = &mut self.maze_ghost_reindeer;
@@ -475,6 +435,8 @@ impl MainLevel {
 
         arrow_mesh.surface_set_material(0, &material);
 
+        let maze_top_left_corner_offset = self.get_maze_top_left_corner_position_or_default();
+
         for i in 0..n_arrows {
             let Some(current) = first_path.get(i) else {
                 break;
@@ -498,7 +460,12 @@ impl MainLevel {
             let position_coordinates = tile_position.coordinates;
             let tile_height = tile_position.height;
 
-            let position = Vector3::new(position_coordinates.x, tile_height + self.maze_floor_height, position_coordinates.y);
+            let position = Vector3::new(
+                position_coordinates.x,
+                tile_height,
+                position_coordinates.y
+
+            ) + maze_top_left_corner_offset;
 
             let mut transform = self.arrow_spawner.bind().create_object_transform(position, self.rng.clone());
 
@@ -523,6 +490,43 @@ impl MainLevel {
     }
 
 
+    #[func]
+    fn run_maze_solver(&mut self) {
+        let Some(maze_info) = self.maze_info.as_ref() else {
+            godot_warn!("Tried running maze solver without maze? Returning...");
+            return;
+        };
+        let mut maze = maze_info.maze.clone();
+
+        let maze_solver_info = self.get_maze_solver_info_or_default();
+        let mut handle = maze.bind_mut().find_paths(maze_solver_info);
+
+        handle
+            .signals()
+            .update_idx()
+            .builder()
+            .connect_other_mut(self, Self::on_maze_update_idx);
+
+        handle
+            .signals()
+            .commit_found_path()
+            .builder()
+            .connect_other_mut(self, Self::on_maze_commit_found_path);
+
+
+        handle.bind_mut().start();
+    }
+
+
+    pub fn get_maze_top_left_corner_position_or_default(&self) -> Vector3 {
+        self
+            .maze_top_left_corner
+            .as_ref()
+            .map(|node_3d| node_3d.get_position())
+            .unwrap_or_default()
+    }
+
+
     fn get_rock_spawner_from_type(&self, rock_type : RockType) -> Gd<EnchancedMultiMeshInstance3D> {
         match rock_type {
             RockType::Small => self.get_rock_small_spawner(),
@@ -532,68 +536,13 @@ impl MainLevel {
     }
 
 
-    fn get_top_corner_offset(&self) -> Option<TopCornerOffsetInfoFull> {
-        let multimesh = self.tile_spawner.get_multimesh()?;
-        let mesh = multimesh.get_mesh()?;
-        
-        let maze = self.maze.clone()?;
-        let bound = maze.bind();
-        let dim_x = bound.rust_get_dim_x();
-        let dim_y = bound.rust_get_dim_y();
-        drop(bound);
-
-        let offset = Self::get_top_corner_offset_from_mesh(dim_x, dim_y, &mesh);
-
-        let result = TopCornerOffsetInfoFull {
-            multimesh,
-            mesh,
-            maze,
-
-            offset,
-        };
-
-        Some(result)
-    }
-
-
-    fn get_top_corner_offset_from_mesh(dim_x : usize, dim_y : usize, mesh : &Gd<Mesh>) -> Vector2 {
-        let aabb = mesh.get_aabb();
-
-        let tile_size = aabb.size;
-
-        let x_size = tile_size.x;
-        let y_size = tile_size.z;
-
-        let dimensions = [
-            (dim_x, x_size),
-            (dim_y, y_size)
-        ];
-
-        let offsets = dimensions.map(|(dimension, size)| {
-            - ((dimension.checked_sub(1).unwrap_or(0)) as f32 * size / 2.0)
-        });
-
-        let result = Vector2::from_array(offsets);
-
-        result
-    }
-
-
     fn get_tile_position(&self, x : i32, y : i32) -> Option<TileCenterPosition> {
         let multimesh = self.tile_spawner.get_multimesh()?;
         let mesh = multimesh.get_mesh()?;
-        
-        let maze = self.maze.clone()?;
-        let bound = maze.bind();
-        let dim_x = bound.rust_get_dim_x();
-        let dim_y = bound.rust_get_dim_y();
-        drop(bound);
 
         let position = Self::get_tile_position_from_cached(
             x,
             y,
-            dim_x,
-            dim_y,
             &mesh
         );
 
@@ -604,27 +553,21 @@ impl MainLevel {
     fn get_tile_position_from_cached(
         x : i32,
         y : i32,
-        dim_x : usize,
-        dim_y : usize,
         mesh : &Gd<Mesh>
 
     ) -> TileCenterPosition {
-        let offset = Self::get_top_corner_offset_from_mesh(dim_x, dim_y, mesh);
-        let offset_x = offset.x;
-        let offset_y = offset.y;
-
         let size = mesh.get_aabb().size;
         let size_x = size.x;
         let height = size.y;
         let size_y = size.z;
 
         let coordinates_and_sizes_and_offsets = [
-            (x, size_x, offset_x),
-            (y, size_y, offset_y),
+            (x, size_x),
+            (y, size_y),
         ];
 
-        let coordinate_array : [f32; 2] = coordinates_and_sizes_and_offsets.map(|(coordinate, size, offset)| {
-            (coordinate as f32) * size + offset
+        let coordinate_array : [f32; 2] = coordinates_and_sizes_and_offsets.map(|(coordinate, size)| {
+            (coordinate as f32) * size
         });
 
         let coordinates = Vector2::from_array(coordinate_array);
@@ -640,6 +583,16 @@ impl MainLevel {
 
     pub fn get_maze_solver_info_or_default(&self) -> Gd<MazeSolverInfo> {
         self.maze_solver_info.clone().unwrap_or_default()
+    }
+
+
+    pub fn get_clearing_ring_padding_or_default(&self) -> Gd<Padding> {
+        self.clearing_ring.clone().unwrap_or_default()
+    }
+
+
+    pub fn get_forest_ring_padding_or_default(&self) -> Gd<Padding> {
+        self.forest_ring.clone().unwrap_or_default()
     }
 }
 
