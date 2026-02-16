@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://bhaqw7kkuvp2d"]
+[gd_scene load_steps=26 format=3 uid="uid://bhaqw7kkuvp2d"]
 
 [ext_resource type="PackedScene" uid="uid://dffs3axw6pbr3" path="res://scenes/reindeers/reindeer.tscn" id="1_geiq8"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_lx3qq"]
@@ -8,16 +8,29 @@
 [ext_resource type="ArrayMesh" uid="uid://csowy0rx5hhrb" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-medium.obj" id="3_geiq8"]
 [ext_resource type="ArrayMesh" uid="uid://bqqf0uncmoovq" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-large.obj" id="4_tkkka"]
 [ext_resource type="ArrayMesh" uid="uid://faqe8o8sn8t6" path="res://assets/extracted/Sketchfab_Scene_Arrow_Material_001_0.res" id="8_h35hl"]
+[ext_resource type="ArrayMesh" uid="uid://djwc13x7nvavv" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/tree.obj" id="9_kwk8y"]
 
 [sub_resource type="MazeSolverInfo" id="MazeSolverInfo_geiq8"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]
-size = Vector3(60, 2, 60)
+[sub_resource type="Padding" id="Padding_c7w6w"]
+north_padding = 10.0
+east_padding = 10.0
+south_padding = 10.0
+west_padding = 10.0
+
+[sub_resource type="Padding" id="Padding_erkku"]
+north_padding = 64.0
+east_padding = 64.0
+south_padding = 64.0
+west_padding = 64.0
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wkbr6"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_wkbr6"]
 material = SubResource("StandardMaterial3D_wkbr6")
+size = Vector3(60, 2, 60)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]
 size = Vector3(60, 2, 60)
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lx3qq"]
@@ -56,20 +69,28 @@ transform_format = 1
 use_colors = true
 mesh = ExtResource("8_h35hl")
 
-[node name="Ground" type="MainLevel" node_paths=PackedStringArray("maze_top_left_corner")]
+[sub_resource type="MultiMesh" id="MultiMesh_63vgv"]
+transform_format = 1
+mesh = ExtResource("9_kwk8y")
+
+[node name="MainLevel" type="MainLevel" node_paths=PackedStringArray("maze_top_left_corner")]
 color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
 color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
 maze_top_left_corner = NodePath("MazeTopLeft")
 maze_solver_info = SubResource("MazeSolverInfo_geiq8")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-shape = SubResource("BoxShape3D_wkbr6")
-
-[node name="GroundMesh" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_wkbr6")
+clearing_ring = SubResource("Padding_c7w6w")
+forest_ring = SubResource("Padding_erkku")
 
 [node name="MazeTopLeft" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="GroundMesh" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+mesh = SubResource("BoxMesh_wkbr6")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("BoxShape3D_wkbr6")
 
 [node name="Reindeer" parent="." instance=ExtResource("1_geiq8")]
 unique_name_in_owner = true
@@ -117,3 +138,8 @@ mesh_scale = Vector3(0.4, 0.4, 0.4)
 mesh_rotation_degrees = Vector3(90, 0, 0)
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_c7w6w")
+
+[node name="TreeSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners"]
+yaw_random_rotation = true
+unique_name_in_owner = true
+multimesh = SubResource("MultiMesh_63vgv")

@@ -1,6 +1,6 @@
-use godot::{classes::{IStaticBody3D, InputEvent, Mesh, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, IStaticBody3D, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{common::{communicator::Communicator, coordinate::Coordinate, direction::Direction, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
+use crate::{core::{common::{communicator::Communicator, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
 
 
 #[derive(GodotClass)]
@@ -19,7 +19,7 @@ pub struct MainLevel {
 
     #[export]
     #[var]
-    maze_top_left_corner : Option<Gd<Node3D>>,
+    maze_top_left_corner : OnEditor<Gd<Node3D>>,
 
     #[export]
     #[var]
@@ -32,16 +32,30 @@ pub struct MainLevel {
 
     #[export_group(name = "Zones")]
     #[export]
-    clearing_ring : Option<Gd<Padding>>,
+    clearing_ring : OnEditor<Gd<Padding>>,
 
     #[export]
-    forest_ring : Option<Gd<Padding>>,
+    forest_ring : OnEditor<Gd<Padding>>,
+
+    #[export(range=(0.0, 100.0, or_greater))]
+    #[init(val = 1.0)]
+    trees_per_square_unit : f32,
 
     #[export_group(name = "Random")]
     #[export]
     #[var]
     #[init(val = "Reindeer".into())]
     random_seed : GString,
+
+    // Non-exported
+
+    #[var]
+    #[init(node = "%GroundMesh")]
+    ground_mesh : OnReady<Gd<MeshInstance3D>>,
+
+    #[var]
+    #[init(node = "%Collision")]
+    collision : OnReady<Gd<CollisionShape3D>>,
 
     #[var]
     #[init(node = "%Reindeer")]
@@ -74,6 +88,10 @@ pub struct MainLevel {
     #[var]
     #[init(node = "%ArrowSpawner")]
     arrow_spawner : OnReady<Gd<EnchancedMultiMeshInstance3D>>,
+
+    #[var]
+    #[init(node = "%TreeSpawner")]
+    tree_spawner : OnReady<Gd<EnchancedMultiMeshInstance3D>>,
 
     rng : Gd<RandomNumberGenerator>,
 
@@ -170,7 +188,68 @@ impl MainLevel {
                 dim_y_f32 * size.z
             );
 
-            let maze_top_left_corner_offset = self.get_maze_top_left_corner_position_or_default();
+            let maze_top_left_corner_offset = self.maze_top_left_corner.get_position();
+
+            let maze_top_left_corner_from_above = Vector2::new(maze_top_left_corner_offset.x, maze_top_left_corner_offset.z);
+            let maze_span = Rect2::new(maze_top_left_corner_from_above, bounding_box_size);
+
+            let clearing_span = maze_span.grow_with_padding(self.clearing_ring.clone());
+            let forest_span = clearing_span.grow_with_padding(self.forest_ring.clone());
+
+            self.set_ground_dimensions(forest_span);
+
+
+            // Create forest
+
+            let forest_size = &forest_span.size;
+            let n_tree_spawn_attempts = (forest_size.x * &forest_size.y * self.trees_per_square_unit) as usize;
+
+            let tree_multimesh_opt =self.tree_spawner.get_multimesh();
+            if let Some(mut tree_multimesh) = tree_multimesh_opt {
+                // Get tree positions
+                let mut tree_spawn_positions = Vec::with_capacity(n_tree_spawn_attempts);
+
+                for _ in 0..n_tree_spawn_attempts {
+                    let x = self.rng.randf_range(0.0, forest_size.x);
+                    let y = self.rng.randf_range(0.0, forest_size.y);
+
+                    let local_point = Vector2::new(x, y);
+
+                    let point = local_point + forest_span.position;
+
+                    // Only add if this point is in the forest but not in clearing
+                    if clearing_span.contains_point(point) {
+                        continue;
+                    }
+
+                    // Else
+                    tree_spawn_positions.push(point);
+                }
+
+                // Spawn trees
+                let bound_tree_spawner = self.tree_spawner.bind();
+
+                // In the extremly unlikely case that usize can't fit into i32, ignore and move on
+                let n_trees_opt = i32::try_from(tree_spawn_positions.len()).ok();
+                if let Some(n_trees) = n_trees_opt {
+                    tree_multimesh.set_instance_count(n_trees);
+                    for (i, top_down_position) in tree_spawn_positions.into_iter().enumerate() {
+                        let i = i as i32;
+                        let position = Vector3::new(
+                            top_down_position.x,
+                            maze_top_left_corner_offset.y,
+                            top_down_position.y
+                        );
+
+                        let transform = bound_tree_spawner.create_object_transform(position, self.rng.clone());
+                        tree_multimesh.set_instance_transform(i, transform);
+                    }
+
+                }
+                drop(bound_tree_spawner);
+            }
+
+            // Create maze
 
             let mut x = 0;
             let mut y = 0;
@@ -293,9 +372,11 @@ impl MainLevel {
             present.set_position(position);
             present.show();
 
+
+            // Finally, set maze info
+            
             drop(bound_maze);
 
-            // Finally, set
             let maze_info = MazeInfo {
                 maze,
                 size : bounding_box_size
@@ -319,6 +400,52 @@ impl MainLevel {
             self.maze_reindeer.hide();
             self.present.hide();
         }
+    }
+
+
+    fn set_ground_dimensions(&mut self, span : Rect2) {
+        // Mesh
+
+        let mut box_mesh = (|| {
+            self
+                .ground_mesh
+                .get_mesh()?
+                .try_cast::<BoxMesh>()
+                .ok()
+
+        })().unwrap_or_default();
+
+        let span_size = span.size;
+
+        let mut mesh_size = box_mesh.get_size();
+        mesh_size.x = span_size.x;
+        mesh_size.z = span_size.y;
+
+        box_mesh.set_size(mesh_size);
+        self.ground_mesh.set_mesh(&box_mesh);
+
+        let top_down_position = span.position + (span_size / 2.0);
+        let mut ground_position = self.ground_mesh.get_position();
+        ground_position.x = top_down_position.x;
+        ground_position.z = top_down_position.y;
+
+        self.ground_mesh.set_position(ground_position);
+
+
+        // Collision, copied from mesh
+
+        let mut box_collision = (|| {
+            self
+                .collision
+                .get_shape()?
+                .try_cast::<BoxShape3D>()
+                .ok()
+
+        })().unwrap_or_default();
+
+        box_collision.set_size(mesh_size);
+
+        self.collision.set_position(ground_position);
     }
 
 
@@ -363,7 +490,7 @@ impl MainLevel {
                                     height,
                                     position.y
 
-                                ) + self.get_maze_top_left_corner_position_or_default();
+                                ) + self.maze_top_left_corner.get_position();
 
                                 // Move ghost reindeer
                                 let ghost_reindeer = &mut self.maze_ghost_reindeer;
@@ -435,7 +562,7 @@ impl MainLevel {
 
         arrow_mesh.surface_set_material(0, &material);
 
-        let maze_top_left_corner_offset = self.get_maze_top_left_corner_position_or_default();
+        let maze_top_left_corner_offset = self.maze_top_left_corner.get_position();
 
         for i in 0..n_arrows {
             let Some(current) = first_path.get(i) else {
@@ -518,15 +645,6 @@ impl MainLevel {
     }
 
 
-    pub fn get_maze_top_left_corner_position_or_default(&self) -> Vector3 {
-        self
-            .maze_top_left_corner
-            .as_ref()
-            .map(|node_3d| node_3d.get_position())
-            .unwrap_or_default()
-    }
-
-
     fn get_rock_spawner_from_type(&self, rock_type : RockType) -> Gd<EnchancedMultiMeshInstance3D> {
         match rock_type {
             RockType::Small => self.get_rock_small_spawner(),
@@ -583,16 +701,6 @@ impl MainLevel {
 
     pub fn get_maze_solver_info_or_default(&self) -> Gd<MazeSolverInfo> {
         self.maze_solver_info.clone().unwrap_or_default()
-    }
-
-
-    pub fn get_clearing_ring_padding_or_default(&self) -> Gd<Padding> {
-        self.clearing_ring.clone().unwrap_or_default()
-    }
-
-
-    pub fn get_forest_ring_padding_or_default(&self) -> Gd<Padding> {
-        self.forest_ring.clone().unwrap_or_default()
     }
 }
 
