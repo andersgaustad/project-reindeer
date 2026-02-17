@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://0cjr7haepmj7"]
+[gd_scene load_steps=21 format=3 uid="uid://0cjr7haepmj7"]
 
 [ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="1_48ne7"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_jbqir"]
@@ -6,6 +6,7 @@
 [ext_resource type="ArrayMesh" uid="uid://faqe8o8sn8t6" path="res://assets/extracted/Sketchfab_Scene_Arrow_Material_001_0.res" id="4_v45ci"]
 [ext_resource type="Material" uid="uid://bf3qfq8dsqcbq" path="res://shading/instance_custom_transparency_material.gdshader.tres" id="5_48ne7"]
 [ext_resource type="ArrayMesh" uid="uid://djwc13x7nvavv" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/tree.obj" id="6_6xh4u"]
+[ext_resource type="PackedScene" uid="uid://kpn4fhy8kxca" path="res://scenes/props/cabin.tscn" id="7_cyt5c"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]
 size = Vector3(60, 2, 60)
@@ -58,9 +59,7 @@ instance_count = 8
 mesh = ExtResource("6_6xh4u")
 buffer = PackedFloat32Array(0, 0, 1.001, -2.2730942, 0, -1.001, 0, 9.263614, 1.001, 0, 0, 1.0050077, 1.001, 0, 0, 3.3095148, 0, -1.001, 0, 9.263614, 0, 0, -1.001, 0.02786398, -1.001, 0, 0, -0.81796646, 0, 1.001, 0, 9.363614, 0, 0, -1.001, -1.7421725, 1.001, 0, 0, 1.470871, 0, -1.001, 0, 9.263614, 0, 0, -1.001, -0.10806525, 1.001, 0, 0, 2.0687857, 0, -1.001, 0, 9.263614, 0, 0, -1.001, 0.82781017, 0, 0, 1.001, -0.8119434, 0, -1.001, 0, 9.263614, 1.001, 0, 0, 3.1677732, 0, 0, -1.001, 3.7118962, 0, 1.001, 0, 9.363613, 1.001, 0, 0, -1.2693491, -1.001, 0, 0, 2.6922207, 0, 1.001, 0, 9.363614, 0, 0, -1.001, -4.9686565)
 
-[node name="Ground" type="MainLevel"]
-color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
-color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
+[node name="Ground" type="StaticBody3D"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_wkbr6")
@@ -136,3 +135,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.521446, 0)
 visible = false
 mesh = ExtResource("6_6xh4u")
 skeleton = NodePath("../../EnchancedMultiMeshInstance3D2")
+
+[node name="Cabin" parent="." instance=ExtResource("7_cyt5c")]
+transform = Transform3D(0.3011885, 0, 0.95356464, 0, 1, 0, -0.95356464, 0, 0.3011885, -11.982262, 0.99503815, 4.0652514)
