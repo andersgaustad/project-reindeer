@@ -1,6 +1,6 @@
 use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, IStaticBody3D, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{common::{communicator::Communicator, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}}, input_map::DEBUG};
+use crate::{core::{common::{communicator::Communicator, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, props::cabin::Cabin}, input_map::DEBUG};
 
 
 #[derive(GodotClass)]
@@ -41,6 +41,10 @@ pub struct MainLevel {
     #[init(val = 1.0)]
     trees_per_square_unit : f32,
 
+    #[export]
+    #[init(val = 30)]
+    max_cabin_spawn_attempts : i32,
+
     #[export_group(name = "Random")]
     #[export]
     #[var]
@@ -68,6 +72,10 @@ pub struct MainLevel {
     #[var]
     #[init(node = "%Present")]
     present : OnReady<Gd<Node3D>>,
+
+    #[var]
+    #[init(node = "%Cabin")]
+    cabin : OnReady<Gd<Cabin>>,
 
     #[var]
     #[init(node = "%TileSpawner")]
@@ -247,6 +255,75 @@ impl MainLevel {
 
                 }
                 drop(bound_tree_spawner);
+            }
+
+            // Spawn cabin
+            let cabin_aabb = self.cabin.bind().get_bounding_box();
+            let position = cabin_aabb.position;
+            let end = cabin_aabb.end();
+
+            let top_down_start = Vector2::new(position.x, position.z);
+            let top_down_end = Vector2::new(end.x, end.z);
+
+            let corner_a = Vector2::new(top_down_start.x, top_down_end.y);
+            let corner_b = Vector2::new(top_down_end.x, top_down_start.y);
+
+            let corners = [
+                top_down_start,
+                corner_a,
+                corner_b,
+                top_down_end
+            ];
+
+            let cabin_corners_opt = (|| {
+                for _ in 0..self.max_cabin_spawn_attempts {
+                    // Get random point in clearing
+                    let size = &clearing_span.size;
+                    
+                    let x = self.rng.randf_range(0.0, size.x);
+                    let y = self.rng.randf_range(0.0, size.y);
+
+                    let radians = self.rng.randf_range(0.0, std::f32::consts::TAU);
+
+                    let points = corners.map(|relative_point| {
+                        let rotated = (relative_point - top_down_start).rotated(radians);
+                        let alligned_point = Vector2::new(x, y) + clearing_span.position + rotated;
+                        alligned_point
+                    });
+
+                    // All points must be in clearing but not in maze if in maze
+                    let all_in_bounds = points.iter().all(|&point| {
+                        !maze_span.contains_point(point) &&
+                        clearing_span.contains_point(point)
+                    });
+
+                    if !all_in_bounds {
+                        continue;
+                    }
+
+                    // Else, if all in bounds, should be possible to spawn cabin
+                    let center = (points[0] + points[3]) / 2.0;
+                    let cabin_position = Vector3::new(
+                        center.x,
+                        self.maze_top_left_corner.get_position().y,
+                        center.y
+                    );
+                    let cabin = &mut self.cabin;
+                    cabin.set_position(cabin_position);
+                    cabin.rotate_y(radians);
+                    cabin.show();
+
+                    return Some(points);
+                }
+
+                None
+            })();
+
+            if cabin_corners_opt.is_some() {
+                godot_print!("Spawned cabin!");
+
+            } else {
+                godot_print!("Failed spawning cabin");
             }
 
             // Create maze

@@ -105,6 +105,11 @@ visible = false
 unique_name_in_owner = true
 visible = false
 
+[node name="Cabin" parent="." instance=ExtResource("10_c7w6w")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0950031, 0)
+visible = false
+
 [node name="Player" parent="." instance=ExtResource("1_lx3qq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.847598, 0)
 
@@ -144,7 +149,3 @@ multimesh = SubResource("MultiMesh_63vgv")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_lx3qq")
-
-[node name="Cabin" parent="." instance=ExtResource("10_c7w6w")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0950031, 0)
-visible = false

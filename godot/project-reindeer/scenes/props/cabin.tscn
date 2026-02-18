@@ -55,130 +55,130 @@ radius = 0.2
 height = 0.4
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_bhqa3"]
-size = Vector3(3.6076813, 3.3425026, 3.8954468)
+size = Vector3(3.6076813, 3.5740833, 3.8954468)
 
 [node name="Cabin" type="Cabin"]
 
-[node name="Cabin" type="Node3D" parent="."]
+[node name="CabinPivot" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1)
 
-[node name="SouthWall" type="Node3D" parent="Cabin"]
+[node name="SouthWall" type="Node3D" parent="CabinPivot"]
 
-[node name="cabin-door-rotate" parent="Cabin/SouthWall" instance=ExtResource("1_53y0y")]
+[node name="cabin-door-rotate" parent="CabinPivot/SouthWall" instance=ExtResource("1_53y0y")]
 
-[node name="cabin-window-a_1" parent="Cabin/SouthWall" instance=ExtResource("2_s32dj")]
+[node name="cabin-window-a_1" parent="CabinPivot/SouthWall" instance=ExtResource("2_s32dj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 
-[node name="cabin-window-a_2" parent="Cabin/SouthWall" instance=ExtResource("2_s32dj")]
+[node name="cabin-window-a_2" parent="CabinPivot/SouthWall" instance=ExtResource("2_s32dj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
 
-[node name="EastWall" type="Node3D" parent="Cabin"]
+[node name="EastWall" type="Node3D" parent="CabinPivot"]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 2.06, 0, -1.13)
 
-[node name="cabin-wall_1" parent="Cabin/EastWall" instance=ExtResource("3_4dukf")]
+[node name="cabin-wall_1" parent="CabinPivot/EastWall" instance=ExtResource("3_4dukf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
 
-[node name="cabin-wall_2" parent="Cabin/EastWall" instance=ExtResource("3_4dukf")]
+[node name="cabin-wall_2" parent="CabinPivot/EastWall" instance=ExtResource("3_4dukf")]
 
-[node name="cabin-wall_3" parent="Cabin/EastWall" instance=ExtResource("3_4dukf")]
+[node name="cabin-wall_3" parent="CabinPivot/EastWall" instance=ExtResource("3_4dukf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 
-[node name="WestWall" type="Node3D" parent="Cabin"]
+[node name="WestWall" type="Node3D" parent="CabinPivot"]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -2.0599997, 0, -1.1300001)
 
-[node name="cabin-wall_1" parent="Cabin/WestWall" instance=ExtResource("3_4dukf")]
+[node name="cabin-wall_1" parent="CabinPivot/WestWall" instance=ExtResource("3_4dukf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
 
-[node name="cabin-wall_2" parent="Cabin/WestWall" instance=ExtResource("3_4dukf")]
+[node name="cabin-wall_2" parent="CabinPivot/WestWall" instance=ExtResource("3_4dukf")]
 
-[node name="cabin-wall_3" parent="Cabin/WestWall" instance=ExtResource("3_4dukf")]
+[node name="cabin-wall_3" parent="CabinPivot/WestWall" instance=ExtResource("3_4dukf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 
-[node name="NorthWall" type="Node3D" parent="Cabin"]
+[node name="NorthWall" type="Node3D" parent="CabinPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3.3300002)
 
-[node name="cabin-wall_1" parent="Cabin/NorthWall" instance=ExtResource("3_4dukf")]
+[node name="cabin-wall_1" parent="CabinPivot/NorthWall" instance=ExtResource("3_4dukf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
 
-[node name="cabin-wall_2" parent="Cabin/NorthWall" instance=ExtResource("3_4dukf")]
+[node name="cabin-wall_2" parent="CabinPivot/NorthWall" instance=ExtResource("3_4dukf")]
 
-[node name="cabin-wall_3" parent="Cabin/NorthWall" instance=ExtResource("3_4dukf")]
+[node name="cabin-wall_3" parent="CabinPivot/NorthWall" instance=ExtResource("3_4dukf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 
-[node name="SWCorner" type="Node3D" parent="Cabin"]
+[node name="SWCorner" type="Node3D" parent="CabinPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.06, 0, 1.07)
 
-[node name="cabin-corner-logs" parent="Cabin/SWCorner" instance=ExtResource("4_h4l3a")]
+[node name="cabin-corner-logs" parent="CabinPivot/SWCorner" instance=ExtResource("4_h4l3a")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
 
-[node name="SECorner" type="Node3D" parent="Cabin"]
+[node name="SECorner" type="Node3D" parent="CabinPivot"]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 2.06, 0, 1.07)
 
-[node name="cabin-corner-logs" parent="Cabin/SECorner" instance=ExtResource("4_h4l3a")]
+[node name="cabin-corner-logs" parent="CabinPivot/SECorner" instance=ExtResource("4_h4l3a")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
 
-[node name="NWCorner" type="Node3D" parent="Cabin"]
+[node name="NWCorner" type="Node3D" parent="CabinPivot"]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -2.06, 0, -3.33)
 
-[node name="cabin-corner-logs" parent="Cabin/NWCorner" instance=ExtResource("4_h4l3a")]
+[node name="cabin-corner-logs" parent="CabinPivot/NWCorner" instance=ExtResource("4_h4l3a")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
 
-[node name="NECorner" type="Node3D" parent="Cabin"]
+[node name="NECorner" type="Node3D" parent="CabinPivot"]
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 2.06, 0, -3.33)
 
-[node name="cabin-corner-logs" parent="Cabin/NECorner" instance=ExtResource("4_h4l3a")]
+[node name="cabin-corner-logs" parent="CabinPivot/NECorner" instance=ExtResource("4_h4l3a")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
 
-[node name="Floor" type="Node3D" parent="Cabin"]
+[node name="Floor" type="Node3D" parent="CabinPivot"]
 
-[node name="FloorRow1" type="Node3D" parent="Cabin/Floor"]
+[node name="FloorRow1" type="Node3D" parent="CabinPivot/Floor"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.2, 0, 0, 0)
 
-[node name="floor-wood_1" parent="Cabin/Floor/FloorRow1" instance=ExtResource("5_ykvsd")]
+[node name="floor-wood_1" parent="CabinPivot/Floor/FloorRow1" instance=ExtResource("5_ykvsd")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 
-[node name="floor-wood_2" parent="Cabin/Floor/FloorRow1" instance=ExtResource("5_ykvsd")]
+[node name="floor-wood_2" parent="CabinPivot/Floor/FloorRow1" instance=ExtResource("5_ykvsd")]
 
-[node name="floor-wood_3" parent="Cabin/Floor/FloorRow1" instance=ExtResource("5_ykvsd")]
+[node name="floor-wood_3" parent="CabinPivot/Floor/FloorRow1" instance=ExtResource("5_ykvsd")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
 
-[node name="FloorRow2" type="Node3D" parent="Cabin/Floor"]
+[node name="FloorRow2" type="Node3D" parent="CabinPivot/Floor"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.2, 0, 0, -1)
 
-[node name="floor-wood_1" parent="Cabin/Floor/FloorRow2" instance=ExtResource("5_ykvsd")]
+[node name="floor-wood_1" parent="CabinPivot/Floor/FloorRow2" instance=ExtResource("5_ykvsd")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 
-[node name="floor-wood_2" parent="Cabin/Floor/FloorRow2" instance=ExtResource("5_ykvsd")]
+[node name="floor-wood_2" parent="CabinPivot/Floor/FloorRow2" instance=ExtResource("5_ykvsd")]
 
-[node name="floor-wood_3" parent="Cabin/Floor/FloorRow2" instance=ExtResource("5_ykvsd")]
+[node name="floor-wood_3" parent="CabinPivot/Floor/FloorRow2" instance=ExtResource("5_ykvsd")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
 
-[node name="FloorRow3" type="Node3D" parent="Cabin/Floor"]
+[node name="FloorRow3" type="Node3D" parent="CabinPivot/Floor"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.2, 0, 0, -2.1)
 
-[node name="floor-wood_1" parent="Cabin/Floor/FloorRow3" instance=ExtResource("5_ykvsd")]
+[node name="floor-wood_1" parent="CabinPivot/Floor/FloorRow3" instance=ExtResource("5_ykvsd")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 
-[node name="floor-wood_2" parent="Cabin/Floor/FloorRow3" instance=ExtResource("5_ykvsd")]
+[node name="floor-wood_2" parent="CabinPivot/Floor/FloorRow3" instance=ExtResource("5_ykvsd")]
 
-[node name="floor-wood_3" parent="Cabin/Floor/FloorRow3" instance=ExtResource("5_ykvsd")]
+[node name="floor-wood_3" parent="CabinPivot/Floor/FloorRow3" instance=ExtResource("5_ykvsd")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
 
-[node name="Fireplace" type="Node3D" parent="Cabin/Floor"]
+[node name="Fireplace" type="Node3D" parent="CabinPivot/Floor"]
 
-[node name="Block1" type="MeshInstance3D" parent="Cabin/Floor/Fireplace"]
+[node name="Block1" type="MeshInstance3D" parent="CabinPivot/Floor/Fireplace"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2145519, 0.7042934, -1.6432571)
 mesh = SubResource("BoxMesh_bhqa3")
 
-[node name="Block2" type="MeshInstance3D" parent="Cabin/Floor/Fireplace"]
+[node name="Block2" type="MeshInstance3D" parent="CabinPivot/Floor/Fireplace"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2145519, 0.7042934, -1.1173713)
 mesh = SubResource("BoxMesh_r7rgn")
 
-[node name="Block3" type="MeshInstance3D" parent="Cabin/Floor/Fireplace"]
+[node name="Block3" type="MeshInstance3D" parent="CabinPivot/Floor/Fireplace"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1183255, 1.1690254, -1.386185)
 mesh = SubResource("BoxMesh_l2m4t")
 
-[node name="FireLight" type="OmniLight3D" parent="Cabin/Floor/Fireplace"]
+[node name="FireLight" type="OmniLight3D" parent="CabinPivot/Floor/Fireplace"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95044625, 0.22622347, -1.3847995)
 light_color = Color(1, 0.5294118, 0.13725491, 1)
@@ -187,52 +187,52 @@ distance_fade_enabled = true
 distance_fade_begin = 10.0
 distance_fade_shadow = 20.0
 
-[node name="Roof" type="Node3D" parent="Cabin"]
+[node name="Roof" type="Node3D" parent="CabinPivot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
-[node name="Center" type="Node3D" parent="Cabin/Roof"]
+[node name="Center" type="Node3D" parent="CabinPivot/Roof"]
 
-[node name="Front" type="Node3D" parent="Cabin/Roof/Center"]
+[node name="Front" type="Node3D" parent="CabinPivot/Roof/Center"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.40999997)
 
-[node name="cabin-wall-wreath" parent="Cabin/Roof/Center/Front" instance=ExtResource("6_qog3t")]
+[node name="cabin-wall-wreath" parent="CabinPivot/Roof/Center/Front" instance=ExtResource("6_qog3t")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.40999997)
 
-[node name="cabin-wall-roof-center" parent="Cabin/Roof/Center/Front/cabin-wall-wreath" instance=ExtResource("7_hewf8")]
+[node name="cabin-wall-roof-center" parent="CabinPivot/Roof/Center/Front/cabin-wall-wreath" instance=ExtResource("7_hewf8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9861827, 0)
 
-[node name="Back" type="Node3D" parent="Cabin/Roof/Center"]
+[node name="Back" type="Node3D" parent="CabinPivot/Roof/Center"]
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0, 0, -2.74)
 
-[node name="cabin-wall-wreath" parent="Cabin/Roof/Center/Back" instance=ExtResource("6_qog3t")]
+[node name="cabin-wall-wreath" parent="CabinPivot/Roof/Center/Back" instance=ExtResource("6_qog3t")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 8.752406e-08, 0, 0.5911586)
 
-[node name="cabin-wall-roof-center" parent="Cabin/Roof/Center/Back/cabin-wall-wreath" instance=ExtResource("7_hewf8")]
+[node name="cabin-wall-roof-center" parent="CabinPivot/Roof/Center/Back/cabin-wall-wreath" instance=ExtResource("7_hewf8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9861827, 0)
 
-[node name="Top" type="Node3D" parent="Cabin/Roof/Center"]
+[node name="Top" type="Node3D" parent="CabinPivot/Roof/Center"]
 
-[node name="cabin-roof-snow-point_1" parent="Cabin/Roof/Center/Top" instance=ExtResource("8_bhqa3")]
+[node name="cabin-roof-snow-point_1" parent="CabinPivot/Roof/Center/Top" instance=ExtResource("8_bhqa3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.3, 0, 1.0099397, -0.37105882)
 
-[node name="cabin-roof-snow-point_2" parent="Cabin/Roof/Center/Top" instance=ExtResource("8_bhqa3")]
+[node name="cabin-roof-snow-point_2" parent="CabinPivot/Roof/Center/Top" instance=ExtResource("8_bhqa3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.3, 0, 1.0099397, -1.9740622)
 
-[node name="East" type="Node3D" parent="Cabin/Roof"]
+[node name="East" type="Node3D" parent="CabinPivot/Roof"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 
-[node name="Segmemt1" type="Node3D" parent="Cabin/Roof/East"]
+[node name="Segmemt1" type="Node3D" parent="CabinPivot/Roof/East"]
 
-[node name="cabin-roof-snow" parent="Cabin/Roof/East/Segmemt1" instance=ExtResource("8_i8pmm")]
+[node name="cabin-roof-snow" parent="CabinPivot/Roof/East/Segmemt1" instance=ExtResource("8_i8pmm")]
 
-[node name="cabin-wall-roof" parent="Cabin/Roof/East/Segmemt1" instance=ExtResource("9_wl3cj")]
+[node name="cabin-wall-roof" parent="CabinPivot/Roof/East/Segmemt1" instance=ExtResource("9_wl3cj")]
 
-[node name="Segmemt2" type="Node3D" parent="Cabin/Roof/East"]
+[node name="Segmemt2" type="Node3D" parent="CabinPivot/Roof/East"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.3999999)
 
-[node name="cabin-roof-snow-chimney" parent="Cabin/Roof/East/Segmemt2" instance=ExtResource("11_r7rgn")]
+[node name="cabin-roof-snow-chimney" parent="CabinPivot/Roof/East/Segmemt2" instance=ExtResource("11_r7rgn")]
 
-[node name="SmokeEmitter" type="GPUParticles3D" parent="Cabin/Roof/East/Segmemt2/cabin-roof-snow-chimney"]
+[node name="SmokeEmitter" type="GPUParticles3D" parent="CabinPivot/Roof/East/Segmemt2/cabin-roof-snow-chimney"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.19307137, 1.3130198, 0)
 amount = 16
@@ -240,36 +240,37 @@ lifetime = 10.0
 process_material = SubResource("ParticleProcessMaterial_1hmex")
 draw_pass_1 = SubResource("SphereMesh_5eg87")
 
-[node name="Segmemt3" type="Node3D" parent="Cabin/Roof/East"]
+[node name="Segmemt3" type="Node3D" parent="CabinPivot/Roof/East"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.18)
 
-[node name="cabin-roof-snow" parent="Cabin/Roof/East/Segmemt3" instance=ExtResource("8_i8pmm")]
+[node name="cabin-roof-snow" parent="CabinPivot/Roof/East/Segmemt3" instance=ExtResource("8_i8pmm")]
 
-[node name="cabin-wall-roof" parent="Cabin/Roof/East/Segmemt3" instance=ExtResource("9_wl3cj")]
+[node name="cabin-wall-roof" parent="CabinPivot/Roof/East/Segmemt3" instance=ExtResource("9_wl3cj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.1499999)
 
-[node name="West" type="Node3D" parent="Cabin/Roof"]
+[node name="West" type="Node3D" parent="CabinPivot/Roof"]
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -0.98, 0, -2.33)
 
-[node name="Segmemt1" type="Node3D" parent="Cabin/Roof/West"]
+[node name="Segmemt1" type="Node3D" parent="CabinPivot/Roof/West"]
 
-[node name="cabin-roof-snow" parent="Cabin/Roof/West/Segmemt1" instance=ExtResource("8_i8pmm")]
+[node name="cabin-roof-snow" parent="CabinPivot/Roof/West/Segmemt1" instance=ExtResource("8_i8pmm")]
 
-[node name="cabin-wall-roof" parent="Cabin/Roof/West/Segmemt1" instance=ExtResource("9_wl3cj")]
+[node name="cabin-wall-roof" parent="CabinPivot/Roof/West/Segmemt1" instance=ExtResource("9_wl3cj")]
 
-[node name="Segmemt2" type="Node3D" parent="Cabin/Roof/West"]
+[node name="Segmemt2" type="Node3D" parent="CabinPivot/Roof/West"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.3999999)
 
-[node name="cabin-roof-snow" parent="Cabin/Roof/West/Segmemt2" instance=ExtResource("8_i8pmm")]
+[node name="cabin-roof-snow" parent="CabinPivot/Roof/West/Segmemt2" instance=ExtResource("8_i8pmm")]
 
-[node name="Segmemt3" type="Node3D" parent="Cabin/Roof/West"]
+[node name="Segmemt3" type="Node3D" parent="CabinPivot/Roof/West"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.18)
 
-[node name="cabin-roof-snow" parent="Cabin/Roof/West/Segmemt3" instance=ExtResource("8_i8pmm")]
+[node name="cabin-roof-snow" parent="CabinPivot/Roof/West/Segmemt3" instance=ExtResource("8_i8pmm")]
 
-[node name="cabin-wall-roof" parent="Cabin/Roof/West/Segmemt3" instance=ExtResource("9_wl3cj")]
+[node name="cabin-wall-roof" parent="CabinPivot/Roof/West/Segmemt3" instance=ExtResource("9_wl3cj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.1499999)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.041023254, 1.6634388, -0.082977295)
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.041023254, 1.7792292, -0.082977295)
 shape = SubResource("BoxShape3D_bhqa3")
