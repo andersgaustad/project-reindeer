@@ -137,4 +137,4 @@ mesh = ExtResource("6_6xh4u")
 skeleton = NodePath("../../EnchancedMultiMeshInstance3D2")
 
 [node name="Cabin" parent="." instance=ExtResource("7_cyt5c")]
-transform = Transform3D(0.3011885, 0, 0.95356464, 0, 1, 0, -0.95356464, 0, 0.3011885, -11.982262, 0.99503815, 4.0652514)
+transform = Transform3D(0.6923825, 0, 0.7215307, 0, 1, 0, -0.7215307, 0, 0.6923825, -11.982262, 0.99503815, 4.0652514)

@@ -1,12 +1,13 @@
 use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, IStaticBody3D, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{common::{communicator::Communicator, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, props::cabin::Cabin}, input_map::DEBUG};
+use crate::{core::{common::{communicator::Communicator, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding, point_and_radius_2d::PointAndRadius2D}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, props::cabin::Cabin}, input_map::DEBUG};
 
 
 #[derive(GodotClass)]
 #[class(init, base=StaticBody3D)]
 pub struct MainLevel {
     #[export_group(name = "Maze")]
+
     #[export]
     #[var]
     #[init(val = Color::DARK_RED)]
@@ -30,7 +31,17 @@ pub struct MainLevel {
     #[init(val = Color::GREEN)]
     arrow_color : Color,
 
+
     #[export_group(name = "Zones")]
+
+    #[export(range=(0.0, 100.0, or_greater))]
+    #[init(val = 14.0)]
+    forecourt_depth : f32,
+
+    #[export(range=(0.0, 10.0, or_greater))]
+    #[init(val = 1.0)]
+    maze_to_forecourt_padding : f32,
+
     #[export]
     clearing_ring : OnEditor<Gd<Padding>>,
 
@@ -41,15 +52,14 @@ pub struct MainLevel {
     #[init(val = 1.0)]
     trees_per_square_unit : f32,
 
-    #[export]
-    #[init(val = 30)]
-    max_cabin_spawn_attempts : i32,
 
     #[export_group(name = "Random")]
+
     #[export]
     #[var]
     #[init(val = "Reindeer".into())]
     random_seed : GString,
+
 
     // Non-exported
 
@@ -185,23 +195,49 @@ impl MainLevel {
 
             tile_multimesh.set_instance_count(n_tiles);
 
-            let size = tile_mesh.get_aabb().size;
-            let tile_height = size.y;
+            let tile_size = tile_mesh.get_aabb().size;
+            let tile_height = tile_size.y;
 
             let dim_x_f32 = dim_x as f32;
             let dim_y_f32 = dim_y as f32;
 
             let bounding_box_size = Vector2::new(
-                dim_x_f32 * size.x,
-                dim_y_f32 * size.z
+                dim_x_f32 * tile_size.x,
+                dim_y_f32 * tile_size.z
             );
 
-            let maze_top_left_corner_offset = self.maze_top_left_corner.get_position();
+            let maze_top_left_corner_center_position = self.maze_top_left_corner.get_position();
+            let maze_origin_position = {
+                let mut center = maze_top_left_corner_center_position;
+                center.x -= tile_size.x / 2.0;
+                center.z -= tile_size.z / 2.0;
 
-            let maze_top_left_corner_from_above = Vector2::new(maze_top_left_corner_offset.x, maze_top_left_corner_offset.z);
-            let maze_span = Rect2::new(maze_top_left_corner_from_above, bounding_box_size);
+                center
+            };
 
-            let clearing_span = maze_span.grow_with_padding(self.clearing_ring.clone());
+            let maze_top_left_corner_position_from_above = Vector2::new(maze_origin_position.x, maze_origin_position.z);
+
+
+            // Zones
+
+            let maze_span = Rect2::new(maze_top_left_corner_position_from_above, bounding_box_size);
+
+            let forecourt_position = Vector2::new(
+                maze_top_left_corner_position_from_above.x,
+                maze_top_left_corner_position_from_above.y + maze_span.size.y + self.maze_to_forecourt_padding
+            );
+            let forecourt_size = Vector2::new(
+                maze_span.size.x,
+                self.forecourt_depth
+            );
+            let forecourt_span = Rect2::new(forecourt_position, forecourt_size);
+
+            let inner_span = Rect2::from_corners(
+                maze_span.position,
+                forecourt_span.end()
+            );
+
+            let clearing_span = inner_span.grow_with_padding(self.clearing_ring.clone());
             let forest_span = clearing_span.grow_with_padding(self.forest_ring.clone());
 
             self.set_ground_dimensions(forest_span);
@@ -245,7 +281,7 @@ impl MainLevel {
                         let i = i as i32;
                         let position = Vector3::new(
                             top_down_position.x,
-                            maze_top_left_corner_offset.y,
+                            maze_top_left_corner_center_position.y,
                             top_down_position.y
                         );
 
@@ -257,7 +293,7 @@ impl MainLevel {
                 drop(bound_tree_spawner);
             }
 
-            // Spawn cabin
+            // Spawn (or move) cabin
             let cabin_aabb = self.cabin.bind().get_bounding_box();
             let position = cabin_aabb.position;
             let end = cabin_aabb.end();
@@ -275,56 +311,73 @@ impl MainLevel {
                 top_down_end
             ];
 
-            let cabin_corners_opt = (|| {
-                for _ in 0..self.max_cabin_spawn_attempts {
-                    // Get random point in clearing
-                    let size = &clearing_span.size;
-                    
-                    let x = self.rng.randf_range(0.0, size.x);
-                    let y = self.rng.randf_range(0.0, size.y);
+            let radius = corners
+                .iter()
+                .map(|corner| {
+                    corner.length()
+                })
+                .max_by(|a, b| {
+                    a.total_cmp(b)
+                })
+                .unwrap();
 
-                    let radians = self.rng.randf_range(0.0, std::f32::consts::TAU);
+            let diameter = 2.0 * radius;
 
-                    let points = corners.map(|relative_point| {
-                        let rotated = (relative_point - top_down_start).rotated(radians);
-                        let alligned_point = Vector2::new(x, y) + clearing_span.position + rotated;
-                        alligned_point
-                    });
-
-                    // All points must be in clearing but not in maze if in maze
-                    let all_in_bounds = points.iter().all(|&point| {
-                        !maze_span.contains_point(point) &&
-                        clearing_span.contains_point(point)
-                    });
-
-                    if !all_in_bounds {
-                        continue;
-                    }
-
-                    // Else, if all in bounds, should be possible to spawn cabin
-                    let center = (points[0] + points[3]) / 2.0;
-                    let cabin_position = Vector3::new(
-                        center.x,
-                        self.maze_top_left_corner.get_position().y,
-                        center.y
-                    );
-                    let cabin = &mut self.cabin;
-                    cabin.set_position(cabin_position);
-                    cabin.rotate_y(radians);
-                    cabin.show();
-
-                    return Some(points);
+            let cabin_position_info_opt = (|| {
+                let shortest_side = forecourt_size.x.min(forecourt_size.y);
+                if shortest_side < diameter {
+                    return None;
                 }
 
-                None
+                // Else, should be able to spawn
+
+                let intersection_from_position_length = std::f32::consts::SQRT_2 * radius;
+                let middle_of_forecourt = forecourt_position + (forecourt_size / 2.0);
+
+                let mut point = Vector2::new(intersection_from_position_length, intersection_from_position_length) + forecourt_position;
+                let mut rotation = std::f32::consts::FRAC_PI_4;
+
+                let flip_against_y = self.rng.randi() % 2 == 0;
+                let flip_against_x = self.rng.randi() % 2 == 0;
+
+                if flip_against_y {
+                    let mut relative = point - middle_of_forecourt;
+                    relative.x *= -1.0;
+                    point = relative + middle_of_forecourt;
+
+                    rotation *= -1.0;
+                }
+
+                if flip_against_x {
+                    let mut relative = point - middle_of_forecourt;
+                    relative.y *= -1.0;
+                    point = relative + middle_of_forecourt;
+
+                    rotation = std::f32::consts::PI - rotation;
+                }
+
+                let cabin_position = Vector3::new(
+                    point.x,
+                    maze_top_left_corner_center_position.y,
+                    point.y
+                );
+                
+                let cabin = &mut self.cabin;
+                cabin.set_position(cabin_position);
+                cabin.set_rotation(Vector3::new(0.0, rotation, 0.0));
+                cabin.show();
+
+                let info = PointAndRadius2D::new(point, radius);
+                Some(info)
             })();
 
-            if cabin_corners_opt.is_some() {
+            if cabin_position_info_opt.is_some() {
                 godot_print!("Spawned cabin!");
 
             } else {
                 godot_print!("Failed spawning cabin");
             }
+
 
             // Create maze
 
@@ -343,7 +396,7 @@ impl MainLevel {
                 let pos_x = position.coordinates.x;
                 let pos_y = position.coordinates.y;
 
-                let vector = Vector3::new(pos_x, 0.0, pos_y) + maze_top_left_corner_offset;
+                let vector = Vector3::new(pos_x, 0.0, pos_y) + maze_top_left_corner_center_position;
                 let basis = Basis::default();
                 let transform = Transform3D::new(basis, vector);
 
@@ -418,7 +471,7 @@ impl MainLevel {
                 position_info.height,
                 position_info.coordinates.y
 
-            ) + maze_top_left_corner_offset;
+            ) + maze_top_left_corner_center_position;
 
             let reindeer = &mut self.maze_reindeer;
             reindeer.set_position(position);
@@ -443,7 +496,7 @@ impl MainLevel {
                 position_info.height,
                 position_info.coordinates.y
 
-            ) + maze_top_left_corner_offset;
+            ) + maze_top_left_corner_center_position;
 
             let present = &mut self.present;
             present.set_position(position);

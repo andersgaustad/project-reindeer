@@ -14,10 +14,10 @@
 [sub_resource type="MazeSolverInfo" id="MazeSolverInfo_geiq8"]
 
 [sub_resource type="Padding" id="Padding_c7w6w"]
-north_padding = 5.0
-east_padding = 5.0
-south_padding = 20.0
-west_padding = 5.0
+north_padding = 1.0
+east_padding = 1.0
+south_padding = 1.0
+west_padding = 1.0
 
 [sub_resource type="Padding" id="Padding_erkku"]
 north_padding = 64.0
@@ -79,6 +79,8 @@ color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
 color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
 maze_top_left_corner = NodePath("MazeTopLeft")
 maze_solver_info = SubResource("MazeSolverInfo_geiq8")
+forecourt_depth = 15.0
+maze_to_forecourt_padding = 0.25
 clearing_ring = SubResource("Padding_c7w6w")
 forest_ring = SubResource("Padding_erkku")
 
