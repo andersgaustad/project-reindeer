@@ -1,6 +1,6 @@
-use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, IStaticBody3D, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, IStaticBody3D, InputEvent, Mesh, MeshInstance3D, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{common::{communicator::Communicator, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding, point_and_radius_2d::PointAndRadius2D}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, props::cabin::Cabin}, input_map::DEBUG};
+use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, player::Player, props::cabin::Cabin, utility::bounding_box_utility}, input_map::DEBUG};
 
 
 #[derive(GodotClass)]
@@ -24,15 +24,28 @@ pub struct MainLevel {
 
     #[export]
     #[var]
-    maze_solver_info : Option<Gd<MazeSolverInfo>>,
+    maze_solver_info : OnEditor<Gd<MazeSolverInfo>>,
 
     #[export]
     #[var]
     #[init(val = Color::GREEN)]
     arrow_color : Color,
 
+    #[export]
+    #[var]
+    #[init(val = true)]
+    teleport_player_on_maze_set : bool,
+
 
     #[export_group(name = "Zones")]
+
+    #[export]
+    #[var]
+    prop_root : OnEditor<Gd<Node3D>>,
+
+    #[export]
+    #[init(val = 30)]
+    max_spawn_attempts_per_prop : i32,
 
     #[export(range=(0.0, 100.0, or_greater))]
     #[init(val = 14.0)]
@@ -48,9 +61,13 @@ pub struct MainLevel {
     #[export]
     forest_ring : OnEditor<Gd<Padding>>,
 
-    #[export(range=(0.0, 100.0, or_greater))]
+    #[export(range=(0.0, 1.0, or_greater))]
     #[init(val = 1.0)]
     trees_per_square_unit : f32,
+
+    #[export(range=(0.0, 1.0, or_greater))]
+    #[init(val = 0.33)]
+    snow_per_square_unit : f32,
 
 
     #[export_group(name = "Random")]
@@ -70,6 +87,10 @@ pub struct MainLevel {
     #[var]
     #[init(node = "%Collision")]
     collision : OnReady<Gd<CollisionShape3D>>,
+
+    #[var]
+    #[init(node = "%Player")]
+    player : OnReady<Gd<Player>>,
 
     #[var]
     #[init(node = "%Reindeer")]
@@ -110,6 +131,18 @@ pub struct MainLevel {
     #[var]
     #[init(node = "%TreeSpawner")]
     tree_spawner : OnReady<Gd<EnchancedMultiMeshInstance3D>>,
+
+    #[var]
+    #[init(node = "%SnowPileSpawner")]
+    snow_pile_spawner : OnReady<Gd<MultiMeshInstance3D>>,
+
+    #[var]
+    #[init(node = "%SnowFlatSpawner")]
+    snow_flats_spawner : OnReady<Gd<MultiMeshInstance3D>>,
+
+    #[var]
+    #[init(node = "%SnowBunkerSpawner")]
+    snow_bunker_spawner : OnReady<Gd<MultiMeshInstance3D>>,
 
     rng : Gd<RandomNumberGenerator>,
 
@@ -294,47 +327,42 @@ impl MainLevel {
             }
 
             // Spawn (or move) cabin
-            let cabin_aabb = self.cabin.bind().get_bounding_box();
+
+            let cabin_aabb = bounding_box_utility::get_node_aabb_ex()
+                .node(Some(self.cabin.clone().upcast()))
+                .build()
+                .done();
+
             let position = cabin_aabb.position;
+            let center_3d = cabin_aabb.center();
+            let center_2d = Vector2::new(center_3d.x, center_3d.z);
             let end = cabin_aabb.end();
 
             let top_down_start = Vector2::new(position.x, position.z);
             let top_down_end = Vector2::new(end.x, end.z);
 
-            let corner_a = Vector2::new(top_down_start.x, top_down_end.y);
-            let corner_b = Vector2::new(top_down_end.x, top_down_start.y);
+            let top_right = Vector2::new(top_down_end.x, top_down_start.y);
+            let bottom_left = Vector2::new(top_down_start.x, top_down_end.y);
+
+            let width = cabin_aabb.size.x;
+            let height = cabin_aabb.size.y;
 
             let corners = [
                 top_down_start,
-                corner_a,
-                corner_b,
-                top_down_end
+                top_right,
+                top_down_end,
+                bottom_left,
             ];
+            
 
-            let radius = corners
-                .iter()
-                .map(|corner| {
-                    corner.length()
-                })
-                .max_by(|a, b| {
-                    a.total_cmp(b)
-                })
-                .unwrap();
-
-            let diameter = 2.0 * radius;
-
-            let cabin_position_info_opt = (|| {
-                let shortest_side = forecourt_size.x.min(forecourt_size.y);
-                if shortest_side < diameter {
-                    return None;
-                }
+            let cabin_polygon_opt = (|| {
+                let extent = (width + height) * std::f32::consts::SQRT_2 / 4.0;
 
                 // Else, should be able to spawn
 
-                let intersection_from_position_length = std::f32::consts::SQRT_2 * radius;
-                let middle_of_forecourt = forecourt_position + (forecourt_size / 2.0);
+                let middle_of_forecourt = forecourt_span.center();
 
-                let mut point = Vector2::new(intersection_from_position_length, intersection_from_position_length) + forecourt_position;
+                let mut point = Vector2::new(extent, extent) + forecourt_position;
                 let mut rotation = std::f32::consts::FRAC_PI_4;
 
                 let flip_against_y = self.rng.randi() % 2 == 0;
@@ -367,15 +395,215 @@ impl MainLevel {
                 cabin.set_rotation(Vector3::new(0.0, rotation, 0.0));
                 cabin.show();
 
-                let info = PointAndRadius2D::new(point, radius);
-                Some(info)
+                let rotated_corners = corners.map(|position| {
+                    (position - center_2d).rotated(rotation) + point
+                });
+
+                let polygon = ConvexPolygon::try_from_points(rotated_corners.into_iter().collect());
+                polygon
             })();
 
-            if cabin_position_info_opt.is_some() {
+            let mut spawned_props = Vec::new();
+
+            if let Some(cabin_polygon) = cabin_polygon_opt {
+                spawned_props.push(cabin_polygon);
                 godot_print!("Spawned cabin!");
 
             } else {
                 godot_print!("Failed spawning cabin");
+            }
+
+
+            // Spawn snow props
+
+            let props = self.prop_root.get_children();
+            for prop in props.iter_shared() {
+                let Ok(mut prop_3d) = prop.try_cast::<Node3D>() else {
+                    continue;
+                };
+                let aabb = bounding_box_utility::get_node_aabb_ex()
+                    .node(Some(prop_3d.clone()))
+                    .build()
+                    .done();
+
+                let center_3d = aabb.center();
+                let center_2d = Vector2::new(center_3d.x, center_3d.z);
+                let position_2d = Vector2::new(aabb.position.x, aabb.position.z);
+                let size_2d = Vector2::new(aabb.size.x, aabb.size.z);
+                let end_2d = position_2d + size_2d;
+
+                let corners = [
+                    position_2d,
+                    Vector2::new(end_2d.x, position_2d.y),
+                    end_2d,
+                    Vector2::new(position_2d.x, end_2d.y),
+                ];
+
+                // Attempt k times for each prop
+                for _ in 0..self.max_spawn_attempts_per_prop {
+                    let x = self.rng.randf_range(0.0, forecourt_size.x);
+                    let y = self.rng.randf_range(0.0, forecourt_size.y);
+                    let rotation = self.rng.randf_range(0.0, std::f32::consts::TAU);
+
+                    let point = Vector2::new(x, y) + forecourt_position;
+                    let rotated_corners = corners
+                        .into_iter()
+                        .map(|corner| {
+                            (corner - center_2d).rotated(rotation) + point
+                        })
+                        .collect::<Vec<_>>();
+
+                    let all_inside_forecourt = rotated_corners
+                        .iter()
+                        .all(|corner| {
+                            forecourt_span.contains_point(*corner)
+                        });
+                    
+                    if !all_inside_forecourt {
+                        continue;
+                    }
+
+                    let Some(polygon) = ConvexPolygon::try_from_points(rotated_corners) else {
+                        continue;
+                    };
+
+                    // Note - this causes O(n^2) time
+                    let any_overlap = spawned_props
+                        .iter()
+                        .any(|existing_polygon| {
+                            existing_polygon.overlaps_with(&polygon)
+                        });
+                    
+                    if any_overlap {
+                        godot_print!("Collision!");
+                        continue;
+                    }
+
+                    // Else, spawn is safe
+                    let position_3d = Vector3::new(
+                        point.x,
+                        maze_top_left_corner_center_position.y,
+                        point.y
+                    );
+
+                    prop_3d.set_position(position_3d);
+                    prop_3d.set_rotation(Vector3::new(0.0, rotation, 0.0));
+                    prop_3d.show();
+
+                    spawned_props.push(polygon);
+                    break;
+                }
+            }
+
+            // Spawn snow
+            let n_expected_snow_piles = (self.snow_per_square_unit * forecourt_size.length()) as i32;
+
+            const N_BARS : usize = 3 - 1;
+            let mut bars = Vec::with_capacity(N_BARS);
+            for _ in 0..N_BARS {
+                let bar_index = self.rng.randi_range(0, n_expected_snow_piles);
+                bars.push(bar_index);
+            }
+
+            bars.sort();
+
+            
+            let n_snow_piles = bars[0];
+            let n_snow_flats = bars[1] - n_snow_piles;
+            let n_snow_bunkers = n_expected_snow_piles - n_snow_piles - n_snow_flats;
+
+            let spawners_and_spawn_amouns = [
+                (self.snow_pile_spawner.clone(), n_snow_piles),
+                (self.snow_flats_spawner.clone(), n_snow_flats),
+                (self.snow_bunker_spawner.clone(), n_snow_bunkers),
+            ];
+
+            for (spawner, amount) in spawners_and_spawn_amouns {
+                let Some(mut multimesh) = spawner.get_multimesh() else {
+                    continue;
+                };
+
+                let Some(mesh) = multimesh.get_mesh() else {
+                    continue;
+                };
+
+                let aabb = mesh.get_aabb();
+                let center_3d = aabb.center();
+                let center_2d = Vector2::new(center_3d.x, center_3d.z);
+                let position_2d = Vector2::new(aabb.position.x, aabb.position.y);
+                let size_2d = Vector2::new(aabb.size.x, aabb.size.y);
+                let end_2d = position_2d + size_2d;
+
+                let corners = [
+                    position_2d,
+                    Vector2::new(end_2d.x, position_2d.y),
+                    end_2d,
+                    Vector2::new(position_2d.x, end_2d.y),
+                ];
+
+                multimesh.set_instance_count(0);
+                multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
+
+                let mut transforms = Vec::new();
+
+                for _ in 0..amount {
+                    let x = self.rng.randf_range(0.0, forecourt_size.x);
+                    let y = self.rng.randf_range(0.0, forecourt_size.y);
+                    let rotation = self.rng.randf_range(0.0, std::f32::consts::TAU);
+
+                    let point = Vector2::new(x, y) + forecourt_position;
+                    let position_3d = Vector3::new(
+                        point.x,
+                        maze_top_left_corner_center_position.y,
+                        point.y
+                    );
+
+                    let rotated_corners = corners
+                        .iter()
+                        .map(|corner| {
+                            (*corner - center_2d).rotated(rotation) + point
+                        })
+                        .collect::<Vec<_>>();
+
+                    let all_inside_forecourt = rotated_corners
+                        .iter()
+                        .all(|corner| {
+                            forecourt_span.contains_point(*corner)
+                        });
+                    
+                    if !all_inside_forecourt {
+                        continue;
+                    }
+
+                    let Some(polygon) = ConvexPolygon::try_from_points(rotated_corners) else {
+                        continue;
+                    };
+
+                    let any_collision = spawned_props
+                        .iter()
+                        .any(|existing_polygon| {
+                            polygon.overlaps_with(existing_polygon)
+                        });
+                    
+                    if any_collision {
+                        continue;
+                    }
+
+                    // Ok to spawn
+                    let basis = Basis::from_axis_angle(Vector3::UP, rotation);
+                    let transform = Transform3D::new(basis, position_3d);
+
+                    spawned_props.push(polygon);
+                    transforms.push(transform);
+                }
+
+                let length = transforms.len() as i32;
+                multimesh.set_instance_count(length);
+                for (i, transform) in transforms.into_iter().enumerate() {
+                    let i = i as i32;
+
+                    multimesh.set_instance_transform(i, transform);
+                }
             }
 
 
@@ -501,6 +729,18 @@ impl MainLevel {
             let present = &mut self.present;
             present.set_position(position);
             present.show();
+
+
+            // Teleport player if enabled
+            if self.teleport_player_on_maze_set {
+                let forecourt_center = forecourt_span.center();
+                let mut player_position = self.player.get_position();
+                
+                player_position.x = forecourt_center.x;
+                player_position.z = forecourt_center.y;
+
+                self.player.set_position(player_position);
+            }
 
 
             // Finally, set maze info
@@ -634,7 +874,7 @@ impl MainLevel {
             },
         }
 
-        let delay = self.get_maze_solver_info_or_default().bind().wait_delay;
+        let delay = self.maze_solver_info.bind().wait_delay;
         let mut scene_tree = self.base().get_tree().expect("Failed getting scene tree??");
         let timer = scene_tree.create_timer(delay).expect("Failed creating timer??");
 
@@ -755,7 +995,7 @@ impl MainLevel {
         };
         let mut maze = maze_info.maze.clone();
 
-        let maze_solver_info = self.get_maze_solver_info_or_default();
+        let maze_solver_info = self.maze_solver_info.clone();
         let mut handle = maze.bind_mut().find_paths(maze_solver_info);
 
         handle
@@ -772,15 +1012,6 @@ impl MainLevel {
 
 
         handle.bind_mut().start();
-    }
-
-
-    fn get_rock_spawner_from_type(&self, rock_type : RockType) -> Gd<EnchancedMultiMeshInstance3D> {
-        match rock_type {
-            RockType::Small => self.get_rock_small_spawner(),
-            RockType::Medium => self.get_rock_medium_spawner(),
-            RockType::Large => self.get_rock_large_spawner(),
-        }
     }
 
 
@@ -827,24 +1058,10 @@ impl MainLevel {
 
         result
     }
-
-
-    pub fn get_maze_solver_info_or_default(&self) -> Gd<MazeSolverInfo> {
-        self.maze_solver_info.clone().unwrap_or_default()
-    }
 }
 
 
 // Utility
-
-struct TopCornerOffsetInfoFull {
-    multimesh : Gd<MultiMesh>,
-    mesh : Gd<Mesh>,
-    maze : Gd<Maze>,
-
-    offset : Vector2,
-}
-
 
 struct TileCenterPosition {
     coordinates : Vector2,

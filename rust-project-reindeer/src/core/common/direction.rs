@@ -3,6 +3,7 @@ use strum::{EnumCount, EnumIter, IntoEnumIterator};
 
 use crate::core::common::coordinate::Coordinate;
 
+
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, EnumCount, EnumIter, Export, PartialEq, Eq, GodotConvert, Hash, Var)]
 #[godot(via = GString)]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://bhaqw7kkuvp2d"]
+[gd_scene load_steps=47 format=3 uid="uid://bhaqw7kkuvp2d"]
 
 [ext_resource type="PackedScene" uid="uid://dffs3axw6pbr3" path="res://scenes/reindeers/reindeer.tscn" id="1_geiq8"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_lx3qq"]
@@ -9,7 +9,24 @@
 [ext_resource type="ArrayMesh" uid="uid://bqqf0uncmoovq" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-large.obj" id="4_tkkka"]
 [ext_resource type="ArrayMesh" uid="uid://faqe8o8sn8t6" path="res://assets/extracted/Sketchfab_Scene_Arrow_Material_001_0.res" id="8_h35hl"]
 [ext_resource type="ArrayMesh" uid="uid://d17hych78y22l" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/tree-snow-a.obj" id="9_kwk8y"]
+[ext_resource type="PackedScene" uid="uid://dnwhe55pf8jgc" path="res://assets/source/kenney_holiday-kit/Models/FBX format/lantern.fbx" id="10_c0gn3"]
 [ext_resource type="PackedScene" uid="uid://kpn4fhy8kxca" path="res://scenes/props/cabin.tscn" id="10_c7w6w"]
+[ext_resource type="PackedScene" uid="uid://dvpemw52sk520" path="res://assets/source/kenney_holiday-kit/Models/FBX format/bench.fbx" id="11_413c4"]
+[ext_resource type="ArrayMesh" uid="uid://dy0sgseasr0uq" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/snow-pile.obj" id="11_g2oho"]
+[ext_resource type="PackedScene" uid="uid://gofciof7vu1c" path="res://assets/source/kenney_holiday-kit/Models/FBX format/bench-short.fbx" id="12_5ru7i"]
+[ext_resource type="ArrayMesh" uid="uid://be0el17jjyxtv" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/snow-flat.obj" id="12_c0gn3"]
+[ext_resource type="ArrayMesh" uid="uid://bnvns7avoswby" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/snow-bunker.obj" id="13_pmkt5"]
+[ext_resource type="PackedScene" uid="uid://bexnyslnpmqfq" path="res://assets/source/kenney_holiday-kit/Models/FBX format/present-a-cube.fbx" id="13_ry3r4"]
+[ext_resource type="PackedScene" uid="uid://bvf0hrmewwwio" path="res://assets/source/kenney_holiday-kit/Models/FBX format/present-a-rectangle.fbx" id="14_moggy"]
+[ext_resource type="PackedScene" uid="uid://b8oj1h6bks16w" path="res://assets/source/kenney_holiday-kit/Models/FBX format/present-b-round.fbx" id="15_5xq6v"]
+[ext_resource type="PackedScene" uid="uid://cgd7sgs4vsqjn" path="res://assets/source/kenney_holiday-kit/Models/FBX format/present-b-rectangle.fbx" id="16_eiw2m"]
+[ext_resource type="PackedScene" uid="uid://dyly861cdm56d" path="res://assets/source/kenney_holiday-kit/Models/FBX format/present-b-cube.fbx" id="17_fjfeh"]
+[ext_resource type="PackedScene" uid="uid://baadgl0jbpvct" path="res://assets/source/kenney_holiday-kit/Models/FBX format/present-a-round.fbx" id="18_mafxj"]
+[ext_resource type="PackedScene" uid="uid://5y0dpppxjbdi" path="res://assets/source/kenney_holiday-kit/Models/FBX format/sled-long.fbx" id="19_mafxj"]
+[ext_resource type="PackedScene" uid="uid://u3ujp04toqw7" path="res://assets/source/kenney_holiday-kit/Models/FBX format/sled.fbx" id="20_m2g4t"]
+[ext_resource type="PackedScene" uid="uid://wk8lhstoo2l1" path="res://assets/source/kenney_holiday-kit/Models/FBX format/snowman-hat.fbx" id="21_lf3sc"]
+[ext_resource type="PackedScene" uid="uid://dju0s05r0mt3n" path="res://assets/source/kenney_holiday-kit/Models/FBX format/snowman.fbx" id="22_qsr70"]
+[ext_resource type="PackedScene" uid="uid://b1li531q4jhe3" path="res://assets/source/kenney_holiday-kit/Models/FBX format/tree-decorated.fbx" id="23_xl3jb"]
 
 [sub_resource type="MazeSolverInfo" id="MazeSolverInfo_geiq8"]
 
@@ -62,6 +79,18 @@ mesh = ExtResource("8_h35hl")
 transform_format = 1
 mesh = ExtResource("9_kwk8y")
 
+[sub_resource type="MultiMesh" id="MultiMesh_413c4"]
+transform_format = 1
+mesh = ExtResource("11_g2oho")
+
+[sub_resource type="MultiMesh" id="MultiMesh_5ru7i"]
+transform_format = 1
+mesh = ExtResource("12_c0gn3")
+
+[sub_resource type="MultiMesh" id="MultiMesh_44ape"]
+transform_format = 1
+mesh = ExtResource("13_pmkt5")
+
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lx3qq"]
 
 [sub_resource type="Sky" id="Sky_ojqrr"]
@@ -74,11 +103,12 @@ ambient_light_source = 3
 ambient_light_color = Color(1, 1, 1, 1)
 reflected_light_source = 2
 
-[node name="MainLevel" type="MainLevel" node_paths=PackedStringArray("maze_top_left_corner")]
+[node name="MainLevel" type="MainLevel" node_paths=PackedStringArray("maze_top_left_corner", "prop_root")]
 color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
 color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
 maze_top_left_corner = NodePath("MazeTopLeft")
 maze_solver_info = SubResource("MazeSolverInfo_geiq8")
+prop_root = NodePath("Spawners/PropSpawners/Single")
 forecourt_depth = 15.0
 maze_to_forecourt_padding = 0.25
 clearing_ring = SubResource("Padding_c7w6w")
@@ -113,41 +143,109 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0950031, 0)
 visible = false
 
 [node name="Player" parent="." instance=ExtResource("1_lx3qq")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.847598, 0)
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 6.847598, 0)
+motion_mode = 1
 
 [node name="Spawners" type="Node3D" parent="."]
 
-[node name="TileSpawner" type="MultiMeshInstance3D" parent="Spawners"]
+[node name="MazeSpawners" type="Node3D" parent="Spawners"]
+
+[node name="TileSpawner" type="MultiMeshInstance3D" parent="Spawners/MazeSpawners"]
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_ojqrr")
 
-[node name="RockSmallSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners"]
+[node name="RockSmallSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/MazeSpawners"]
 yaw_random_rotation = true
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_8lk3y")
 
-[node name="RockMediumSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners"]
+[node name="RockMediumSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/MazeSpawners"]
 mesh_scale = Vector3(0.9, 0.9, 0.9)
 yaw_random_rotation = true
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_h35hl")
 
-[node name="RockLargeSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners"]
+[node name="RockLargeSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/MazeSpawners"]
 mesh_scale = Vector3(0.65, 0.65, 0.65)
 yaw_random_rotation = true
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_kwk8y")
 
-[node name="ArrowSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners"]
+[node name="ArrowSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/MazeSpawners"]
 mesh_scale = Vector3(0.4, 0.4, 0.4)
 mesh_rotation_degrees = Vector3(90, 0, 0)
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_c7w6w")
 
-[node name="TreeSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners"]
+[node name="PropSpawners" type="Node3D" parent="Spawners"]
+
+[node name="Single" type="Node3D" parent="Spawners/PropSpawners"]
+
+[node name="Lantern" parent="Spawners/PropSpawners/Single" instance=ExtResource("10_c0gn3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0498582, 0)
+visible = false
+
+[node name="Bench" parent="Spawners/PropSpawners/Single" instance=ExtResource("11_413c4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.01171, 0)
+visible = false
+
+[node name="BenchShort" parent="Spawners/PropSpawners/Single" instance=ExtResource("12_5ru7i")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0578879, 0)
+visible = false
+
+[node name="Present1" parent="Spawners/PropSpawners/Single" instance=ExtResource("13_ry3r4")]
+visible = false
+
+[node name="Present2" parent="Spawners/PropSpawners/Single" instance=ExtResource("14_moggy")]
+visible = false
+
+[node name="Present3" parent="Spawners/PropSpawners/Single" instance=ExtResource("15_5xq6v")]
+visible = false
+
+[node name="Present4" parent="Spawners/PropSpawners/Single" instance=ExtResource("16_eiw2m")]
+visible = false
+
+[node name="Present5" parent="Spawners/PropSpawners/Single" instance=ExtResource("17_fjfeh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0578879, 0)
+visible = false
+
+[node name="Present6" parent="Spawners/PropSpawners/Single" instance=ExtResource("18_mafxj")]
+visible = false
+
+[node name="SledLong" parent="Spawners/PropSpawners/Single" instance=ExtResource("19_mafxj")]
+visible = false
+
+[node name="Sled" parent="Spawners/PropSpawners/Single" instance=ExtResource("20_m2g4t")]
+visible = false
+
+[node name="SnowmanHat" parent="Spawners/PropSpawners/Single" instance=ExtResource("21_lf3sc")]
+visible = false
+
+[node name="Snowman" parent="Spawners/PropSpawners/Single" instance=ExtResource("22_qsr70")]
+visible = false
+
+[node name="Tree" parent="Spawners/PropSpawners/Single" instance=ExtResource("23_xl3jb")]
+visible = false
+
+[node name="Multi" type="Node3D" parent="Spawners/PropSpawners"]
+
+[node name="TreeSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/PropSpawners/Multi"]
 yaw_random_rotation = true
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_63vgv")
+
+[node name="SnowPileSpawner" type="MultiMeshInstance3D" parent="Spawners/PropSpawners/Multi"]
+unique_name_in_owner = true
+multimesh = SubResource("MultiMesh_413c4")
+
+[node name="SnowFlatSpawner" type="MultiMeshInstance3D" parent="Spawners/PropSpawners/Multi"]
+unique_name_in_owner = true
+multimesh = SubResource("MultiMesh_5ru7i")
+
+[node name="SnowBunkerSpawner" type="MultiMeshInstance3D" parent="Spawners/PropSpawners/Multi"]
+unique_name_in_owner = true
+multimesh = SubResource("MultiMesh_44ape")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_lx3qq")

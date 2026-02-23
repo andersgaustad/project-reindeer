@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::{HashMap, HashSet}, fmt::{Debug, Display, Write}};
+use std::{cmp::Ordering, collections::{HashMap, HashSet}, fmt::Debug};
 
 use godot::prelude::*;
 use strum::{EnumCount, IntoEnumIterator};
@@ -697,43 +697,6 @@ impl Default for Reindeer {
 struct CoordinateAndDirecton {
     coordinate : Coordinate,
     direction : Direction,
-}
-
-
-struct MazeDisplayer<'a> {
-    maze : &'a Maze,
-    path_coordinates : &'a HashSet<Coordinate>,
-}
-
-
-impl Display for MazeDisplayer<'_> {
-    fn fmt(&self, f : &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let maze = &self.maze;
-
-        let last_y = maze.dim_y - 1;
-
-        for y in 0..maze.dim_y {
-            for x in 0..maze.dim_x {
-                let coordinate = Coordinate::new(x as isize, y as isize);
-
-                let c = if self.path_coordinates.contains(&coordinate) {
-                    'O'
-                } else if let Some((_, tile)) = maze.get_index_and_content_by_coordinate(&coordinate) {
-                    char::from(tile)
-                } else {
-                    '?'
-                };
-
-                f.write_char(c)?;
-            }
-
-            if y != last_y {
-                f.write_char('\n')?;
-            }
-        }
-
-        Ok(())
-    }
 }
 
 

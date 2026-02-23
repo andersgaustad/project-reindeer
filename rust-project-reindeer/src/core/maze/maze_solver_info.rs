@@ -24,7 +24,6 @@ pub struct MazeSolverInfo {
     #[export]
     #[var]
     #[init(val = 1000)]
-    // Note: Rotation cost of 0 might make spinning in place repeatedly a viable tactic?
     pub rotation_cost : u32,
 
     base : Base<Resource>,

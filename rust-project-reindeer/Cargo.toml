@@ -8,5 +8,6 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
+derive_builder = "0.20.2"
 godot = { version = "0.4.5", features = ["api-4-5"] }
 strum = { version = "0.26", features = ["derive"] }
