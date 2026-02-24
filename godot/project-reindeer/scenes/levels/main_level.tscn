@@ -91,16 +91,16 @@ mesh = ExtResource("12_c0gn3")
 transform_format = 1
 mesh = ExtResource("13_pmkt5")
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lx3qq"]
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_mafxj"]
+sky_top_color = Color(0.39396158, 0.69545203, 0.9992464, 1)
+sky_energy_multiplier = 0.8
 
 [sub_resource type="Sky" id="Sky_ojqrr"]
-sky_material = SubResource("ProceduralSkyMaterial_lx3qq")
+sky_material = SubResource("ProceduralSkyMaterial_mafxj")
 
 [sub_resource type="Environment" id="Environment_lx3qq"]
 background_mode = 2
 sky = SubResource("Sky_ojqrr")
-ambient_light_source = 3
-ambient_light_color = Color(1, 1, 1, 1)
 reflected_light_source = 2
 
 [node name="MainLevel" type="MainLevel" node_paths=PackedStringArray("maze_top_left_corner", "prop_root")]
@@ -249,3 +249,11 @@ multimesh = SubResource("MultiMesh_44ape")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_lx3qq")
+
+[node name="Sun" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(1, 0, 0, 0, 0.6335565, 0.77369654, 0, -0.77369654, 0.6335565, 0, 0, 0)
+visible = false
+light_energy = 0.6
+shadow_enabled = true
+shadow_blur = 2.0
+directional_shadow_mode = 0
