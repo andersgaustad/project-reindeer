@@ -1,6 +1,6 @@
 use godot::{classes::{Camera3D, CharacterBody3D, ICharacterBody3D, Input, InputEvent, InputEventMouseMotion, OmniLight3D, input::MouseMode, light_3d::Param}, global::move_toward, prelude::*};
 
-use crate::input_map::{MOUSE_LEFT, MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_VISIBILITY};
+use crate::input_map::{MOUSE_LEFT, MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_SPRINT, TOGGLE_VISIBILITY};
 
 
 #[derive(GodotClass)]
@@ -28,8 +28,12 @@ pub struct Player {
     light_on : bool,
 
     #[var(get, set = set_body_visible)]
-    #[init(val = true)]
+    #[init(val = false)]
     body_visible : bool,
+
+    #[var(get, set = set_body_visible)]
+    #[init(val = false)]
+    sprint_toggled : bool,
 
     base : Base<CharacterBody3D>,
 }
@@ -39,16 +43,23 @@ pub struct Player {
 impl ICharacterBody3D for Player {
     fn ready(&mut self) {
         let mut input = Input::singleton();
-
         input.set_mouse_mode(MouseMode::CAPTURED);
 
+        let light_on = self.get_light_on();
         self.set_light_on(false);
+        
+        let body_visible = self.get_body_visible();
+        self.set_body_visible(body_visible); 
     }
     
 
     fn physics_process(&mut self, _delta: f64) {
         let input = Input::singleton();
-        let speed = self.speed;
+        
+        let mut speed = self.speed;
+        if self.sprint_toggled {
+            speed *= 2.0;
+        }
 
         let movement_vector_2d = input.get_vector(
             MOVE_RIGHT,
@@ -121,6 +132,13 @@ impl ICharacterBody3D for Player {
             self.base_mut().set_rotation_degrees(rotation_degrees);
             self.camera.set_rotation_degrees(camera_rotation_degrees);
 
+            return;
+        }
+
+        // Else, check sprint
+        if event.is_action_pressed(TOGGLE_SPRINT) {
+            let toggled = !self.sprint_toggled;
+            self.sprint_toggled = toggled;
             return;
         }
 

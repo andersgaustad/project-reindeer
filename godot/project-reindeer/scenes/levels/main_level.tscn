@@ -75,10 +75,6 @@ transform_format = 1
 use_colors = true
 mesh = ExtResource("8_h35hl")
 
-[sub_resource type="MultiMesh" id="MultiMesh_63vgv"]
-transform_format = 1
-mesh = ExtResource("9_kwk8y")
-
 [sub_resource type="MultiMesh" id="MultiMesh_413c4"]
 transform_format = 1
 mesh = ExtResource("11_g2oho")
@@ -91,9 +87,14 @@ mesh = ExtResource("12_c0gn3")
 transform_format = 1
 mesh = ExtResource("13_pmkt5")
 
+[sub_resource type="MultiMesh" id="MultiMesh_63vgv"]
+transform_format = 1
+mesh = ExtResource("9_kwk8y")
+
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_mafxj"]
 sky_top_color = Color(0.39396158, 0.69545203, 0.9992464, 1)
 sky_energy_multiplier = 0.8
+ground_bottom_color = Color(0.50532067, 0.59877646, 0.9928549, 1)
 
 [sub_resource type="Sky" id="Sky_ojqrr"]
 sky_material = SubResource("ProceduralSkyMaterial_mafxj")
@@ -230,11 +231,6 @@ visible = false
 
 [node name="Multi" type="Node3D" parent="Spawners/PropSpawners"]
 
-[node name="TreeSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/PropSpawners/Multi"]
-yaw_random_rotation = true
-unique_name_in_owner = true
-multimesh = SubResource("MultiMesh_63vgv")
-
 [node name="SnowPileSpawner" type="MultiMeshInstance3D" parent="Spawners/PropSpawners/Multi"]
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_413c4")
@@ -246,6 +242,18 @@ multimesh = SubResource("MultiMesh_5ru7i")
 [node name="SnowBunkerSpawner" type="MultiMeshInstance3D" parent="Spawners/PropSpawners/Multi"]
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_44ape")
+
+[node name="ForestSpawners" type="Node3D" parent="Spawners"]
+
+[node name="MainForest" type="Node3D" parent="Spawners/ForestSpawners"]
+
+[node name="TreeSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/ForestSpawners/MainForest"]
+yaw_random_rotation = true
+unique_name_in_owner = true
+multimesh = SubResource("MultiMesh_63vgv")
+
+[node name="SideForests" type="Node3D" parent="Spawners/ForestSpawners"]
+unique_name_in_owner = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_lx3qq")
