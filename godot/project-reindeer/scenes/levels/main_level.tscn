@@ -1,4 +1,4 @@
-[gd_scene load_steps=47 format=3 uid="uid://bhaqw7kkuvp2d"]
+[gd_scene load_steps=48 format=3 uid="uid://bhaqw7kkuvp2d"]
 
 [ext_resource type="PackedScene" uid="uid://dffs3axw6pbr3" path="res://scenes/reindeers/reindeer.tscn" id="1_geiq8"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_lx3qq"]
@@ -27,6 +27,7 @@
 [ext_resource type="PackedScene" uid="uid://wk8lhstoo2l1" path="res://assets/source/kenney_holiday-kit/Models/FBX format/snowman-hat.fbx" id="21_lf3sc"]
 [ext_resource type="PackedScene" uid="uid://dju0s05r0mt3n" path="res://assets/source/kenney_holiday-kit/Models/FBX format/snowman.fbx" id="22_qsr70"]
 [ext_resource type="PackedScene" uid="uid://b1li531q4jhe3" path="res://assets/source/kenney_holiday-kit/Models/FBX format/tree-decorated.fbx" id="23_xl3jb"]
+[ext_resource type="PackedScene" uid="uid://x0d1jeiwcryx" path="res://scenes/ui/pause_menu.tscn" id="28_m2g4t"]
 
 [sub_resource type="MazeSolverInfo" id="MazeSolverInfo_geiq8"]
 
@@ -107,160 +108,166 @@ reflected_light_source = 2
 [node name="MainLevel" type="MainLevel" node_paths=PackedStringArray("maze_top_left_corner", "prop_root")]
 color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
 color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
-maze_top_left_corner = NodePath("MazeTopLeft")
+maze_top_left_corner = NodePath("Level/MazeTopLeft")
 maze_solver_info = SubResource("MazeSolverInfo_geiq8")
-prop_root = NodePath("Spawners/PropSpawners/Single")
+prop_root = NodePath("Level/Spawners/PropSpawners/Single")
 forecourt_depth = 15.0
 maze_to_forecourt_padding = 0.25
 clearing_ring = SubResource("Padding_c7w6w")
 forest_ring = SubResource("Padding_erkku")
 
-[node name="MazeTopLeft" type="Node3D" parent="."]
+[node name="Level" type="StaticBody3D" parent="."]
+
+[node name="MazeTopLeft" type="Node3D" parent="Level"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
-[node name="GroundMesh" type="MeshInstance3D" parent="."]
+[node name="GroundMesh" type="MeshInstance3D" parent="Level"]
 unique_name_in_owner = true
 mesh = SubResource("BoxMesh_wkbr6")
+skeleton = NodePath("../..")
 
-[node name="Collision" type="CollisionShape3D" parent="."]
+[node name="Collision" type="CollisionShape3D" parent="Level"]
 unique_name_in_owner = true
 shape = SubResource("BoxShape3D_wkbr6")
 
-[node name="Reindeer" parent="." instance=ExtResource("1_geiq8")]
+[node name="Reindeer" parent="Level" instance=ExtResource("1_geiq8")]
 unique_name_in_owner = true
 visible = false
 
-[node name="GhostReindeer" parent="." instance=ExtResource("2_8lk3y")]
+[node name="GhostReindeer" parent="Level" instance=ExtResource("2_8lk3y")]
 unique_name_in_owner = true
 visible = false
 
-[node name="Present" parent="." instance=ExtResource("2_tkkka")]
+[node name="Present" parent="Level" instance=ExtResource("2_tkkka")]
 unique_name_in_owner = true
 visible = false
 
-[node name="Cabin" parent="." instance=ExtResource("10_c7w6w")]
+[node name="Cabin" parent="Level" instance=ExtResource("10_c7w6w")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0950031, 0)
 visible = false
 
-[node name="Player" parent="." instance=ExtResource("1_lx3qq")]
+[node name="Player" parent="Level" instance=ExtResource("1_lx3qq")]
 unique_name_in_owner = true
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 6.847598, 0)
 motion_mode = 1
 
-[node name="Spawners" type="Node3D" parent="."]
+[node name="Spawners" type="Node3D" parent="Level"]
 
-[node name="MazeSpawners" type="Node3D" parent="Spawners"]
+[node name="MazeSpawners" type="Node3D" parent="Level/Spawners"]
 
-[node name="TileSpawner" type="MultiMeshInstance3D" parent="Spawners/MazeSpawners"]
+[node name="TileSpawner" type="MultiMeshInstance3D" parent="Level/Spawners/MazeSpawners"]
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_ojqrr")
 
-[node name="RockSmallSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/MazeSpawners"]
+[node name="RockSmallSpawner" type="EnchancedMultiMeshInstance3D" parent="Level/Spawners/MazeSpawners"]
 yaw_random_rotation = true
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_8lk3y")
 
-[node name="RockMediumSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/MazeSpawners"]
+[node name="RockMediumSpawner" type="EnchancedMultiMeshInstance3D" parent="Level/Spawners/MazeSpawners"]
 mesh_scale = Vector3(0.9, 0.9, 0.9)
 yaw_random_rotation = true
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_h35hl")
 
-[node name="RockLargeSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/MazeSpawners"]
+[node name="RockLargeSpawner" type="EnchancedMultiMeshInstance3D" parent="Level/Spawners/MazeSpawners"]
 mesh_scale = Vector3(0.65, 0.65, 0.65)
 yaw_random_rotation = true
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_kwk8y")
 
-[node name="ArrowSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/MazeSpawners"]
+[node name="ArrowSpawner" type="EnchancedMultiMeshInstance3D" parent="Level/Spawners/MazeSpawners"]
 mesh_scale = Vector3(0.4, 0.4, 0.4)
 mesh_rotation_degrees = Vector3(90, 0, 0)
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_c7w6w")
 
-[node name="PropSpawners" type="Node3D" parent="Spawners"]
+[node name="PropSpawners" type="Node3D" parent="Level/Spawners"]
 
-[node name="Single" type="Node3D" parent="Spawners/PropSpawners"]
+[node name="Single" type="Node3D" parent="Level/Spawners/PropSpawners"]
 
-[node name="Lantern" parent="Spawners/PropSpawners/Single" instance=ExtResource("10_c0gn3")]
+[node name="Lantern" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("10_c0gn3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0498582, 0)
 visible = false
 
-[node name="Bench" parent="Spawners/PropSpawners/Single" instance=ExtResource("11_413c4")]
+[node name="Bench" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("11_413c4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.01171, 0)
 visible = false
 
-[node name="BenchShort" parent="Spawners/PropSpawners/Single" instance=ExtResource("12_5ru7i")]
+[node name="BenchShort" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("12_5ru7i")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0578879, 0)
 visible = false
 
-[node name="Present1" parent="Spawners/PropSpawners/Single" instance=ExtResource("13_ry3r4")]
+[node name="Present1" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("13_ry3r4")]
 visible = false
 
-[node name="Present2" parent="Spawners/PropSpawners/Single" instance=ExtResource("14_moggy")]
+[node name="Present2" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("14_moggy")]
 visible = false
 
-[node name="Present3" parent="Spawners/PropSpawners/Single" instance=ExtResource("15_5xq6v")]
+[node name="Present3" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("15_5xq6v")]
 visible = false
 
-[node name="Present4" parent="Spawners/PropSpawners/Single" instance=ExtResource("16_eiw2m")]
+[node name="Present4" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("16_eiw2m")]
 visible = false
 
-[node name="Present5" parent="Spawners/PropSpawners/Single" instance=ExtResource("17_fjfeh")]
+[node name="Present5" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("17_fjfeh")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0578879, 0)
 visible = false
 
-[node name="Present6" parent="Spawners/PropSpawners/Single" instance=ExtResource("18_mafxj")]
+[node name="Present6" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("18_mafxj")]
 visible = false
 
-[node name="SledLong" parent="Spawners/PropSpawners/Single" instance=ExtResource("19_mafxj")]
+[node name="SledLong" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("19_mafxj")]
 visible = false
 
-[node name="Sled" parent="Spawners/PropSpawners/Single" instance=ExtResource("20_m2g4t")]
+[node name="Sled" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("20_m2g4t")]
 visible = false
 
-[node name="SnowmanHat" parent="Spawners/PropSpawners/Single" instance=ExtResource("21_lf3sc")]
+[node name="SnowmanHat" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("21_lf3sc")]
 visible = false
 
-[node name="Snowman" parent="Spawners/PropSpawners/Single" instance=ExtResource("22_qsr70")]
+[node name="Snowman" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("22_qsr70")]
 visible = false
 
-[node name="Tree" parent="Spawners/PropSpawners/Single" instance=ExtResource("23_xl3jb")]
+[node name="Tree" parent="Level/Spawners/PropSpawners/Single" instance=ExtResource("23_xl3jb")]
 visible = false
 
-[node name="Multi" type="Node3D" parent="Spawners/PropSpawners"]
+[node name="Multi" type="Node3D" parent="Level/Spawners/PropSpawners"]
 
-[node name="SnowPileSpawner" type="MultiMeshInstance3D" parent="Spawners/PropSpawners/Multi"]
+[node name="SnowPileSpawner" type="MultiMeshInstance3D" parent="Level/Spawners/PropSpawners/Multi"]
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_413c4")
 
-[node name="SnowFlatSpawner" type="MultiMeshInstance3D" parent="Spawners/PropSpawners/Multi"]
+[node name="SnowFlatSpawner" type="MultiMeshInstance3D" parent="Level/Spawners/PropSpawners/Multi"]
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_5ru7i")
 
-[node name="SnowBunkerSpawner" type="MultiMeshInstance3D" parent="Spawners/PropSpawners/Multi"]
+[node name="SnowBunkerSpawner" type="MultiMeshInstance3D" parent="Level/Spawners/PropSpawners/Multi"]
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_44ape")
 
-[node name="ForestSpawners" type="Node3D" parent="Spawners"]
+[node name="ForestSpawners" type="Node3D" parent="Level/Spawners"]
 
-[node name="MainForest" type="Node3D" parent="Spawners/ForestSpawners"]
+[node name="MainForest" type="Node3D" parent="Level/Spawners/ForestSpawners"]
 
-[node name="TreeSpawner" type="EnchancedMultiMeshInstance3D" parent="Spawners/ForestSpawners/MainForest"]
+[node name="TreeSpawner" type="EnchancedMultiMeshInstance3D" parent="Level/Spawners/ForestSpawners/MainForest"]
 yaw_random_rotation = true
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_63vgv")
 
-[node name="SideForests" type="Node3D" parent="Spawners/ForestSpawners"]
+[node name="SideForests" type="Node3D" parent="Level/Spawners/ForestSpawners"]
 unique_name_in_owner = true
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Level"]
 environment = SubResource("Environment_lx3qq")
 
-[node name="Sun" type="DirectionalLight3D" parent="WorldEnvironment"]
+[node name="Sun" type="DirectionalLight3D" parent="Level/WorldEnvironment"]
 transform = Transform3D(1, 0, 0, 0, 0.6335565, 0.77369654, 0, -0.77369654, 0.6335565, 0, 0, 0)
 shadow_enabled = true
 shadow_blur = 2.0
 directional_shadow_mode = 0
 sky_mode = 2
+
+[node name="PauseMenu" parent="." instance=ExtResource("28_m2g4t")]
+unique_name_in_owner = true

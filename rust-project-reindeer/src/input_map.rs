@@ -11,4 +11,6 @@ pub const TOGGLE_SPRINT : &str = "sprint";
 pub const TOGGLE_LIGHT : &str = "toggle_light";
 pub const TOGGLE_VISIBILITY : &str = "toggle_visibility";
 
+pub const CANCEL : &str = "cancel";
+
 pub const DEBUG : &str = "debug";

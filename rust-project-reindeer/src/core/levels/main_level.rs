@@ -1,21 +1,22 @@
-use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, IStaticBody3D, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, StaticBody3D, base_material_3d::Flags, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, Input, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use strum::IntoEnumIterator;
 
-use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, player::Player, props::cabin::Cabin, utility::bounding_box_utility}, input_map::DEBUG};
+use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::level_run_state::LevelRunState, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, player::Player, props::cabin::Cabin, ui::{pause_menu::PauseMenu, pause_menu_button_types::PauseMenuButtonType}, utility::bounding_box_utility}, input_map::{CANCEL, DEBUG}};
 
 
 #[derive(GodotClass)]
-#[class(init, base=StaticBody3D)]
+#[class(init, base=Node3D)]
 pub struct MainLevel {
     #[export_group(name = "Maze")]
 
     #[export]
     #[var]
-    #[init(val = Color::DARK_RED)]
+    #[init(val = Color::from_html("#343c90").unwrap())]
     color_a : Color,
 
     #[export]
     #[var]
-    #[init(val = Color::DARK_GREEN)]
+    #[init(val = Color::from_html("#1b88b6").unwrap())]
     color_b : Color,
 
     #[export]
@@ -86,6 +87,10 @@ pub struct MainLevel {
     // Non-exported
 
     #[var]
+    #[init(node = "%PauseMenu")]
+    pause_menu : OnReady<Gd<PauseMenu>>,
+
+    #[var]
     #[init(node = "%GroundMesh")]
     ground_mesh : OnReady<Gd<MeshInstance3D>>,
 
@@ -153,16 +158,20 @@ pub struct MainLevel {
     #[init(node = "%SnowBunkerSpawner")]
     snow_bunker_spawner : OnReady<Gd<MultiMeshInstance3D>>,
 
+    #[var(get, set = set_level_run_state)]
+    #[init(val = LevelRunState::Running)]
+    level_run_state : LevelRunState,
+
     rng : Gd<RandomNumberGenerator>,
 
     maze_info : Option<MazeInfo>,
 
-    base : Base<StaticBody3D>,
+    base : Base<Node3D>,
 }
 
 
 #[godot_api]
-impl IStaticBody3D for MainLevel {
+impl INode3D for MainLevel {
     fn ready(&mut self) {
         let seed = self.random_seed.hash_u32();
         let seed_u64 = u64::from(seed);
@@ -171,14 +180,51 @@ impl IStaticBody3D for MainLevel {
         self.maze_reindeer.hide();
         self.maze_ghost_reindeer.hide();
 
+        let level_run_state = self.level_run_state.clone();
+        self.set_level_run_state(level_run_state);
+
         let maze = std::mem::take(&mut self.maze_info).map(|info| info.maze);
         self.set_maze(maze);
+
+
+        // Connect signals
+
+        let bound_pause_menu = self.pause_menu.bind();
+        for pause_menu_button_press_type in PauseMenuButtonType::iter() {
+            let button = bound_pause_menu.get_button_from_type(pause_menu_button_press_type);
+            button
+                .signals()
+                .pressed()
+                .builder()
+                .flags(ConnectFlags::DEFERRED)
+                .connect_other_mut(
+                    self,
+                    move |me| {
+                        me.on_pause_menu_button_pressed(pause_menu_button_press_type);
+                    }
+                );
+        }
+        drop(bound_pause_menu);
     }
 
 
     fn unhandled_input(&mut self, event: Gd<InputEvent>) {
+        if self.level_run_state != LevelRunState::Running {
+            return;
+        }
+
+        // Debug
         if event.is_action_pressed(DEBUG) {
             self.run_maze_solver();
+            return;
+        }
+
+        // Cancel
+        if event.is_action_pressed(CANCEL) {
+            self.run_deferred(|me| {
+                me.set_level_run_state(LevelRunState::Paused);
+            });
+
             return;
         }
     }
@@ -187,6 +233,36 @@ impl IStaticBody3D for MainLevel {
 
 #[godot_api]
 impl MainLevel {
+    #[func]
+    pub fn set_level_run_state(&mut self, value : LevelRunState) {
+        let Some(mut tree) = self.base().get_tree() else {
+            return;
+        };
+
+        // Set
+        self.level_run_state = value;
+
+        let paused = value == LevelRunState::Paused;
+        self.pause_menu.set_visible(paused);
+
+        let mouse_mode = if paused {
+            MouseMode::VISIBLE
+        } else {
+            MouseMode::CAPTURED
+        };
+
+        let mut input = Input::singleton();
+        input.set_mouse_mode(mouse_mode);
+
+        tree.set_pause(paused);
+
+        if paused {
+            let mut resume_button = self.pause_menu.bind().get_resume_button();
+            resume_button.grab_focus();
+        }
+    }
+
+
     #[func]
     pub fn set_maze(&mut self, maze_opt : Option<Gd<Maze>>) {
         self.maze_info = None;
@@ -282,8 +358,6 @@ impl MainLevel {
             let clearing_span = inner_span.grow_with_padding(self.clearing_ring.clone());
             let forest_span = clearing_span.grow_with_padding(self.forest_ring.clone());
 
-            // self.set_ground_dimensions(forest_span);
-
 
             // Create forest
 
@@ -310,8 +384,6 @@ impl MainLevel {
                     forest_size.y
                 )
             );
-
-            godot_print!(":? Setting custom AABB for main forest: {:?}", &forest_custom_aabb);
 
             self.tree_spawner.set_custom_aabb(forest_custom_aabb);
 
@@ -935,6 +1007,36 @@ impl MainLevel {
         box_collision.set_size(mesh_size);
 
         self.collision.set_position(ground_position);
+    }
+
+
+    fn on_pause_menu_button_pressed(&mut self, button_press : PauseMenuButtonType) {
+        if self.level_run_state != LevelRunState::Paused {
+            return;
+        }
+
+        match button_press {
+            PauseMenuButtonType::Start => {
+                godot_print!("TODO: Started");
+            },
+            PauseMenuButtonType::Resume => {
+                self.set_level_run_state(LevelRunState::Running);
+            },
+            PauseMenuButtonType::Options => {
+                godot_print!("TODO: Options");
+            },
+            PauseMenuButtonType::MainMenu => {
+                godot_print!("TODO: Main Menu");
+            },
+            PauseMenuButtonType::Exit => {
+                // TODO Ask for confirmation
+                let Some(mut tree) = self.base().get_tree() else {
+                    return;
+                };
+
+                tree.quit();
+            },
+        }
     }
 
 

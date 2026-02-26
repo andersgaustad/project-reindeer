@@ -46,7 +46,7 @@ impl ICharacterBody3D for Player {
         input.set_mouse_mode(MouseMode::CAPTURED);
 
         let light_on = self.get_light_on();
-        self.set_light_on(false);
+        self.set_light_on(light_on);
         
         let body_visible = self.get_body_visible();
         self.set_body_visible(body_visible); 
