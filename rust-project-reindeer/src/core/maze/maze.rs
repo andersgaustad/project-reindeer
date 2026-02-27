@@ -575,6 +575,13 @@ impl Maze {
     T : TryInto<i32>,
     <T as TryInto<i32>>::Error : Debug,
     {
+        let paused = communicator.bind().get_paused();
+        if paused {
+            // AWAIT
+            let _await = communicator.signals().unpaused().to_fallible_future().await;
+            // AWAIT
+        }
+
         let acknowledger = Communicator::new_gd();
         communicator.signals().update_idx().emit(
             idx.try_into().unwrap(),

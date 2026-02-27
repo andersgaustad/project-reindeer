@@ -1,4 +1,4 @@
-[gd_scene load_steps=48 format=3 uid="uid://bhaqw7kkuvp2d"]
+[gd_scene load_steps=49 format=3 uid="uid://bhaqw7kkuvp2d"]
 
 [ext_resource type="PackedScene" uid="uid://dffs3axw6pbr3" path="res://scenes/reindeers/reindeer.tscn" id="1_geiq8"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_lx3qq"]
@@ -28,6 +28,7 @@
 [ext_resource type="PackedScene" uid="uid://dju0s05r0mt3n" path="res://assets/source/kenney_holiday-kit/Models/FBX format/snowman.fbx" id="22_qsr70"]
 [ext_resource type="PackedScene" uid="uid://b1li531q4jhe3" path="res://assets/source/kenney_holiday-kit/Models/FBX format/tree-decorated.fbx" id="23_xl3jb"]
 [ext_resource type="PackedScene" uid="uid://x0d1jeiwcryx" path="res://scenes/ui/pause_menu.tscn" id="28_m2g4t"]
+[ext_resource type="FontFile" uid="uid://c32cp4lupcblh" path="res://assets/source/AsteriskMono_Font_1_0/OpenType (.otf)/AsteriskMono-Regular.otf" id="29_xl3jb"]
 
 [sub_resource type="MazeSolverInfo" id="MazeSolverInfo_geiq8"]
 
@@ -269,5 +270,36 @@ shadow_blur = 2.0
 directional_shadow_mode = 0
 sky_mode = 2
 
+[node name="InGameUI" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StartingInLabel" type="RichTextLabel" parent="InGameUI"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(1920, 80)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 100.0
+grow_horizontal = 2
+theme_override_colors/default_color = Color(1, 1, 1, 1)
+theme_override_fonts/normal_font = ExtResource("29_xl3jb")
+theme_override_font_sizes/normal_font_size = 96
+bbcode_enabled = true
+text = "Starting in: ???"
+horizontal_alignment = 2
+
+[node name="CountdownToStartTimer" type="Timer" parent="InGameUI"]
+unique_name_in_owner = true
+wait_time = 3.0
+one_shot = true
+
 [node name="PauseMenu" parent="." instance=ExtResource("28_m2g4t")]
 unique_name_in_owner = true
+visible = false

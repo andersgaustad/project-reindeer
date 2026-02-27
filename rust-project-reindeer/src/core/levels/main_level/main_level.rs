@@ -1,7 +1,7 @@
-use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, Input, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, StandardMaterial3D, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, Control, Input, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextEffect, RichTextLabel, StandardMaterial3D, Timer, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::level_run_state::LevelRunState, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, player::Player, props::cabin::Cabin, ui::{pause_menu::PauseMenu, pause_menu_button_types::PauseMenuButtonType}, utility::bounding_box_utility}, input_map::{CANCEL, DEBUG}};
+use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, player::Player, props::cabin::Cabin, ui::{pause_menu::PauseMenu, pause_menu_button_types::PauseMenuButtonType}, utility::bounding_box_utility}, input_map::{CANCEL, DEBUG}};
 
 
 #[derive(GodotClass)]
@@ -91,6 +91,14 @@ pub struct MainLevel {
     pause_menu : OnReady<Gd<PauseMenu>>,
 
     #[var]
+    #[init(node = "%InGameUI")]
+    in_game_ui : OnReady<Gd<Control>>,
+
+    #[var]
+    #[init(node = "%StartingInLabel")]
+    starting_in_label : OnReady<Gd<RichTextLabel>>,
+
+    #[var]
     #[init(node = "%GroundMesh")]
     ground_mesh : OnReady<Gd<MeshInstance3D>>,
 
@@ -158,9 +166,19 @@ pub struct MainLevel {
     #[init(node = "%SnowBunkerSpawner")]
     snow_bunker_spawner : OnReady<Gd<MultiMeshInstance3D>>,
 
+    #[var]
+    #[init(node = "%CountdownToStartTimer")]
+    countdown_to_start_timer : OnReady<Gd<Timer>>,
+
+
     #[var(get, set = set_level_run_state)]
     #[init(val = LevelRunState::Running)]
     level_run_state : LevelRunState,
+
+    #[var(get, set = set_pathfinding_state)]
+    #[init(val = PathfindingState::NotStarted)]
+    pathfinding_state : PathfindingState,
+
 
     rng : Gd<RandomNumberGenerator>,
 
@@ -182,6 +200,9 @@ impl INode3D for MainLevel {
 
         let level_run_state = self.level_run_state.clone();
         self.set_level_run_state(level_run_state);
+
+        let pathfinding_state = self.pathfinding_state.clone();
+        self.set_pathfinding_state(pathfinding_state);
 
         let maze = std::mem::take(&mut self.maze_info).map(|info| info.maze);
         self.set_maze(maze);
@@ -205,6 +226,15 @@ impl INode3D for MainLevel {
                 );
         }
         drop(bound_pause_menu);
+    }
+
+    fn process(&mut self, _delta : f64) {
+        if self.pathfinding_state == PathfindingState::Countdown {
+            let time_left = self.countdown_to_start_timer.get_time_left();
+
+            let string = format!("Starting in {:>5.2}s", time_left);
+            self.starting_in_label.set_text(&string);
+        }
     }
 
 
@@ -233,11 +263,17 @@ impl INode3D for MainLevel {
 
 #[godot_api]
 impl MainLevel {
+    #[signal]
+    pub fn notify_level_run_state_update(old : LevelRunState, new : LevelRunState);
+
+
     #[func]
     pub fn set_level_run_state(&mut self, value : LevelRunState) {
         let Some(mut tree) = self.base().get_tree() else {
             return;
         };
+
+        let previous_state = self.level_run_state;
 
         // Set
         self.level_run_state = value;
@@ -259,6 +295,58 @@ impl MainLevel {
         if paused {
             let mut resume_button = self.pause_menu.bind().get_resume_button();
             resume_button.grab_focus();
+        }
+
+        // Notify update
+        if previous_state != value {
+            self
+                .signals()
+                .notify_level_run_state_update()
+                .emit(previous_state, value);
+        }
+    }
+
+
+    #[func]
+    pub fn set_pathfinding_state(&mut self, value : PathfindingState) {
+        let previous_state = self.pathfinding_state;
+
+        // Set
+        self.pathfinding_state = value;
+
+        self.in_game_ui.hide();
+        self.countdown_to_start_timer.stop();
+
+        match value {
+            PathfindingState::NotStarted => {
+                // Do nothing
+            },
+            PathfindingState::Countdown => {
+                // Only start countdown if we get here from NotStarted
+                if previous_state != PathfindingState::NotStarted {
+                    return;
+                }
+
+                self.in_game_ui.show();
+                self.countdown_to_start_timer.start();
+
+                self
+                    .countdown_to_start_timer
+                    .signals()
+                    .timeout()
+                    .connect_other(
+                        self,
+                        |me| {
+                            me.set_pathfinding_state(PathfindingState::InProgress);
+                        }
+                    );
+            },
+            PathfindingState::InProgress => {
+                self.run_maze_solver();
+            },
+            PathfindingState::Done => {
+                // Do nothing
+            },
         }
     }
 
@@ -1017,7 +1105,8 @@ impl MainLevel {
 
         match button_press {
             PauseMenuButtonType::Start => {
-                godot_print!("TODO: Started");
+                self.set_level_run_state(LevelRunState::Running);
+                self.set_pathfinding_state(PathfindingState::Countdown);
             },
             PauseMenuButtonType::Resume => {
                 self.set_level_run_state(LevelRunState::Running);
@@ -1219,6 +1308,32 @@ impl MainLevel {
         let maze_solver_info = self.maze_solver_info.clone();
         let mut handle = maze.bind_mut().find_paths(maze_solver_info);
 
+        
+        // Level -> Communicator
+
+        self
+            .signals()
+            .notify_level_run_state_update()
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_gd(
+                &handle,
+                |mut handle, _, new_state| {
+                    let paused = match new_state {
+                        LevelRunState::Running => false,
+                        LevelRunState::Paused => true,
+                    };
+
+                    handle.bind_mut().set_paused(paused);
+                }
+            );
+        
+        let paused_right_now = self.level_run_state.is_paused();
+        handle.bind_mut().set_paused(paused_right_now);
+
+
+        // Communicator -> Level
+        
         handle
             .signals()
             .update_idx()

@@ -6,6 +6,10 @@ use crate::core::{common::{communicator::Communicator, direction::Direction}, ma
 #[derive(GodotClass)]
 #[class(init, base=RefCounted)]
 pub struct MazeFindPathsCommunicator {
+    #[var(get, set = set_paused)]
+    #[init(val = false)]
+    paused : bool,
+
     base : Base<RefCounted>,
 }
 
@@ -17,6 +21,9 @@ impl MazeFindPathsCommunicator {
     pub fn start();
 
     #[signal]
+    pub fn unpaused();
+
+    #[signal]
     pub fn update_idx(idx : i32, state : MazeTileState, direction : Direction, acknowledger : Gd<Communicator>);
 
     #[signal]
@@ -24,6 +31,22 @@ impl MazeFindPathsCommunicator {
 
     
     // Methods
+
+    #[func]
+    pub fn set_paused(&mut self, value : bool) {
+        let previous = self.paused;
+
+        // Set
+        self.paused = value;
+
+        let paused_to_unpaused = previous && !value;
+        if paused_to_unpaused {
+            self
+                .signals()
+                .unpaused()
+                .emit();
+        }
+    }
 
     #[func]
     pub fn start(&mut self) {
