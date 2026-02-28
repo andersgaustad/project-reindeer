@@ -1,6 +1,6 @@
 use godot::prelude::*;
 
-use crate::core::{levels::main_level::main_level::MainLevel, maze::maze::Maze, ui::main_menu::MainMenu};
+use crate::core::{levels::main_level::main_level::MainLevel, maze::maze::Maze, ui::main_menu::main_menu::MainMenu};
 
 
 #[derive(GodotClass)]

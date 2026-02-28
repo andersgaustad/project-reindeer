@@ -1,7 +1,7 @@
 use godot::{classes::{Control, IControl}, prelude::*};
 use strum::{EnumCount, VariantArray};
 
-use crate::core::{maze::maze::Maze, ui::{load_map_menu::LoadMapMenu, main_menu_state::MainMenuState, title_menu::TitleMenu}};
+use crate::core::{maze::maze::Maze, ui::main_menu::{load_map_menu::LoadMapMenu, main_menu_state::MainMenuState, title_menu::TitleMenu}};
 
 
 #[derive(GodotClass)]
