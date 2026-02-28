@@ -1,6 +1,6 @@
-use godot::prelude::*;
+use godot::{classes::{Input, input::MouseMode, object::ConnectFlags}, prelude::*};
 
-use crate::core::{levels::main_level::main_level::MainLevel, maze::maze::Maze, ui::main_menu::main_menu::MainMenu};
+use crate::core::{levels::main_level::main_level::MainLevel, maze::maze::Maze, ui::main_menu::{main_menu_state_machine::MainMenuStateMachine, main_menu_state::MainMenuState}};
 
 
 #[derive(GodotClass)]
@@ -15,7 +15,8 @@ pub struct Run {
 
     #[var]
     #[init(node = "%MainMenu")]
-    main_menu : OnReady<Gd<MainMenu>>,
+    main_menu_state_machine : OnReady<Gd<MainMenuStateMachine>>,
+    
 
     base : Base<Node>
 }
@@ -26,7 +27,7 @@ impl INode for Run {
     fn ready(&mut self) {
         // Signals
         self
-            .main_menu
+            .main_menu_state_machine
             .signals()
             .request_set_maze()
             .connect_other(
@@ -43,7 +44,7 @@ impl INode for Run {
 #[godot_api]
 impl Run {
     #[func]
-    pub fn set_main_level(&mut self, value : Option<Gd<MainLevel>>) {
+    pub fn set_main_level(&mut self, main_level : Option<Gd<MainLevel>>) {
         // Handle existing
         let existing_level_opt = std::mem::take(&mut self.main_level);
         if let Some(mut existing_level) = existing_level_opt {
@@ -51,13 +52,43 @@ impl Run {
         }
 
         // Setting
-        self.main_level = value;
+        self.main_level = main_level;
         if !self.base().is_node_ready() {
             return;
         }
 
         let main_menu_visible = self.main_level.is_none();
-        self.main_menu.set_visible(main_menu_visible);
+        self.main_menu_state_machine.set_visible(main_menu_visible);
+
+        match self.main_level.clone() {
+            Some(main_level) => {
+                // Connect signals
+
+                // MainLevel -> Run
+
+                // request_exit_to_main_menu
+                main_level
+                    .signals()
+                    .request_exit_to_main_menu()
+                    .builder()
+                    .flags(ConnectFlags::DEFERRED | ConnectFlags::ONE_SHOT)
+                    .connect_other_mut(
+                        self,
+                        |me| {
+                            me.set_main_level(None);
+                        }
+                    );
+            },
+            None => {
+                let mut input = Input::singleton();
+                input.set_mouse_mode(MouseMode::VISIBLE);
+
+                // Reset to title
+                let main_menu_state_machine = &mut self.main_menu_state_machine;
+                main_menu_state_machine.clone().into_dyn().dyn_bind_mut().reset();
+                main_menu_state_machine.bind_mut().set_state(MainMenuState::Title);
+            },
+        }
     }
 
 

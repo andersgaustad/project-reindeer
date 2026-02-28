@@ -1,5 +1,7 @@
 use godot::{classes::{Button, Control, IControl}, prelude::*};
 
+use crate::core::ui::main_menu::i_main_menu_sub_menu::IMainMenuSubMenu;
+
 
 #[derive(GodotClass)]
 #[class(init, base=Control)]
@@ -38,6 +40,14 @@ impl IControl for TitleMenu {
                 self,
                 Self::on_exit_pressed
             );
+    }
+}
+
+
+#[godot_dyn]
+impl IMainMenuSubMenu for TitleMenu {
+    fn reset(&mut self) {
+        // Nothing needed
     }
 }
 

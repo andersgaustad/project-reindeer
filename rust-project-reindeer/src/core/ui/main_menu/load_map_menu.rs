@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl, RichTextLabel, TextEdit}, prelude::*};
 
-use crate::core::maze::maze::{Maze, NewMazeError};
+use crate::core::{maze::maze::{Maze, NewMazeError}, ui::main_menu::i_main_menu_sub_menu::IMainMenuSubMenu};
 
 
 #[derive(GodotClass)]
@@ -33,6 +33,9 @@ pub struct LoadMapMenu {
     #[init(node = "%FeedbackText")]
     feedback_text : OnReady<Gd<RichTextLabel>>,
 
+    default_feedback_text : GString,
+
+
     base : Base<Control>,
 }
 
@@ -40,6 +43,8 @@ pub struct LoadMapMenu {
 #[godot_api]
 impl IControl for LoadMapMenu {
     fn ready(&mut self) {
+        // Signals
+
         // On text change:
         self
             .maze_text_edit
@@ -70,7 +75,19 @@ impl IControl for LoadMapMenu {
                 Self::on_cancel_pressed
             );
         
+        
+        self.default_feedback_text = self.feedback_text.get_text();
+
         self.on_text_changed();
+    }
+}
+
+
+#[godot_dyn]
+impl IMainMenuSubMenu for LoadMapMenu {
+    fn reset(&mut self) {
+        self.maze_text_edit.clear();
+        self.feedback_text.set_text(&self.default_feedback_text);
     }
 }
 

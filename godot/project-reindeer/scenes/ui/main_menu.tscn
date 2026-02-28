@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://enihlfva4ccy" path="res://scenes/ui/title_menu.tscn" id="2_1g8jr"]
 [ext_resource type="PackedScene" uid="uid://b34eprg0tr18k" path="res://scenes/ui/load_map_menu.tscn" id="2_fe2o3"]
 
-[node name="MainMenu" type="MainMenu"]
+[node name="MainMenu" type="MainMenuStateMachine"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

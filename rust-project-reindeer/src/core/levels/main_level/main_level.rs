@@ -251,6 +251,7 @@ impl INode3D for MainLevel {
         drop(bound_pause_menu);
     }
 
+
     fn process(&mut self, _delta : f64) {
         if self.pathfinding_state == PathfindingState::Countdown {
             let time_left = self.countdown_to_start_timer.get_time_left();
@@ -291,6 +292,9 @@ impl MainLevel {
 
     #[signal]
     pub fn notify_pathfinding_state_update(old : PathfindingState, new : PathfindingState);
+
+    #[signal]
+    pub fn request_exit_to_main_menu();
 
 
     #[func]
@@ -1148,7 +1152,12 @@ impl MainLevel {
                 godot_print!("TODO: Options");
             },
             PauseMenuButtonType::MainMenu => {
-                godot_print!("TODO: Main Menu");
+                // TODO Ask for confirmation
+                self.set_level_run_state(LevelRunState::Running);
+                self
+                    .signals()
+                    .request_exit_to_main_menu()
+                    .emit();
             },
             PauseMenuButtonType::Exit => {
                 // TODO Ask for confirmation
@@ -1239,7 +1248,7 @@ impl MainLevel {
     fn on_maze_commit_found_path(&mut self, path_info : Gd<PathInfo>) {
         godot_print!("Path commited!");
         self.set_pathfinding_state(PathfindingState::Done);
-        
+
         self.maze_ghost_reindeer.hide();
 
         let bound = path_info.bind();

@@ -1,12 +1,12 @@
 use godot::{classes::{Control, IControl}, prelude::*};
 use strum::{EnumCount, VariantArray};
 
-use crate::core::{maze::maze::Maze, ui::main_menu::{load_map_menu::LoadMapMenu, main_menu_state::MainMenuState, title_menu::TitleMenu}};
+use crate::core::{maze::maze::Maze, ui::main_menu::{i_main_menu_sub_menu::IMainMenuSubMenu, load_map_menu::LoadMapMenu, main_menu_state::MainMenuState, title_menu::TitleMenu}};
 
 
 #[derive(GodotClass)]
 #[class(init, base=Control)]
-pub struct MainMenu {
+pub struct MainMenuStateMachine {
     #[var]
     #[init(node = "%TitleMenu")]
     title_menu : OnReady<Gd<TitleMenu>>,
@@ -24,7 +24,7 @@ pub struct MainMenu {
 
 
 #[godot_api]
-impl IControl for MainMenu {
+impl IControl for MainMenuStateMachine {
     fn ready(&mut self) {
         // Forward request_set_maze
         self
@@ -67,14 +67,25 @@ impl IControl for MainMenu {
 }
 
 
+#[godot_dyn]
+impl IMainMenuSubMenu for MainMenuStateMachine {
+    fn reset(&mut self) {
+        let submenus = self.get_all_submenu_controls();
+        for mut submenu in submenus {
+            submenu.dyn_bind_mut().reset();
+        }
+    }
+}
+
+
 #[godot_api]
-impl MainMenu {
+impl MainMenuStateMachine {
     #[signal]
     pub fn request_set_maze(maze : Gd<Maze>);
 
 
     #[func]
-    fn set_state(&mut self, state : MainMenuState) {
+    pub fn set_state(&mut self, state : MainMenuState) {
         self.state = state;
         if !self.base().is_node_ready() {
             return;
@@ -103,15 +114,15 @@ impl MainMenu {
     }
 
 
-    fn get_submenu_control(&self, state : MainMenuState) -> Gd<Control> {
+    fn get_submenu_control(&self, state : MainMenuState) -> DynGd<Control, dyn IMainMenuSubMenu> {
         match state {
-            MainMenuState::Title => self.title_menu.clone().upcast(),
-            MainMenuState::LoadMap => self.load_map_menu.clone().upcast(),
+            MainMenuState::Title => self.title_menu.clone().into_dyn().upcast(),
+            MainMenuState::LoadMap => self.load_map_menu.clone().into_dyn().upcast(),
         }
     }
 
 
-    fn get_all_submenu_controls(&self) -> [Gd<Control>; MainMenuState::COUNT] {
+    fn get_all_submenu_controls(&self) -> [DynGd<Control, dyn IMainMenuSubMenu>; MainMenuState::COUNT] {
         let states : &[MainMenuState; MainMenuState::COUNT] = MainMenuState::VARIANTS.try_into().unwrap();
 
         states.map(|state| {
