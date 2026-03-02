@@ -2,6 +2,7 @@ pub mod common;
 pub mod environment;
 pub mod levels;
 pub mod maze;
+pub mod options;
 pub mod player;
 pub mod props;
 pub mod random;

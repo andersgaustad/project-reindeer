@@ -1,7 +1,7 @@
 use godot::{classes::{Control, IControl}, prelude::*};
 use strum::{EnumCount, VariantArray};
 
-use crate::core::{maze::maze::Maze, ui::main_menu::{i_main_menu_sub_menu::IMainMenuSubMenu, load_map_menu::LoadMapMenu, main_menu_state::MainMenuState, title_menu::TitleMenu}};
+use crate::core::{maze::maze::Maze, ui::{main_menu::{i_main_menu_sub_menu::IMainMenuSubMenu, load_map_menu::LoadMapMenu, main_menu_state::MainMenuState, title_menu::TitleMenu}, options_menu::option_menu::OptionsMenu}};
 
 
 #[derive(GodotClass)]
@@ -14,6 +14,10 @@ pub struct MainMenuStateMachine {
     #[var]
     #[init(node = "%LoadMapMenu")]
     load_map_menu : OnReady<Gd<LoadMapMenu>>,
+
+    #[var]
+    #[init(node = "%OptionsMenu")]
+    options_menu : OnReady<Gd<OptionsMenu>>,
 
     #[var(get, set = set_state)]
     #[init(val = MainMenuState::Title)]
@@ -41,14 +45,24 @@ impl IControl for MainMenuStateMachine {
                 }
             );
         
-        // Title [start] -> Load map
+        // Title -> Other
         self
             .title_menu
             .signals()
-            .request_start()
+            .request_state()
             .connect_other(
                 self,
-                Self::on_title_requests_start
+                Self::on_title_requests_state
+            );
+
+        // Options [back] -> Title
+        self
+            .options_menu
+            .signals()
+            .request_exit()
+            .connect_other(
+                self,
+                Self::on_options_requests_cancel
             );
         
         // Load map [cancel] -> Title
@@ -61,8 +75,8 @@ impl IControl for MainMenuStateMachine {
                 Self::on_load_map_requests_cancel
             );
         
-        let current_state = self.state;
-        self.set_state(current_state);
+
+        self.refresh();
     }
 }
 
@@ -103,8 +117,14 @@ impl MainMenuStateMachine {
 
 
     #[func]
-    fn on_title_requests_start(&mut self) {
-        self.set_state(MainMenuState::LoadMap);
+    fn on_title_requests_state(&mut self, requested : MainMenuState) {
+        self.set_state(requested);
+    }
+
+
+    #[func]
+    fn on_options_requests_cancel(&mut self) {
+        self.set_state(MainMenuState::Title);
     }
 
 
@@ -114,9 +134,16 @@ impl MainMenuStateMachine {
     }
 
 
+    fn refresh(&mut self) {
+        let current_state = self.state;
+        self.set_state(current_state);
+    }
+
+
     fn get_submenu_control(&self, state : MainMenuState) -> DynGd<Control, dyn IMainMenuSubMenu> {
         match state {
             MainMenuState::Title => self.title_menu.clone().into_dyn().upcast(),
+            MainMenuState::Options => self.options_menu.clone().into_dyn().upcast(),
             MainMenuState::LoadMap => self.load_map_menu.clone().into_dyn().upcast(),
         }
     }

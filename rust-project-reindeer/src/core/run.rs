@@ -1,11 +1,15 @@
 use godot::{classes::{Input, input::MouseMode, object::ConnectFlags}, prelude::*};
 
-use crate::core::{levels::main_level::main_level::MainLevel, maze::maze::Maze, ui::main_menu::{main_menu_state_machine::MainMenuStateMachine, main_menu_state::MainMenuState}};
+use crate::core::{levels::main_level::main_level::MainLevel, maze::maze::Maze, options::Options, ui::main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}};
 
 
 #[derive(GodotClass)]
 #[class(init, base=Node)]
 pub struct Run {
+    #[export]
+    #[var]
+    options : OnEditor<Gd<Options>>,
+
     #[export]
     #[var]
     main_level_scene : OnEditor<Gd<PackedScene>>,
@@ -14,7 +18,7 @@ pub struct Run {
     main_level : Option<Gd<MainLevel>>,
 
     #[var]
-    #[init(node = "%MainMenu")]
+    #[init(node = "%MainMenuStateMachine")]
     main_menu_state_machine : OnReady<Gd<MainMenuStateMachine>>,
     
 

@@ -1,0 +1,21 @@
+[gd_resource type="Theme" load_steps=9 format=3 uid="uid://dbb7npgeokycs"]
+
+[ext_resource type="Texture2D" uid="uid://csp5t1flbjnwi" path="res://reexports/ui/toggle_button_large/checked_large.tres" id="1_tih6u"]
+[ext_resource type="Texture2D" uid="uid://4kwi824atkj3" path="res://reexports/ui/toggle_button_large/checked_disabled_large.tres" id="2_lshxh"]
+[ext_resource type="Texture2D" uid="uid://dbuejtb1xp2ag" path="res://reexports/ui/toggle_button_large/checked_disabled_mirrored_large.tres" id="3_2mbgl"]
+[ext_resource type="Texture2D" uid="uid://cvfu77dfaklcy" path="res://reexports/ui/toggle_button_large/checked_mirrored_large.tres" id="4_iprp8"]
+[ext_resource type="Texture2D" uid="uid://bfbthuwtjpet7" path="res://reexports/ui/toggle_button_large/unchecked_large.tres" id="5_cgyob"]
+[ext_resource type="Texture2D" uid="uid://dojj73dibac3" path="res://reexports/ui/toggle_button_large/unchecked_disabled_large.tres" id="6_ni8a4"]
+[ext_resource type="Texture2D" uid="uid://dcbs3v2blnw8g" path="res://reexports/ui/toggle_button_large/unchecked_disabled_mirrored_large.tres" id="7_cgyob"]
+[ext_resource type="Texture2D" uid="uid://dr56h7e6pxxsn" path="res://reexports/ui/toggle_button_large/unchecked_mirrored_large.tres" id="8_ni8a4"]
+
+[resource]
+default_font_size = 64
+CheckButton/icons/checked = ExtResource("1_tih6u")
+CheckButton/icons/checked_disabled = ExtResource("2_lshxh")
+CheckButton/icons/checked_disabled_mirrored = ExtResource("3_2mbgl")
+CheckButton/icons/checked_mirrored = ExtResource("4_iprp8")
+CheckButton/icons/unchecked = ExtResource("5_cgyob")
+CheckButton/icons/unchecked_disabled = ExtResource("6_ni8a4")
+CheckButton/icons/unchecked_disabled_mirrored = ExtResource("7_cgyob")
+CheckButton/icons/unchecked_mirrored = ExtResource("8_ni8a4")

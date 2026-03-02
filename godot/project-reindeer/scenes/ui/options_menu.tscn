@@ -1,0 +1,107 @@
+[gd_scene load_steps=4 format=3 uid="uid://bg3ubsvdotyio"]
+
+[ext_resource type="Theme" uid="uid://dbb7npgeokycs" path="res://themes/options_theme.tres" id="1_wj2x4"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_ebwep"]
+font_size = 64
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_ta2k2"]
+color = Color(1, 1, 1, 1)
+thickness = 8
+
+[node name="OptionsMenu" type="OptionsMenu"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_wj2x4")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="PanelContainer" type="PanelContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TitleVBox" type="VBoxContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/TitleVBox"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Options"
+label_settings = SubResource("LabelSettings_ebwep")
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/TitleVBox"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 4
+theme_override_styles/separator = SubResource("StyleBoxLine_ta2k2")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="CenterContainer" type="CenterContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="GridContainer" type="GridContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/CenterContainer"]
+layout_mode = 2
+theme_override_constants/h_separation = 128
+columns = 2
+
+[node name="LowPerformanceModeText" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/CenterContainer/GridContainer"]
+layout_mode = 2
+text = "Low-performance mode"
+
+[node name="ToggleLowPerformanceModeButton" type="CheckButton" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/CenterContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 6
+
+[node name="Label2" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/CenterContainer/GridContainer"]
+visible = false
+layout_mode = 2
+text = "Low-performance mode"
+
+[node name="HSlider" type="HSlider" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/CenterContainer/GridContainer"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer2" type="MarginContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="BackButton" type="Button" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+text = "Back"

@@ -1,10 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://d2xp6l0n7ch86"]
+[gd_scene load_steps=4 format=3 uid="uid://d2xp6l0n7ch86"]
 
 [ext_resource type="PackedScene" uid="uid://buhhonnkkvo8t" path="res://scenes/ui/main_menu.tscn" id="1_2d5n6"]
 [ext_resource type="PackedScene" uid="uid://bhaqw7kkuvp2d" path="res://scenes/levels/main_level.tscn" id="1_6elw1"]
 
+[sub_resource type="Options" id="Options_6elw1"]
+
 [node name="Run" type="Run"]
+options = SubResource("Options_6elw1")
 main_level_scene = ExtResource("1_6elw1")
 
-[node name="MainMenu" parent="." instance=ExtResource("1_2d5n6")]
+[node name="MainMenuStateMachine" parent="." instance=ExtResource("1_2d5n6")]
 unique_name_in_owner = true
