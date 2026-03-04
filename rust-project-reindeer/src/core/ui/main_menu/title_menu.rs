@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl}, prelude::*};
 
-use crate::core::ui::main_menu::{i_main_menu_sub_menu::IMainMenuSubMenu, main_menu_state::MainMenuState};
+use crate::core::ui::{i_sub_menu_state::ISubMenuState, main_menu::main_menu_state::MainMenuState};
 
 
 #[derive(GodotClass)]
@@ -60,9 +60,9 @@ impl IControl for TitleMenu {
 
 
 #[godot_dyn]
-impl IMainMenuSubMenu for TitleMenu {
-    fn reset(&mut self) {
-        // Nothing needed
+impl ISubMenuState for TitleMenu {
+    fn enter(&mut self) {
+        self.start_button.grab_focus();
     }
 }
 

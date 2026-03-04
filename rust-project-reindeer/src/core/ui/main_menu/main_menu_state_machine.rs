@@ -1,7 +1,7 @@
 use godot::{classes::{Control, IControl}, prelude::*};
 use strum::{EnumCount, VariantArray};
 
-use crate::core::{maze::maze::Maze, ui::{main_menu::{i_main_menu_sub_menu::IMainMenuSubMenu, load_map_menu::LoadMapMenu, main_menu_state::MainMenuState, title_menu::TitleMenu}, options_menu::option_menu::OptionsMenu}};
+use crate::core::{maze::maze::Maze, ui::{i_sub_menu_state::ISubMenuState, main_menu::{load_map_menu::LoadMapMenu, main_menu_state::MainMenuState, title_menu::TitleMenu}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}};
 
 
 #[derive(GodotClass)]
@@ -55,14 +55,14 @@ impl IControl for MainMenuStateMachine {
                 Self::on_title_requests_state
             );
 
-        // Options [back] -> Title
+        // Options -> Title
         self
             .options_menu
             .signals()
-            .request_exit()
+            .request()
             .connect_other(
                 self,
-                Self::on_options_requests_cancel
+                Self::on_options_request
             );
         
         // Load map [cancel] -> Title
@@ -82,7 +82,7 @@ impl IControl for MainMenuStateMachine {
 
 
 #[godot_dyn]
-impl IMainMenuSubMenu for MainMenuStateMachine {
+impl ISubMenuState for MainMenuStateMachine {
     fn reset(&mut self) {
         let submenus = self.get_all_submenu_controls();
         for mut submenu in submenus {
@@ -112,6 +112,7 @@ impl MainMenuStateMachine {
         }
 
         let mut active_submenu = self.get_submenu_control(state);
+        active_submenu.dyn_bind_mut().enter();
         active_submenu.show();
     }
 
@@ -123,8 +124,10 @@ impl MainMenuStateMachine {
 
 
     #[func]
-    fn on_options_requests_cancel(&mut self) {
-        self.set_state(MainMenuState::Title);
+    fn on_options_request(&mut self, request : OptionsMenuRequest) {
+        match request {
+            OptionsMenuRequest::Exit => self.set_state(MainMenuState::Title),
+        }
     }
 
 
@@ -140,7 +143,7 @@ impl MainMenuStateMachine {
     }
 
 
-    fn get_submenu_control(&self, state : MainMenuState) -> DynGd<Control, dyn IMainMenuSubMenu> {
+    fn get_submenu_control(&self, state : MainMenuState) -> DynGd<Control, dyn ISubMenuState> {
         match state {
             MainMenuState::Title => self.title_menu.clone().into_dyn().upcast(),
             MainMenuState::Options => self.options_menu.clone().into_dyn().upcast(),
@@ -149,7 +152,7 @@ impl MainMenuStateMachine {
     }
 
 
-    fn get_all_submenu_controls(&self) -> [DynGd<Control, dyn IMainMenuSubMenu>; MainMenuState::COUNT] {
+    fn get_all_submenu_controls(&self) -> [DynGd<Control, dyn ISubMenuState>; MainMenuState::COUNT] {
         let states : &[MainMenuState; MainMenuState::COUNT] = MainMenuState::VARIANTS.try_into().unwrap();
 
         states.map(|state| {

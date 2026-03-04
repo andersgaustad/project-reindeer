@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl, RichTextLabel, TextEdit}, prelude::*};
 
-use crate::core::{maze::maze::{Maze, NewMazeError}, ui::main_menu::i_main_menu_sub_menu::IMainMenuSubMenu};
+use crate::core::{maze::maze::{Maze, NewMazeError}, ui::i_sub_menu_state::ISubMenuState};
 
 
 #[derive(GodotClass)]
@@ -84,7 +84,11 @@ impl IControl for LoadMapMenu {
 
 
 #[godot_dyn]
-impl IMainMenuSubMenu for LoadMapMenu {
+impl ISubMenuState for LoadMapMenu {
+    fn enter(&mut self) {
+        self.maze_text_edit.grab_focus();
+    }
+
     fn reset(&mut self) {
         self.maze_text_edit.clear();
         self.feedback_text.set_text(&self.default_feedback_text);

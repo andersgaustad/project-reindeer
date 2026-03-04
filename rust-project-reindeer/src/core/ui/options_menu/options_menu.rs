@@ -1,6 +1,6 @@
-use godot::{classes::{Button, CheckButton, Control, IControl}, prelude::*};
+use godot::{classes::{Button, CheckButton, Control, IControl, InputEvent, object::ConnectFlags}, prelude::*};
 
-use crate::core::{options::Options, run::Run, ui::main_menu::i_main_menu_sub_menu::IMainMenuSubMenu, utility::node_utility};
+use crate::{core::{options::Options, run::Run, ui::{i_sub_menu_state::ISubMenuState, options_menu::options_menu_request::OptionsMenuRequest}, utility::node_utility}, input_map::CANCEL};
 
 
 #[derive(GodotClass)]
@@ -39,7 +39,9 @@ impl IControl for OptionsMenu {
             .low_performance_toggle_button
             .signals()
             .toggled()
-            .connect_other(
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(
                 self,
                 Self::on_low_performance_mode_toggled
             );
@@ -48,7 +50,9 @@ impl IControl for OptionsMenu {
             .back_button
             .signals()
             .pressed()
-            .connect_other(
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(
                 self,
                 Self::on_back_pressed
             );
@@ -57,11 +61,26 @@ impl IControl for OptionsMenu {
         // Refresh
         self.refresh();        
     }
+
+
+    fn unhandled_input(&mut self, event : Gd<InputEvent>) {
+        if !self.base().is_visible_in_tree() {
+            return;
+        }
+
+        if event.is_action_pressed(CANCEL) {
+            self
+                .back_button
+                .signals()
+                .pressed()
+                .emit();
+        }
+    }
 }
 
 
 #[godot_dyn]
-impl IMainMenuSubMenu for OptionsMenu {
+impl ISubMenuState for OptionsMenu {
     fn reset(&mut self) {
         self.refresh();
     }
@@ -71,7 +90,7 @@ impl IMainMenuSubMenu for OptionsMenu {
 #[godot_api]
 impl OptionsMenu {
     #[signal]
-    pub fn request_exit();
+    pub fn request(request : OptionsMenuRequest);
 
 
     #[func]
@@ -122,8 +141,8 @@ impl OptionsMenu {
     fn on_back_pressed(&mut self) {
         self
             .signals()
-            .request_exit()
-            .emit();
+            .request()
+            .emit(OptionsMenuRequest::Exit);
     }
 
 

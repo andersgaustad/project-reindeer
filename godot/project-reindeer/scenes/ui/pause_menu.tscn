@@ -12,7 +12,7 @@ bg_color = Color(0.35686275, 0.41960785, 0.98039216, 0.5019608)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vtvlb"]
 bg_color = Color(0.8776705, 0.18441218, 0.32231104, 0.5019608)
 
-[node name="PauseMenu" type="PauseMenu"]
+[node name="PauseMenu" type="PauseMenuFace"]
 process_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
