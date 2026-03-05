@@ -1,11 +1,11 @@
 [gd_scene load_steps=21 format=3 uid="uid://0cjr7haepmj7"]
 
-[ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="1_48ne7"]
+[ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="1_48ne7"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_jbqir"]
 [ext_resource type="PackedScene" uid="uid://c0hahcleepgei" path="res://scenes/present.tscn" id="3_fr1um"]
-[ext_resource type="ArrayMesh" uid="uid://ncp03n34vna4" path="res://assets/extracted/Sketchfab_Scene_Arrow_Material_001_0.res" id="4_v45ci"]
+[ext_resource type="ArrayMesh" uid="uid://ncp03n34vna4" path="res://assets/dev_assets/derived/Sketchfab_Scene_Arrow_Material_001_0.res" id="4_v45ci"]
 [ext_resource type="Material" uid="uid://bf3qfq8dsqcbq" path="res://shading/instance_custom_transparency_material.gdshader.tres" id="5_48ne7"]
-[ext_resource type="ArrayMesh" uid="uid://djwc13x7nvavv" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/tree.obj" id="6_6xh4u"]
+[ext_resource type="ArrayMesh" uid="uid://djwc13x7nvavv" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/OBJ format/tree.obj" id="6_6xh4u"]
 [ext_resource type="PackedScene" uid="uid://kpn4fhy8kxca" path="res://scenes/props/cabin.tscn" id="7_cyt5c"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]

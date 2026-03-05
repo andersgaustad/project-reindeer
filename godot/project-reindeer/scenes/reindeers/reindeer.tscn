@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dffs3axw6pbr3"]
 
-[ext_resource type="ArrayMesh" uid="uid://b8rqem4inq5es" path="res://assets/source/kenney_holiday-kit/Models/OBJ format/reindeer.obj" id="1_043k3"]
+[ext_resource type="ArrayMesh" uid="uid://b8rqem4inq5es" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/OBJ format/reindeer.obj" id="1_043k3"]
 
 [node name="Reindeer" type="Reindeer"]
 
