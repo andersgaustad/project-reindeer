@@ -3,6 +3,9 @@ use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, Control, Input, Inp
 use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::Options, player::Player, props::cabin::Cabin, run::Run, ui::pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}, utility::{bounding_box_utility, node_utility}}, input_map::CANCEL};
 
 
+const N_VISIBLE_TREES_IN_LOW_PERFORMANCE_MODE : i32 = 100;
+
+
 #[derive(GodotClass)]
 #[class(init, base=Node3D)]
 pub struct MainLevel {
@@ -545,8 +548,12 @@ impl MainLevel {
                     let transform = bound_tree_spawner.create_object_transform(position, self.rng.clone());
                     tree_multimesh.set_instance_transform(i, transform);
                 }
-
                 drop(bound_tree_spawner);
+                
+                let n_visible_trees = self.get_number_of_visible_trees();
+                if n_visible_trees <= n_trees {
+                    tree_multimesh.set_visible_instance_count(n_visible_trees);
+                }
 
 
                 // Spawn side forests
@@ -1135,6 +1142,16 @@ impl MainLevel {
 
         let low_performance_mode = options.bind().get_low_performance_mode();
 
+        let tree_multimesh_opt = self.tree_spawner.get_multimesh();
+        if let Some(mut tree_multimesh) = tree_multimesh_opt {
+            let desired_visible_count = self.get_number_of_visible_trees();
+            let current_tree_count = tree_multimesh.get_instance_count();
+
+            if desired_visible_count <= current_tree_count {
+                tree_multimesh.set_visible_instance_count(desired_visible_count);
+            }
+        }
+
         self.cabin.bind_mut().toggle_effects(!low_performance_mode);
     }
 
@@ -1452,6 +1469,24 @@ impl MainLevel {
         };
 
         result
+    }
+
+
+    fn get_number_of_visible_trees(&self) -> i32 {
+        let low_performance_mode = self
+            .options
+            .as_ref()
+            .map_or(false, |options| {
+                options.bind().get_low_performance_mode()
+            });
+        
+        let visible_trees = if low_performance_mode {
+            N_VISIBLE_TREES_IN_LOW_PERFORMANCE_MODE
+        } else {
+            -1
+        };
+
+        visible_trees
     }
 }
 
