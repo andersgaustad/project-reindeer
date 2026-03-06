@@ -300,7 +300,7 @@ impl LoadMapMenu {
 
 
     fn get_tree_density(&self) -> f32 {
-        const DEFAULT_DENSITY : f32 = 1.0;
+        const DEFAULT_DENSITY : f32 = 0.25;
 
         let selected_tree_density_id = self.tree_density_option_button.get_selected_id();
         let density_opt = self.tree_density_id_to_density.get(selected_tree_density_id as usize);
