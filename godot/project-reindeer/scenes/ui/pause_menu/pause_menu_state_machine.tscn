@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://d1adqsqoxpnk5"]
 
-[ext_resource type="PackedScene" uid="uid://x0d1jeiwcryx" path="res://scenes/ui/pause_menu.tscn" id="1_w6ked"]
-[ext_resource type="PackedScene" uid="uid://bg3ubsvdotyio" path="res://scenes/ui/options_menu.tscn" id="2_4hq67"]
+[ext_resource type="PackedScene" uid="uid://x0d1jeiwcryx" path="res://scenes/ui/pause_menu/pause_menu.tscn" id="1_w6ked"]
+[ext_resource type="PackedScene" uid="uid://bg3ubsvdotyio" path="res://scenes/ui/options_menu/options_menu.tscn" id="2_4hq67"]
 
 [node name="PauseMenuStateMachine" type="PauseMenuStateMachine"]
 anchors_preset = 15

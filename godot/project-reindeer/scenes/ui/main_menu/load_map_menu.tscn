@@ -1,0 +1,136 @@
+[gd_scene load_steps=5 format=3 uid="uid://b34eprg0tr18k"]
+
+[ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme.tres" id="1_0sa51"]
+[ext_resource type="Theme" uid="uid://c8od8x740s487" path="res://themes/monospace_theme.tres" id="1_5qoqg"]
+[ext_resource type="Texture2D" uid="uid://he17gtp7d3fn" path="res://assets/dev_assets/derived/open_advanced_settings.png" id="1_v4wla"]
+[ext_resource type="Texture2D" uid="uid://c8savga72akqe" path="res://assets/dev_assets/derived/close_advanced_settings.png" id="2_r5as2"]
+
+[node name="LoadMapMenu" type="LoadMapMenu"]
+open_advanced_options_button_texture = ExtResource("1_v4wla")
+close_advanced_options_button_texture = ExtResource("2_r5as2")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_0sa51")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LoadMap" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EnterMaze" type="RichTextLabel" parent="HBoxContainer/LoadMap"]
+layout_mode = 2
+text = "Enter Maze (or leave blank for default):"
+fit_content = true
+horizontal_alignment = 1
+
+[node name="MazeTextEdit" type="TextEdit" parent="HBoxContainer/LoadMap"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme = ExtResource("1_5qoqg")
+placeholder_text = "###############
+#.......#....E#
+#.#.###.#.###.#
+#.....#.#...#.#
+#.###.#####.#.#
+#.#.#.......#.#
+#.#.#####.###.#
+#...........#.#
+###.#.#####.#.#
+#...#.....#.#.#
+#.#.#.###.#.#.#
+#.....#...#.#.#
+#.###.#.#.#.#.#
+#S..#.....#...#
+###############
+"
+scroll_smooth = true
+
+[node name="FeedbackText" type="RichTextLabel" parent="HBoxContainer/LoadMap"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+bbcode_enabled = true
+text = "Enter Maze in the box above to get started"
+fit_content = true
+scroll_active = false
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/LoadMap"]
+layout_mode = 2
+theme_override_constants/separation = 64
+alignment = 1
+
+[node name="LoadButton" type="Button" parent="HBoxContainer/LoadMap/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Load Maze"
+
+[node name="CancelButton" type="Button" parent="HBoxContainer/LoadMap/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancel"
+
+[node name="ExpandAdvancedOptionsButton" type="Button" parent="HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+icon = ExtResource("1_v4wla")
+
+[node name="AdvancedOptions" type="Control" parent="HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/AdvancedOptions"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_right = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/AdvancedOptions/MarginContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Advanced Load Options"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="GridContainer" type="GridContainer" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 40
+columns = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+layout_mode = 2
+text = "Seed:"
+
+[node name="SeedTextEdit" type="TextEdit" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Reindeer"

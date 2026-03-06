@@ -1,7 +1,7 @@
 use godot::{classes::{Control, IControl}, prelude::*};
 use strum::{EnumCount, VariantArray};
 
-use crate::core::{maze::maze::Maze, ui::{i_sub_menu_state::ISubMenuState, main_menu::{load_map_menu::LoadMapMenu, main_menu_state::MainMenuState, title_menu::TitleMenu}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}};
+use crate::core::{levels::main_level::main_level_constructor_info::MainLevelConstructorInfo, ui::{i_sub_menu_state::ISubMenuState, main_menu::{load_map_menu::LoadMapMenu, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}};
 
 
 #[derive(GodotClass)]
@@ -9,7 +9,7 @@ use crate::core::{maze::maze::Maze, ui::{i_sub_menu_state::ISubMenuState, main_m
 pub struct MainMenuStateMachine {
     #[var]
     #[init(node = "%TitleMenu")]
-    title_menu : OnReady<Gd<TitleMenu>>,
+    title_menu : OnReady<Gd<MainMenu>>,
 
     #[var]
     #[init(node = "%LoadMapMenu")]
@@ -40,7 +40,7 @@ impl IControl for MainMenuStateMachine {
                 |me, maze| {
                     me
                         .signals()
-                        .request_set_maze()
+                        .request_initialize_level()
                         .emit(&maze);
                 }
             );
@@ -95,7 +95,7 @@ impl ISubMenuState for MainMenuStateMachine {
 #[godot_api]
 impl MainMenuStateMachine {
     #[signal]
-    pub fn request_set_maze(maze : Gd<Maze>);
+    pub fn request_initialize_level(level_info : Gd<MainLevelConstructorInfo>);
 
 
     #[func]

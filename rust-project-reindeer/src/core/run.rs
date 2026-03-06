@@ -1,6 +1,6 @@
 use godot::{classes::{Input, input::MouseMode, object::ConnectFlags}, prelude::*};
 
-use crate::core::{levels::main_level::main_level::MainLevel, maze::maze::Maze, options::Options, ui::main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}};
+use crate::core::{levels::main_level::{main_level::MainLevel, main_level_constructor_info::MainLevelConstructorInfo}, options::Options, ui::main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}};
 
 
 #[derive(GodotClass)]
@@ -33,10 +33,10 @@ impl INode for Run {
         self
             .main_menu_state_machine
             .signals()
-            .request_set_maze()
+            .request_initialize_level()
             .connect_other(
                 self,
-                Self::on_receive_maze
+                Self::on_receive_level_constructor_info
             );
 
         let main_level = std::mem::take(&mut self.main_level);
@@ -97,7 +97,7 @@ impl Run {
 
 
     #[func]
-    fn on_receive_maze(&mut self, maze : Gd<Maze>) {
+    fn on_receive_level_constructor_info(&mut self, level_constructor_info : Gd<MainLevelConstructorInfo>) {
         if self.main_level.is_some() {
             godot_warn!("Run got maze while level was spawned? Ignoring...");
             return;
@@ -110,6 +110,13 @@ impl Run {
             godot_error!("Failed instantiating main level!! Check that the scene is actually set to MainLevel!");
             return;
         };
+
+        let bound_constructor_info = level_constructor_info.bind();
+        let maze = bound_constructor_info.get_maze();
+        let seed = bound_constructor_info.get_seed();
+        drop(bound_constructor_info);
+
+        main_level.bind_mut().set_random_seed(seed);
 
         self.base_mut().add_child(&main_level.clone().upcast::<Node>());
         self.set_main_level(Some(main_level.clone()));

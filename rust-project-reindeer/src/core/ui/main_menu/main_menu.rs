@@ -5,7 +5,7 @@ use crate::core::ui::{i_sub_menu_state::ISubMenuState, main_menu::main_menu_stat
 
 #[derive(GodotClass)]
 #[class(init, base=Control)]
-pub struct TitleMenu {
+pub struct MainMenu {
     #[var]
     #[init(node = "%StartButton")]
     start_button : OnReady<Gd<Button>>,
@@ -23,7 +23,7 @@ pub struct TitleMenu {
 
 
 #[godot_api]
-impl IControl for TitleMenu {
+impl IControl for MainMenu {
     fn ready(&mut self) { 
         // start_button
         self
@@ -60,7 +60,7 @@ impl IControl for TitleMenu {
 
 
 #[godot_dyn]
-impl ISubMenuState for TitleMenu {
+impl ISubMenuState for MainMenu {
     fn enter(&mut self) {
         self.start_button.grab_focus();
     }
@@ -68,7 +68,7 @@ impl ISubMenuState for TitleMenu {
 
 
 #[godot_api]
-impl TitleMenu {
+impl MainMenu {
     #[signal]
     pub fn request_state(main_menu_state : MainMenuState);
 

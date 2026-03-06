@@ -27,7 +27,7 @@
 [ext_resource type="PackedScene" uid="uid://wk8lhstoo2l1" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/snowman-hat.fbx" id="21_lf3sc"]
 [ext_resource type="PackedScene" uid="uid://dju0s05r0mt3n" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/snowman.fbx" id="22_qsr70"]
 [ext_resource type="PackedScene" uid="uid://b1li531q4jhe3" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/tree-decorated.fbx" id="23_xl3jb"]
-[ext_resource type="PackedScene" uid="uid://d1adqsqoxpnk5" path="res://scenes/ui/pause_menu_state_machine.tscn" id="29_lf3sc"]
+[ext_resource type="PackedScene" uid="uid://d1adqsqoxpnk5" path="res://scenes/ui/pause_menu/pause_menu_state_machine.tscn" id="29_lf3sc"]
 [ext_resource type="FontFile" uid="uid://c32cp4lupcblh" path="res://assets/dev_assets/source/AsteriskMono_Font_1_0/OpenType (.otf)/AsteriskMono-Regular.otf" id="29_xl3jb"]
 
 [sub_resource type="MazeSolverInfo" id="MazeSolverInfo_geiq8"]

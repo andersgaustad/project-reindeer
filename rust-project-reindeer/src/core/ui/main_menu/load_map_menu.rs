@@ -1,12 +1,13 @@
-use godot::{classes::{Button, Control, IControl, RichTextLabel, TextEdit}, prelude::*};
+use godot::{classes::{Button, Control, IControl, RichTextLabel, TextEdit, Texture2D}, prelude::*};
 
-use crate::core::{maze::maze::{Maze, NewMazeError}, ui::i_sub_menu_state::ISubMenuState};
+use crate::core::{levels::main_level::main_level_constructor_info::MainLevelConstructorInfo, maze::maze::{Maze, NewMazeError}, ui::i_sub_menu_state::ISubMenuState};
 
 
 #[derive(GodotClass)]
 #[class(init, base=Control)]
 pub struct LoadMapMenu {
     #[export_group(name = "Colors")]
+
     #[export]
     #[var]
     #[init(val = Color::from_html("#0B6623").unwrap())]
@@ -16,6 +17,24 @@ pub struct LoadMapMenu {
     #[var]
     #[init(val = Color::from_html("#FF2400").unwrap())]
     error_color : Color,
+
+
+    #[export_group(name = "Advanced Load Map Options")]
+
+    #[export]
+    #[var]
+    open_advanced_options_button_texture : OnEditor<Gd<Texture2D>>,
+
+    #[export]
+    #[var]
+    close_advanced_options_button_texture : OnEditor<Gd<Texture2D>>,
+
+
+    // Non-exported
+
+    #[var(get, set = set_show_advanced_options)]
+    #[init(val = false)]
+    show_advanced_options : bool,
 
     #[var]
     #[init(node = "%MazeTextEdit")]
@@ -32,8 +51,19 @@ pub struct LoadMapMenu {
     #[var]
     #[init(node = "%FeedbackText")]
     feedback_text : OnReady<Gd<RichTextLabel>>,
-
     default_feedback_text : GString,
+
+    #[var]
+    #[init(node = "%ExpandAdvancedOptionsButton")]
+    expand_advanced_options_button : OnReady<Gd<Button>>,
+
+    #[var]
+    #[init(node = "%AdvancedOptions")]
+    advanced_options : OnReady<Gd<Control>>,
+    
+    #[var]
+    #[init(node = "%SeedTextEdit")]
+    seed_text_edit : OnReady<Gd<TextEdit>>,
 
 
     base : Base<Control>,
@@ -75,10 +105,19 @@ impl IControl for LoadMapMenu {
                 Self::on_cancel_pressed
             );
         
+        // On advanced options
+        self
+            .expand_advanced_options_button
+            .signals()
+            .pressed()
+            .connect_other(
+                self,
+                Self::on_show_or_hide_advanced_options_pressed
+            );
         
         self.default_feedback_text = self.feedback_text.get_text();
 
-        self.on_text_changed();
+        self.refresh();
     }
 }
 
@@ -92,6 +131,9 @@ impl ISubMenuState for LoadMapMenu {
     fn reset(&mut self) {
         self.maze_text_edit.clear();
         self.feedback_text.set_text(&self.default_feedback_text);
+
+        self.set_show_advanced_options(false);
+        self.seed_text_edit.clear();
     }
 }
 
@@ -99,11 +141,28 @@ impl ISubMenuState for LoadMapMenu {
 #[godot_api]
 impl LoadMapMenu {
     #[signal]
-    pub fn notify_maze_created(maze : Gd<Maze>);
+    pub fn notify_maze_created(info : Gd<MainLevelConstructorInfo>);
 
     #[signal]
     pub fn request_cancel();
 
+
+    #[func]
+    pub fn set_show_advanced_options(&mut self, show_advanced_options : bool) {
+        // Set
+        self.show_advanced_options = show_advanced_options;
+
+        let texture = if show_advanced_options {
+            self.close_advanced_options_button_texture.clone()
+
+        } else {
+            self.open_advanced_options_button_texture.clone()
+        };
+        
+        self.expand_advanced_options_button.set_button_icon(&texture);
+
+        self.advanced_options.set_visible(show_advanced_options);
+    }
 
 
     fn on_text_changed(&mut self) {
@@ -128,6 +187,21 @@ impl LoadMapMenu {
     }
 
 
+    fn on_show_or_hide_advanced_options_pressed(&mut self) {
+        let showing_advanced_options = self.show_advanced_options;
+        self.set_show_advanced_options(!showing_advanced_options);
+    }
+
+
+    fn refresh(&mut self) {
+        let show_advanced_options = self.show_advanced_options;
+        self.set_show_advanced_options(show_advanced_options);
+
+        self.on_text_changed();
+
+    }
+
+
     fn try_load_text_or_default(&mut self) {
         let text_is_empty = self.text_is_empty();
         let maze_text_edit = &mut self.maze_text_edit;
@@ -141,7 +215,7 @@ impl LoadMapMenu {
         let maze_result = Maze::try_new_gd_from_str(&text);
         let feedback_text = &mut self.feedback_text;
         match maze_result {
-            Ok(ok) => {
+            Ok(maze) => {
                 feedback_text.set_text(
                     &format!(
                         "[color=#{}]Maze succesfully loaded![/color]",
@@ -149,10 +223,22 @@ impl LoadMapMenu {
                     )
                 );
 
+                let raw_seed_input_text = self.seed_text_edit.get_text();
+                let seed = if !raw_seed_input_text.is_empty() {
+                    raw_seed_input_text
+                } else {
+                    self.seed_text_edit.get_tooltip_text()
+                };
+
+                let info = MainLevelConstructorInfo::new(
+                    maze,
+                    seed
+                );
+
                 self
                     .signals()
                     .notify_maze_created()
-                    .emit(&ok);
+                    .emit(&info);
             },
 
             Err(e) => {
