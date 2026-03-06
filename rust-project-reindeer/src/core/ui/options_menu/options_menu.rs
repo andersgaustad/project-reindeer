@@ -1,6 +1,6 @@
 use godot::{classes::{Button, CheckButton, Control, IControl, InputEvent, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{options::Options, run::Run, ui::{i_sub_menu_state::ISubMenuState, options_menu::options_menu_request::OptionsMenuRequest}, utility::node_utility}, input_map::CANCEL};
+use crate::{core::{options::options::Options, run::Run, ui::{i_sub_menu_state::ISubMenuState, options_menu::options_menu_request::OptionsMenuRequest}, utility::node_utility}, input_map::CANCEL};
 
 
 #[derive(GodotClass)]

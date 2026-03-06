@@ -1,6 +1,7 @@
 use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, Control, Input, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextLabel, StandardMaterial3D, Timer, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use strum::IntoEnumIterator;
 
-use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::Options, player::Player, props::cabin::Cabin, run::Run, ui::pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}, utility::{bounding_box_utility, node_utility}}, input_map::CANCEL};
+use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::{option_change::OptionChange, options::Options}, player::Player, props::cabin::Cabin, run::Run, ui::pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}, utility::{bounding_box_utility, node_utility}}, input_map::CANCEL};
 
 
 const N_VISIBLE_TREES_IN_LOW_PERFORMANCE_MODE : i32 = 100;
@@ -206,7 +207,7 @@ impl INode3D for MainLevel {
             if let Some(options) = options_opt {
                 options
                     .signals()
-                    .changed()
+                    .option_changed()
                     .connect_other(
                         self,
                         Self::on_options_changed
@@ -303,8 +304,6 @@ impl MainLevel {
         let Some(mut tree) = self.base().get_tree() else {
             return;
         };
-
-        godot_print!(":? - Setting run state to {:?}", &new_state);
 
         let previous_state = self.level_run_state;
 
@@ -630,7 +629,6 @@ impl MainLevel {
                         });
                     
                     if any_overlap {
-                        godot_print!("Collision!");
                         continue;
                     }
 
@@ -1021,8 +1019,6 @@ impl MainLevel {
                         side_forest_custom_aabb.position.x = side_forest_position.x;
                         side_forest_custom_aabb.position.z = side_forest_position.y;
 
-                        godot_print!(":? Setting custom AABB for side forest x={} y={}: {:?}", x_major, y_major, &side_forest_custom_aabb);
-
                         forest_spawner.set_custom_aabb(side_forest_custom_aabb);
 
 
@@ -1084,7 +1080,7 @@ impl MainLevel {
 
         // Finally, refresh options to apply low performance mode
         // Not using refresh() here as that would lead to an unfortunate infinite loop
-        self.on_options_changed();
+        self.on_low_performance_mode_change();
     }
 
 
@@ -1135,7 +1131,14 @@ impl MainLevel {
 
 
     #[func]
-    fn on_options_changed(&mut self) {
+    fn on_options_changed(&mut self, options_change : OptionChange) {
+        match options_change {
+            OptionChange::LowPerformanceMode => self.on_low_performance_mode_change(),
+        }
+    }
+
+
+    fn on_low_performance_mode_change(&mut self) {
         let Some(options) = self.options.clone() else {
             return;
         };
@@ -1380,7 +1383,9 @@ impl MainLevel {
         let maze = std::mem::take(&mut self.maze_info).map(|info| info.maze);
         self.set_maze(maze);
 
-        self.on_options_changed();
+        for possible_option_change in OptionChange::iter() {
+            self.on_options_changed(possible_option_change);
+        }
     }
 
 

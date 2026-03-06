@@ -1,6 +1,6 @@
 use godot::{classes::{Input, input::MouseMode, object::ConnectFlags}, prelude::*};
 
-use crate::core::{levels::main_level::{main_level::MainLevel, main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}}, options::Options, ui::main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}};
+use crate::core::{levels::main_level::{main_level::MainLevel, main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}}, options::options::Options, ui::main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}};
 
 
 #[derive(GodotClass)]
