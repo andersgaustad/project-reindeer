@@ -1,6 +1,6 @@
-use godot::{classes::{Button, Control, IControl, RichTextLabel, TextEdit, Texture2D}, prelude::*};
+use godot::{classes::{Button, Control, IControl, OptionButton, RichTextLabel, TextEdit, Texture2D}, prelude::*};
 
-use crate::core::{levels::main_level::main_level_constructor_info::MainLevelConstructorInfo, maze::maze::{Maze, NewMazeError}, ui::i_sub_menu_state::ISubMenuState};
+use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, maze::maze::{Maze, NewMazeError}, ui::i_sub_menu_state::ISubMenuState};
 
 
 #[derive(GodotClass)]
@@ -28,6 +28,16 @@ pub struct LoadMapMenu {
     #[export]
     #[var]
     close_advanced_options_button_texture : OnEditor<Gd<Texture2D>>,
+
+    #[export]
+    #[var]
+    #[init(val = tree_density_id_to_density_default())]
+    tree_density_id_to_density : PackedArray<f32>,
+
+    #[export]
+    #[var]
+    #[init(val = outer_forest_rings_id_to_rings_default())]
+    outer_forest_rings_id_to_rings : PackedArray<i32>,
 
 
     // Non-exported
@@ -65,6 +75,16 @@ pub struct LoadMapMenu {
     #[init(node = "%SeedTextEdit")]
     seed_text_edit : OnReady<Gd<TextEdit>>,
 
+    #[var]
+    #[init(node = "%TreeDensityOptionDropDownButton")]
+    tree_density_option_button : OnReady<Gd<OptionButton>>,
+    default_tree_density_id : i32,
+
+    #[var]
+    #[init(node = "%ForestSizeDropDownButton")]
+    forest_size_option_button : OnReady<Gd<OptionButton>>,
+    default_forest_size_id : i32,
+    
 
     base : Base<Control>,
 }
@@ -116,6 +136,7 @@ impl IControl for LoadMapMenu {
             );
         
         self.default_feedback_text = self.feedback_text.get_text();
+        self.default_tree_density_id = self.tree_density_option_button.get_selected_id();
 
         self.refresh();
     }
@@ -134,6 +155,8 @@ impl ISubMenuState for LoadMapMenu {
 
         self.set_show_advanced_options(false);
         self.seed_text_edit.clear();
+        self.tree_density_option_button.select(self.default_tree_density_id);
+        self.forest_size_option_button.select(self.default_forest_size_id);
     }
 }
 
@@ -141,7 +164,7 @@ impl ISubMenuState for LoadMapMenu {
 #[godot_api]
 impl LoadMapMenu {
     #[signal]
-    pub fn notify_maze_created(info : Gd<MainLevelConstructorInfo>);
+    pub fn notify_maze_created(info : Gd<GodotMainLevelConstructorInfo>);
 
     #[signal]
     pub fn request_cancel();
@@ -230,9 +253,14 @@ impl LoadMapMenu {
                     self.seed_text_edit.get_tooltip_text()
                 };
 
-                let info = MainLevelConstructorInfo::new(
+                let tree_density = self.get_tree_density();
+                let outer_forest_rings = self.get_outer_forest_rings();
+
+                let info = GodotMainLevelConstructorInfo::new(
                     maze,
-                    seed
+                    seed,
+                    tree_density,
+                    outer_forest_rings,
                 );
 
                 self
@@ -269,4 +297,61 @@ impl LoadMapMenu {
     fn text_is_empty(&self) -> bool {
         self.maze_text_edit.get_text().is_empty()
     }
+
+
+    fn get_tree_density(&self) -> f32 {
+        const DEFAULT_DENSITY : f32 = 1.0;
+
+        let selected_tree_density_id = self.tree_density_option_button.get_selected_id();
+        let density_opt = self.tree_density_id_to_density.get(selected_tree_density_id as usize);
+
+        match density_opt {
+            Some(some) => some,
+            None => {
+                godot_error!(
+                    "Got density id of {}, but density array only holds {} ids! Defaulting to {}",
+                    selected_tree_density_id,
+                    self.tree_density_id_to_density.len(),
+                    DEFAULT_DENSITY
+                );
+                DEFAULT_DENSITY
+            }
+        }
+    }
+
+
+    fn get_outer_forest_rings(&self) -> i32 {
+        const DEFAULT_OUTER_FOREST_RINGS : i32 = 0;
+
+        let selected_forest_rings_id = self.forest_size_option_button.get_selected_id();
+        let forest_rings_opt = self.outer_forest_rings_id_to_rings.get(selected_forest_rings_id as usize);
+        match forest_rings_opt {
+            Some(some) => some,
+            None => {
+                godot_error!(
+                    "Got outer forest ring id of {}, but forest ring array only holds {} ids! Defaulting to {}",
+                    selected_forest_rings_id,
+                    self.outer_forest_rings_id_to_rings.len(),
+                    DEFAULT_OUTER_FOREST_RINGS
+                );
+                DEFAULT_OUTER_FOREST_RINGS
+            },
+        }
+    }
+}
+
+
+// Utility
+
+fn tree_density_id_to_density_default() -> PackedArray<f32> {
+    PackedArray::from_iter([
+        0.10,
+        0.25,
+        1.00,
+    ])
+}
+
+
+fn outer_forest_rings_id_to_rings_default() -> PackedArray<i32> {
+    PackedArray::from_iter(0..=2)
 }

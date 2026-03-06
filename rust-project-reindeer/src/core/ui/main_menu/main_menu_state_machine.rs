@@ -1,7 +1,7 @@
 use godot::{classes::{Control, IControl}, prelude::*};
 use strum::{EnumCount, VariantArray};
 
-use crate::core::{levels::main_level::main_level_constructor_info::MainLevelConstructorInfo, ui::{i_sub_menu_state::ISubMenuState, main_menu::{load_map_menu::LoadMapMenu, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}};
+use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, ui::{i_sub_menu_state::ISubMenuState, main_menu::{load_map_menu::LoadMapMenu, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}};
 
 
 #[derive(GodotClass)]
@@ -95,7 +95,7 @@ impl ISubMenuState for MainMenuStateMachine {
 #[godot_api]
 impl MainMenuStateMachine {
     #[signal]
-    pub fn request_initialize_level(level_info : Gd<MainLevelConstructorInfo>);
+    pub fn request_initialize_level(level_info : Gd<GodotMainLevelConstructorInfo>);
 
 
     #[func]

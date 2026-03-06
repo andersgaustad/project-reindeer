@@ -1,6 +1,6 @@
 use godot::{classes::{Input, input::MouseMode, object::ConnectFlags}, prelude::*};
 
-use crate::core::{levels::main_level::{main_level::MainLevel, main_level_constructor_info::MainLevelConstructorInfo}, options::Options, ui::main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}};
+use crate::core::{levels::main_level::{main_level::MainLevel, main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}}, options::Options, ui::main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}};
 
 
 #[derive(GodotClass)]
@@ -97,7 +97,7 @@ impl Run {
 
 
     #[func]
-    fn on_receive_level_constructor_info(&mut self, level_constructor_info : Gd<MainLevelConstructorInfo>) {
+    fn on_receive_level_constructor_info(&mut self, level_constructor_info : Gd<GodotMainLevelConstructorInfo>) {
         if self.main_level.is_some() {
             godot_warn!("Run got maze while level was spawned? Ignoring...");
             return;
@@ -111,12 +111,20 @@ impl Run {
             return;
         };
 
-        let bound_constructor_info = level_constructor_info.bind();
-        let maze = bound_constructor_info.get_maze();
-        let seed = bound_constructor_info.get_seed();
-        drop(bound_constructor_info);
+        let inner = level_constructor_info.bind().inner.clone();
+        let MainLevelConstructorInfo {
+            maze,
+            seed,
+            tree_density,
+            outer_forest_rings, 
 
-        main_level.bind_mut().set_random_seed(seed);
+        } = inner;
+
+        let mut bound_main_level = main_level.bind_mut();
+        bound_main_level.set_random_seed(seed);
+        bound_main_level.set_trees_per_square_unit(tree_density);
+        bound_main_level.set_outer_forest_rings(outer_forest_rings);
+        drop(bound_main_level);
 
         self.base_mut().add_child(&main_level.clone().upcast::<Node>());
         self.set_main_level(Some(main_level.clone()));

@@ -3,32 +3,51 @@ use godot::prelude::*;
 use crate::core::maze::maze::Maze;
 
 
+// GodotMainLevelConstructorInfo
+
 #[derive(GodotClass)]
 #[class(no_init, base=RefCounted)]
-pub struct MainLevelConstructorInfo {
-    #[var]
-    pub maze : Gd<Maze>,
-
-    #[var]
-    pub seed : GString,
-
+pub struct GodotMainLevelConstructorInfo {
+    pub inner : MainLevelConstructorInfo,
 
     base : Base<RefCounted>
 }
 
 
-impl MainLevelConstructorInfo {
+impl GodotMainLevelConstructorInfo {
     pub fn new(
         maze : Gd<Maze>,
         seed : GString,
+        tree_density : f32,
+        outer_forest_rings : i32,
 
     ) -> Gd<Self> {
         Gd::from_init_fn(|base| {
-            Self {
+            let inner = MainLevelConstructorInfo {
                 maze,
                 seed,
+                tree_density,
+                outer_forest_rings,
+            };
+
+            Self {
+                inner,
                 base,
             }
         })
     }
+}
+
+
+// MainLevelConstructorInfo
+
+#[derive(Clone)]
+pub struct MainLevelConstructorInfo {
+    pub maze : Gd<Maze>,
+
+    pub seed : GString,
+
+    pub tree_density : f32,
+
+    pub outer_forest_rings : i32,
 }

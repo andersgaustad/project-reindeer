@@ -481,166 +481,6 @@ impl MainLevel {
             let forest_span = clearing_span.grow_with_padding(self.forest_ring.clone());
 
 
-            // Create forest
-
-            let forest_position = &forest_span.position;
-            let forest_size = &forest_span.size;
-            let n_tree_spawn_attempts = (forest_size.x * &forest_size.y * self.trees_per_square_unit) as usize;
-
-            let tree_multimesh_opt =self.tree_spawner.get_multimesh();
-
-            let aabb_tree_height = (|| {
-                let height = tree_multimesh_opt.as_ref()?.get_mesh()?.get_aabb().size.y;
-                Some(height)
-
-            })().unwrap_or(1.0);
-            let forest_custom_aabb = Aabb::new(
-                Vector3::new(
-                    forest_position.x,
-                    maze_top_left_corner_center_position.y,
-                    forest_position.y
-                ),
-                Vector3::new(
-                    forest_size.x,
-                    aabb_tree_height,
-                    forest_size.y
-                )
-            );
-
-            self.tree_spawner.set_custom_aabb(forest_custom_aabb);
-
-            if let Some(mut tree_multimesh) = tree_multimesh_opt {
-                // Get tree positions
-
-                let mut tree_spawn_positions = Vec::with_capacity(n_tree_spawn_attempts);
-
-                for _ in 0..n_tree_spawn_attempts {
-                    let x = self.rng.randf_range(0.0, forest_size.x);
-                    let y = self.rng.randf_range(0.0, forest_size.y);
-
-                    let local_point = Vector2::new(x, y);
-
-                    let point = local_point + forest_span.position;
-
-                    // Only add if this point is in the forest but not in clearing
-                    if clearing_span.contains_point(point) {
-                        continue;
-                    }
-
-                    // Else
-                    tree_spawn_positions.push(point);
-                }
-
-                // Spawn main forest
-
-                let bound_tree_spawner = self.tree_spawner.bind();
-
-                let n_trees = tree_spawn_positions.len() as i32;
-                tree_multimesh.set_instance_count(n_trees);
-                for (i, top_down_position) in tree_spawn_positions.into_iter().enumerate() {
-                    let i = i as i32;
-                    let position = Vector3::new(
-                        top_down_position.x,
-                        maze_top_left_corner_center_position.y,
-                        top_down_position.y
-                    );
-
-                    let transform = bound_tree_spawner.create_object_transform(position, self.rng.clone());
-                    tree_multimesh.set_instance_transform(i, transform);
-                }
-                drop(bound_tree_spawner);
-                
-                let n_visible_trees = self.get_number_of_visible_trees();
-                if n_visible_trees <= n_trees {
-                    tree_multimesh.set_visible_instance_count(n_visible_trees);
-                }
-
-
-                // Spawn side forests
-
-                // Delete old side forests
-                for mut old_side_forest in self.side_forest_spawners_root.get_children().iter_shared() {
-                    old_side_forest.queue_free();
-                }
-
-                let forest_rings = self.outer_forest_rings;
-
-                let super_forest_position = *forest_position - (*forest_size * (forest_rings as f32));
-                let super_forest_size = (forest_rings * 2 + 1) as f32 * *forest_size;
-
-                let super_forest_span = Rect2::new(super_forest_position, super_forest_size);
-
-                self.set_ground_dimensions(super_forest_span);
-
-                // Spawn new forests
-                for x_major in -forest_rings..=forest_rings {
-                    for y_major in -forest_rings..=forest_rings {
-                        if x_major == 0 && y_major == 0 {
-                            continue;
-                        }
-
-                        let x_major = x_major as f32;
-                        let y_major = y_major as f32;
-
-                        let x = x_major * forest_size.x;
-                        let y = y_major * forest_size.y;
-
-                        let side_forest_position = *forest_position + Vector2::new(x, y);
-
-                        let tree_mesh_opt = tree_multimesh.get_mesh();
-                        let mut tree_multimesh = MultiMesh::new_gd();
-
-                        tree_multimesh.set_instance_count(0);
-                        tree_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
-                        tree_multimesh.set_mesh(tree_mesh_opt.as_ref());
-
-                        let side_forest_spawner_opt = (|| {
-                            self.tree_spawner.duplicate()?.try_cast::<EnchancedMultiMeshInstance3D>().ok()
-                        })();
-
-                        let Some(mut forest_spawner) = side_forest_spawner_opt else {
-                            continue;
-                        };
-
-                        forest_spawner.set_multimesh(&tree_multimesh);
-
-                        let mut side_forest_custom_aabb = forest_custom_aabb.clone();
-                        side_forest_custom_aabb.position.x = side_forest_position.x;
-                        side_forest_custom_aabb.position.z = side_forest_position.y;
-
-                        godot_print!(":? Setting custom AABB for side forest x={} y={}: {:?}", x_major, y_major, &side_forest_custom_aabb);
-
-                        forest_spawner.set_custom_aabb(side_forest_custom_aabb);
-
-
-                        // Spawn
-                        self.side_forest_spawners_root.add_child(&forest_spawner);
-
-                        let n_tree_spawn_attempts = n_tree_spawn_attempts as i32;
-                        tree_multimesh.set_instance_count(n_tree_spawn_attempts);
-
-                        for i in 0..n_tree_spawn_attempts {
-                            let x = self.rng.randf_range(0.0, forest_size.x) + side_forest_position.x;
-                            let y = self.rng.randf_range(0.0, forest_size.y) + side_forest_position.y;
-
-                            let position_3d = Vector3::new(
-                                x,
-                                maze_top_left_corner_center_position.y,
-                                y
-                            );
-
-                            let transform = forest_spawner.bind().create_object_transform(
-                                position_3d,
-                                self.rng.clone()
-                            );
-
-                            tree_multimesh.set_instance_transform(i, transform);
-                        }
-                    }
-                }
-            }
-
-
             // Spawn (or move) cabin
 
             let cabin_aabb = bounding_box_utility::get_node_aabb_ex()
@@ -1058,6 +898,162 @@ impl MainLevel {
             }
 
 
+            // Create surrounding forest
+            // Note that this is done here after everything else as we want the same seed to generate the same cabin and prop variants regardless of forest size
+
+            let forest_position = &forest_span.position;
+            let forest_size = &forest_span.size;
+            let n_tree_spawn_attempts = (forest_size.x * &forest_size.y * self.trees_per_square_unit) as usize;
+
+            let tree_multimesh_opt =self.tree_spawner.get_multimesh();
+
+            let aabb_tree_height = (|| {
+                let height = tree_multimesh_opt.as_ref()?.get_mesh()?.get_aabb().size.y;
+                Some(height)
+
+            })().unwrap_or(1.0);
+            let forest_custom_aabb = Aabb::new(
+                Vector3::new(
+                    forest_position.x,
+                    maze_top_left_corner_center_position.y,
+                    forest_position.y
+                ),
+                Vector3::new(
+                    forest_size.x,
+                    aabb_tree_height,
+                    forest_size.y
+                )
+            );
+
+            self.tree_spawner.set_custom_aabb(forest_custom_aabb);
+
+            if let Some(mut tree_multimesh) = tree_multimesh_opt {
+                // Get tree positions
+
+                let mut tree_spawn_positions = Vec::with_capacity(n_tree_spawn_attempts);
+
+                for _ in 0..n_tree_spawn_attempts {
+                    let x = self.rng.randf_range(0.0, forest_size.x);
+                    let y = self.rng.randf_range(0.0, forest_size.y);
+
+                    let local_point = Vector2::new(x, y);
+
+                    let point = local_point + forest_span.position;
+
+                    // Only add if this point is in the forest but not in clearing
+                    if clearing_span.contains_point(point) {
+                        continue;
+                    }
+
+                    // Else
+                    tree_spawn_positions.push(point);
+                }
+
+                // Spawn main forest
+
+                let bound_tree_spawner = self.tree_spawner.bind();
+
+                let n_trees = tree_spawn_positions.len() as i32;
+                tree_multimesh.set_instance_count(n_trees);
+                for (i, top_down_position) in tree_spawn_positions.into_iter().enumerate() {
+                    let i = i as i32;
+                    let position = Vector3::new(
+                        top_down_position.x,
+                        maze_top_left_corner_center_position.y,
+                        top_down_position.y
+                    );
+
+                    let transform = bound_tree_spawner.create_object_transform(position, self.rng.clone());
+                    tree_multimesh.set_instance_transform(i, transform);
+                }
+                drop(bound_tree_spawner);
+
+
+                // Spawn side forests
+
+                // Delete old side forests
+                for mut old_side_forest in self.side_forest_spawners_root.get_children().iter_shared() {
+                    old_side_forest.queue_free();
+                }
+
+                let forest_rings = self.outer_forest_rings;
+
+                let super_forest_position = *forest_position - (*forest_size * (forest_rings as f32));
+                let super_forest_size = (forest_rings * 2 + 1) as f32 * *forest_size;
+
+                let super_forest_span = Rect2::new(super_forest_position, super_forest_size);
+
+                self.set_ground_dimensions(super_forest_span);
+
+                // Spawn new forests
+                for x_major in -forest_rings..=forest_rings {
+                    for y_major in -forest_rings..=forest_rings {
+                        if x_major == 0 && y_major == 0 {
+                            continue;
+                        }
+
+                        let x_major = x_major as f32;
+                        let y_major = y_major as f32;
+
+                        let x = x_major * forest_size.x;
+                        let y = y_major * forest_size.y;
+
+                        let side_forest_position = *forest_position + Vector2::new(x, y);
+
+                        let tree_mesh_opt = tree_multimesh.get_mesh();
+                        let mut tree_multimesh = MultiMesh::new_gd();
+
+                        tree_multimesh.set_instance_count(0);
+                        tree_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
+                        tree_multimesh.set_mesh(tree_mesh_opt.as_ref());
+
+                        let side_forest_spawner_opt = (|| {
+                            self.tree_spawner.duplicate()?.try_cast::<EnchancedMultiMeshInstance3D>().ok()
+                        })();
+
+                        let Some(mut forest_spawner) = side_forest_spawner_opt else {
+                            continue;
+                        };
+
+                        forest_spawner.set_multimesh(&tree_multimesh);
+
+                        let mut side_forest_custom_aabb = forest_custom_aabb.clone();
+                        side_forest_custom_aabb.position.x = side_forest_position.x;
+                        side_forest_custom_aabb.position.z = side_forest_position.y;
+
+                        godot_print!(":? Setting custom AABB for side forest x={} y={}: {:?}", x_major, y_major, &side_forest_custom_aabb);
+
+                        forest_spawner.set_custom_aabb(side_forest_custom_aabb);
+
+
+                        // Spawn
+                        self.side_forest_spawners_root.add_child(&forest_spawner);
+
+                        let n_tree_spawn_attempts = n_tree_spawn_attempts as i32;
+                        tree_multimesh.set_instance_count(n_tree_spawn_attempts);
+
+                        for i in 0..n_tree_spawn_attempts {
+                            let x = self.rng.randf_range(0.0, forest_size.x) + side_forest_position.x;
+                            let y = self.rng.randf_range(0.0, forest_size.y) + side_forest_position.y;
+
+                            let position_3d = Vector3::new(
+                                x,
+                                maze_top_left_corner_center_position.y,
+                                y
+                            );
+
+                            let transform = forest_spawner.bind().create_object_transform(
+                                position_3d,
+                                self.rng.clone()
+                            );
+
+                            tree_multimesh.set_instance_transform(i, transform);
+                        }
+                    }
+                }
+            }
+
+
             // Finally, set maze info
             
             drop(bound_maze);
@@ -1085,6 +1081,10 @@ impl MainLevel {
             self.maze_reindeer.hide();
             self.present.hide();
         }
+
+        // Finally, refresh options to apply low performance mode
+        // Not using refresh() here as that would lead to an unfortunate infinite loop
+        self.on_options_changed();
     }
 
 
@@ -1142,11 +1142,22 @@ impl MainLevel {
 
         let low_performance_mode = options.bind().get_low_performance_mode();
 
-        let tree_multimesh_opt = self.tree_spawner.get_multimesh();
-        if let Some(mut tree_multimesh) = tree_multimesh_opt {
-            let desired_visible_count = self.get_number_of_visible_trees();
-            let current_tree_count = tree_multimesh.get_instance_count();
+        let mut forest_spawners = vec![self.tree_spawner.clone().upcast::<MultiMeshInstance3D>()];
+        let side_forests = self.side_forest_spawners_root.get_children();
+        for child in side_forests.iter_shared() {
+            let as_multimesh_instance_result = child.try_cast::<MultiMeshInstance3D>();
+            if let Ok(as_multimesh_instance) = as_multimesh_instance_result {
+                forest_spawners.push(as_multimesh_instance);
+            }
+        }
 
+        let desired_visible_count = self.get_number_of_visible_trees();
+        for spawner in forest_spawners {
+            let Some(mut tree_multimesh) = spawner.get_multimesh() else {
+                continue;
+            };
+
+            let current_tree_count = tree_multimesh.get_instance_count();
             if desired_visible_count <= current_tree_count {
                 tree_multimesh.set_visible_instance_count(desired_visible_count);
             }

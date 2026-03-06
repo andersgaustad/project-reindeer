@@ -89,7 +89,7 @@ icon = ExtResource("1_v4wla")
 
 [node name="AdvancedOptions" type="Control" parent="HBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(800, 0)
+custom_minimum_size = Vector2(810, 0)
 layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/AdvancedOptions"]
@@ -107,7 +107,7 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "Advanced Load Options"
+text = "Advanced Options"
 horizontal_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer"]
@@ -123,9 +123,10 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 40
+theme_override_constants/v_separation = 16
 columns = 2
 
-[node name="Label" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+[node name="SeedLabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
 layout_mode = 2
 text = "Seed:"
 
@@ -134,3 +135,37 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Reindeer"
+
+[node name="TreeDensityLabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+layout_mode = 2
+text = "Tree Density:"
+
+[node name="TreeDensityOptionDropDownButton" type="OptionButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 2
+allow_reselect = true
+item_count = 3
+popup/item_0/text = "Sparse"
+popup/item_0/id = 0
+popup/item_1/text = "Medium"
+popup/item_1/id = 1
+popup/item_2/text = "Dense"
+popup/item_2/id = 2
+
+[node name="ForestSizeLabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+layout_mode = 2
+text = "Forest Size:"
+
+[node name="ForestSizeDropDownButton" type="OptionButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+allow_reselect = true
+item_count = 3
+popup/item_0/text = "Standard"
+popup/item_0/id = 0
+popup/item_1/text = "Large"
+popup/item_1/id = 1
+popup/item_2/text = "Huge"
+popup/item_2/id = 2
