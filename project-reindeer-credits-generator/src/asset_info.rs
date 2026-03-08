@@ -1,0 +1,12 @@
+use serde::Deserialize;
+
+
+#[derive(Debug, Deserialize)]
+pub struct AssetInfo {
+    pub asset : String,
+    pub author : String,
+    pub source : String,
+    pub license : String,
+    pub ty : String,
+    pub custom_attribution : Option<String>,
+}

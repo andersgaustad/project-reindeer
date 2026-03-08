@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://c0hahcleepgei" path="res://scenes/present.tscn" id="2_tkkka"]
 [ext_resource type="ArrayMesh" uid="uid://csowy0rx5hhrb" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/OBJ format/rocks-medium.obj" id="3_geiq8"]
 [ext_resource type="ArrayMesh" uid="uid://bqqf0uncmoovq" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/OBJ format/rocks-large.obj" id="4_tkkka"]
-[ext_resource type="ArrayMesh" uid="uid://ncp03n34vna4" path="res://assets/dev_assets/derived/Sketchfab_Scene_Arrow_Material_001_0.res" id="8_h35hl"]
+[ext_resource type="ArrayMesh" uid="uid://dkykq4ud1ejlp" path="res://assets/dev_assets/derived/Sketchfab_Scene_Arrow_Material_001_0.res" id="8_h35hl"]
 [ext_resource type="ArrayMesh" uid="uid://d17hych78y22l" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/OBJ format/tree-snow-a.obj" id="9_kwk8y"]
 [ext_resource type="PackedScene" uid="uid://dnwhe55pf8jgc" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/lantern.fbx" id="10_c0gn3"]
 [ext_resource type="PackedScene" uid="uid://kpn4fhy8kxca" path="res://scenes/props/cabin.tscn" id="10_c7w6w"]
@@ -179,7 +179,7 @@ unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_kwk8y")
 
 [node name="ArrowSpawner" type="EnchancedMultiMeshInstance3D" parent="Level/Spawners/MazeSpawners"]
-mesh_scale = Vector3(40, 40, 40)
+mesh_scale = Vector3(0.4, 0.4, 0.4)
 mesh_rotation_degrees = Vector3(90, 0, 0)
 unique_name_in_owner = true
 multimesh = SubResource("MultiMesh_c7w6w")
