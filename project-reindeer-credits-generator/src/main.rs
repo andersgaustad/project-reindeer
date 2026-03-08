@@ -43,6 +43,7 @@ fn get_assets(asset_root : AssetsRoot, asset_info_file_name : &OsStr) -> Vec<Ass
         if file_name != asset_info_file_name {
             continue;
         };
+        println!("Found!");
 
         let entry_path = entry.path();
         let content_result = std::fs::read_to_string(entry_path);
@@ -74,8 +75,8 @@ fn type_sorted_assets(assets : impl Iterator<Item = AssetInfo>) -> BTreeMap<Stri
 
     for (_, assets) in map.iter_mut() {
         assets.sort_unstable_by(|a, b| {
-            let asset_a = &a.asset;
-            let asset_b = &b.asset;
+            let asset_a = &a.name;
+            let asset_b = &b.name;
 
             asset_a.cmp(asset_b)
         });
@@ -86,6 +87,7 @@ fn type_sorted_assets(assets : impl Iterator<Item = AssetInfo>) -> BTreeMap<Stri
 
 
 fn write_markdown_credits(out_credits_file : &Path, map : &BTreeMap<String, Vec<AssetInfo>>) -> Result<(), std::io::Error> {
+    println!("Creating file {}", out_credits_file.display());
     let file : std::fs::File = std::fs::File::create(out_credits_file)?;
     let mut buffer = BufWriter::new(file);
 
@@ -110,7 +112,7 @@ fn write_markdown_credits(out_credits_file : &Path, map : &BTreeMap<String, Vec<
 
         for asset_info in assets {
             let AssetInfo {
-                asset,
+                name,
                 author,
                 source,
                 license,
@@ -118,13 +120,13 @@ fn write_markdown_credits(out_credits_file : &Path, map : &BTreeMap<String, Vec<
                 custom_attribution,
             } = asset_info;
 
-            writeln!(buffer, "**{}**", asset)?;
-            writeln!(buffer, "Author: **{}**", author)?;
-            writeln!(buffer, "Source: **[link]({})**", source)?;
-            writeln!(buffer, "License: **{}**", license)?;
+            writeln!(buffer, "**{}**", name)?;
+            writeln!(buffer, "- Author: **{}**", author)?;
+            writeln!(buffer, "- Source: **[link]({})**", source)?;
+            writeln!(buffer, "- License: **{}**", license)?;
             
             if let Some(custom_attribution_override) = custom_attribution {
-                writeln!(buffer, "{}", custom_attribution_override)?;
+                writeln!(buffer, "- {}", custom_attribution_override)?;
             };
 
             writeln!(buffer, "")?;
@@ -148,14 +150,25 @@ fn write_bbcode_credits(out_credits_file : &Path, map : &BTreeMap<String, Vec<As
     writeln!(buffer, "See the bundled Markdown file for a detailed list of assets, authors, and licenses.")?;
     writeln!(buffer, "\n")?;
 
-    for (ty, assets) in map.iter() {
-        writeln!(buffer, "[b]{}:[/b]\n", ty)?;
+    for (header, assets) in map.iter() {
+        let capitalized = header
+            .char_indices()
+            .map(|(i, c)| {
+                if i == 0 {
+                    c.to_ascii_uppercase()
+                } else {
+                    c.to_ascii_lowercase()
+                }
+            })
+            .collect::<String>();
+
+        writeln!(buffer, "[b]{}:[/b]\n", capitalized)?;
 
         for asset in assets.iter() {
             writeln!(
                 buffer,
                 "[i]{}[/i] by {} ([url={{{}}}]{{External link}}[/url])",
-                &asset.asset,
+                &asset.name,
                 &asset.author,
                 &asset.source,
             )?;

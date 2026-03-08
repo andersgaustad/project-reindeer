@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct AssetInfo {
-    pub asset : String,
+    pub name : String,
     pub author : String,
     pub source : String,
     pub license : String,

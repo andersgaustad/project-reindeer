@@ -20,7 +20,7 @@ impl ProjectRoot {
         let mut path_ref = path.as_path();
 
         for _ in 0..3 {
-            path_ref = path.parent().unwrap();
+            path_ref = path_ref.parent().unwrap();
         }
 
         let path = path_ref.to_path_buf();
