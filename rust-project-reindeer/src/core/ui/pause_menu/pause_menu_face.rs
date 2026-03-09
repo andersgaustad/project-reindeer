@@ -20,6 +20,10 @@ pub struct PauseMenuFace {
     options_button : OnReady<Gd<Button>>,
 
     #[var]
+    #[init(node = "%ControlsButton")]
+    controls_button : OnReady<Gd<Button>>,
+
+    #[var]
     #[init(node = "%MainMenuButton")]
     main_menu_button : OnReady<Gd<Button>>,
 
@@ -82,20 +86,11 @@ impl ISubMenuState for PauseMenuFace {
 
 #[godot_api]
 impl PauseMenuFace {
-    // #[signal]
-    //pub fn button_pressed(button_type : PauseMenuButtonType);
-
     #[signal]
     pub fn request(request : PauseMenuFaceRequest);
 
 
-    pub fn set_start_button_state_info(&mut self, state_info : ButtonStateInfo) {
-        let start_button = &mut self.start_button;
-        start_button.set_disabled(!state_info.clickable);
-        start_button.set_tooltip_text(&state_info.tooltip);
-    }
-
-
+    #[func]
     fn on_start_pressed(&mut self) {
         self
             .signals()
@@ -104,24 +99,33 @@ impl PauseMenuFace {
     }
 
 
+    #[func]
     fn on_resume_pressed(&mut self) {
         self
             .signals()
             .request()
             .emit(PauseMenuFaceRequest::Resume);
-        
     }
 
 
+    #[func]
     fn on_options_pressed(&mut self) {
         self
             .signals()
             .request()
             .emit(PauseMenuFaceRequest::ToOptions);
-        
     }
 
 
+    #[func]
+    fn on_controls_pressed(&mut self) {
+        self
+            .signals()
+            .request()
+            .emit(PauseMenuFaceRequest::ToControls);
+    }
+
+    #[func]
     fn on_main_menu_pressed(&mut self) {
         self
             .signals()
@@ -130,6 +134,7 @@ impl PauseMenuFace {
     }
 
 
+    #[func]
     fn on_exit_pressed(&mut self) {
         let Some(mut tree) = self.base().get_tree() else {
             return;
@@ -139,6 +144,7 @@ impl PauseMenuFace {
     }
 
 
+    #[func]
     pub fn on_level_pathfinding_state_update(
         &mut self,
         _old_state : PathfindingState,
@@ -181,11 +187,19 @@ impl PauseMenuFace {
     }
 
 
+    pub fn set_start_button_state_info(&mut self, state_info : ButtonStateInfo) {
+        let start_button = &mut self.start_button;
+        start_button.set_disabled(!state_info.clickable);
+        start_button.set_tooltip_text(&state_info.tooltip);
+    }
+
+
     fn get_button_and_pressed_callback_from_type(&self, ty : PauseMenuButtonType) -> (Gd<Button>, Box<dyn FnMut(&mut Self) -> ()>) {
         match ty {
             PauseMenuButtonType::Start      => (self.start_button.clone(),      Box::new(Self::on_start_pressed)),
             PauseMenuButtonType::Resume     => (self.resume_button.clone(),     Box::new(Self::on_resume_pressed)),
             PauseMenuButtonType::Options    => (self.options_button.clone(),    Box::new(Self::on_options_pressed)),
+            PauseMenuButtonType::Controls   => (self.controls_button.clone(),   Box::new(Self::on_controls_pressed)),
             PauseMenuButtonType::MainMenu   => (self.main_menu_button.clone(),  Box::new(Self::on_main_menu_pressed)),
             PauseMenuButtonType::Exit       => (self.exit_button.clone(),       Box::new(Self::on_exit_pressed)),
         }

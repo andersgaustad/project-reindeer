@@ -6,5 +6,6 @@ use strum::{EnumCount, VariantArray};
 #[godot(via = GString)]
 pub enum PauseMenuState {
     Face,
-    Options,    
+    Options,
+    Controls,
 }

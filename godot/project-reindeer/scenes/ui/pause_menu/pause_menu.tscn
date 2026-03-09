@@ -90,6 +90,11 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Options"
 
+[node name="ControlsButton" type="Button" parent="CenterContainer/Panel/MainMargins/VBoxContainer/ButtonMargin/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Controls"
+
 [node name="MainMenuButton" type="Button" parent="CenterContainer/Panel/MainMargins/VBoxContainer/ButtonMargin/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2

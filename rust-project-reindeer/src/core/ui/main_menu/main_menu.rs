@@ -19,6 +19,10 @@ pub struct MainMenu {
     exit_button : OnReady<Gd<Button>>,
 
     #[var]
+    #[init(node = "%ControlsButton")]
+    controls_button : OnReady<Gd<Button>>,
+
+    #[var]
     #[init(node = "%AboutButton")]
     about_button : OnReady<Gd<Button>>,
 
@@ -47,6 +51,16 @@ impl IControl for MainMenu {
             .connect_other(
                 self,
                 Self::on_options_pressed
+            );
+        
+        // controls_button
+        self
+            .controls_button
+            .signals()
+            .pressed()
+            .connect_other(
+                self,
+                Self::on_controls_pressed
             );
         
         // about_button
@@ -93,6 +107,11 @@ impl MainMenu {
 
     fn on_options_pressed(&mut self) {
         self.emit_request_for(MainMenuState::Options);
+    }
+
+
+    fn on_controls_pressed(&mut self) {
+        self.emit_request_for(MainMenuState::Controls);
     }
 
 

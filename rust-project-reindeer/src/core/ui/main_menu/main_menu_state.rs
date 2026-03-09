@@ -9,4 +9,5 @@ pub enum MainMenuState {
     Options,
     LoadMap,
     About,
+    Controls,
 }

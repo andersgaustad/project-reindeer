@@ -9,5 +9,6 @@ pub enum PauseMenuFaceRequest {
     Start,
     Resume,
     ToOptions,
+    ToControls,
     ToMainMenu,
 }

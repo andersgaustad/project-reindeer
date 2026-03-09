@@ -1,0 +1,216 @@
+[gd_scene load_steps=5 format=3 uid="uid://dvuexqktlpgph"]
+
+[ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme.tres" id="1_7x6g1"]
+[ext_resource type="Texture2D" uid="uid://c1p8xe1vcoitq" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/plus.png" id="2_5ajlj"]
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_qe5gh"]
+color = Color(1, 1, 1, 1)
+thickness = 10
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_7x6g1"]
+color = Color(1, 1, 1, 1)
+thickness = 5
+
+[node name="ControlsMenu" type="ControlsMenu"]
+default_button_icon = ExtResource("2_5ajlj")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_7x6g1")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Controls"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+theme_override_styles/separator = SubResource("StyleBoxLine_qe5gh")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 120
+
+[node name="MovementContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer"]
+layout_mode = 2
+text = "Movement"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_7x6g1")
+
+[node name="CenterContainer" type="CenterContainer" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer"]
+layout_mode = 2
+theme_override_constants/h_separation = 60
+theme_override_constants/v_separation = 15
+columns = 2
+
+[node name="MoveForwardLabel" type="Label" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+text = "Move Forward:"
+
+[node name="MoveForwardRebind" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+text = "<Unassigned>"
+icon = ExtResource("2_5ajlj")
+
+[node name="MoveLeftLabel" type="Label" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+layout_mode = 2
+text = "Move Left:"
+
+[node name="MoveLeftRebind" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+text = "<Unassigned>"
+icon = ExtResource("2_5ajlj")
+
+[node name="MoveBackLabel" type="Label" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+layout_mode = 2
+text = "Move Back:"
+
+[node name="MoveBackRebind" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+text = "<Unassigned>"
+icon = ExtResource("2_5ajlj")
+
+[node name="MoveRightLabel" type="Label" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+layout_mode = 2
+text = "Move Right:"
+
+[node name="MoveRightRebind" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+text = "<Unassigned>"
+icon = ExtResource("2_5ajlj")
+
+[node name="ToggleSprintLabel4" type="Label" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+layout_mode = 2
+text = "Toggle Sprint:"
+
+[node name="ToggleSprintRebind" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+text = "<Unassigned>"
+icon = ExtResource("2_5ajlj")
+
+[node name="MoveUpLabel" type="Label" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+layout_mode = 2
+text = "Move Up:"
+
+[node name="MoveUpRebind" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+text = "<Unassigned>"
+icon = ExtResource("2_5ajlj")
+
+[node name="MoveDownLabel" type="Label" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+layout_mode = 2
+text = "Move Down:"
+
+[node name="MoveDownRebind" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+text = "<Unassigned>"
+icon = ExtResource("2_5ajlj")
+
+[node name="MiscContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MiscContainer"]
+layout_mode = 2
+text = "Misc"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MiscContainer"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_7x6g1")
+
+[node name="CenterContainer" type="CenterContainer" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MiscContainer"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MiscContainer/CenterContainer"]
+layout_mode = 2
+theme_override_constants/h_separation = 60
+theme_override_constants/v_separation = 15
+columns = 2
+
+[node name="ShowBodyLabel" type="Label" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MiscContainer/CenterContainer/GridContainer"]
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+text = "Show Player:"
+
+[node name="ShowBodyRebind" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MiscContainer/CenterContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+text = "<Unassigned>"
+icon = ExtResource("2_5ajlj")
+
+[node name="ToggleLightLabel" type="Label" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MiscContainer/CenterContainer/GridContainer"]
+layout_mode = 2
+text = "Toggle Light:"
+
+[node name="ToggleLightRebind" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MiscContainer/CenterContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+text = "<Unassigned>"
+icon = ExtResource("2_5ajlj")
+
+[node name="BackButton" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Back"

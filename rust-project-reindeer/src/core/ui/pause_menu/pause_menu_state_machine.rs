@@ -1,7 +1,7 @@
 use godot::{classes::{Control, IControl, object::ConnectFlags}, prelude::*};
 use strum::{EnumCount, VariantArray};
 
-use crate::core::ui::{i_sub_menu_state::ISubMenuState, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}, pause_menu::{pause_menu_face::PauseMenuFace, pause_menu_face_request::PauseMenuFaceRequest, pause_menu_request::PauseMenuRequest, pause_menu_state::PauseMenuState}};
+use crate::core::ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_sub_menu_state::ISubMenuState, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}, pause_menu::{pause_menu_face::PauseMenuFace, pause_menu_face_request::PauseMenuFaceRequest, pause_menu_request::PauseMenuRequest, pause_menu_state::PauseMenuState}};
 
 
 #[derive(GodotClass)]
@@ -15,10 +15,15 @@ pub struct PauseMenuStateMachine {
     #[init(node = "%OptionsMenu")]
     options_menu : OnReady<Gd<OptionsMenu>>,
 
+    #[var]
+    #[init(node = "%ControlsMenu")]
+    controls_menu : OnReady<Gd<ControlsMenu>>,
+
     #[var(get, set = set_state)]
     #[init(val = PauseMenuState::Face)]
     state : PauseMenuState,
 
+    
     base : Base<Control>,
 }
 
@@ -51,6 +56,18 @@ impl IControl for PauseMenuStateMachine {
                 self,
                 Self::on_options_menu_request
             );
+        
+        // controls_menu
+        self
+            .controls_menu
+            .signals()
+            .request()
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(
+                self,
+                Self::on_controls_menu_request
+            );
             
 
         self.refresh();
@@ -62,6 +79,7 @@ impl IControl for PauseMenuStateMachine {
 impl PauseMenuStateMachine {
     #[signal]
     pub fn request(request : PauseMenuRequest);
+
 
     #[func]
     pub fn set_state(&mut self, new_state : PauseMenuState) {
@@ -84,20 +102,31 @@ impl PauseMenuStateMachine {
     }
 
 
+    #[func]
     fn on_pause_menu_face_request(&mut self, request : PauseMenuFaceRequest) {
         match request {
             PauseMenuFaceRequest::Start => self.signals().request().emit(PauseMenuRequest::Start),
             PauseMenuFaceRequest::Resume => self.signals().request().emit(PauseMenuRequest::Resume),
             PauseMenuFaceRequest::ToMainMenu => self.signals().request().emit(PauseMenuRequest::ToMainMenu),
-
+            
             PauseMenuFaceRequest::ToOptions => self.set_state(PauseMenuState::Options),
+            PauseMenuFaceRequest::ToControls => self.set_state(PauseMenuState::Controls),
         }
     }
 
 
+    #[func]
     fn on_options_menu_request(&mut self, request : OptionsMenuRequest) {
         match request {
             OptionsMenuRequest::Exit => self.set_state(PauseMenuState::Face),
+        }
+    }
+
+
+    #[func]
+    fn on_controls_menu_request(&mut self, request : ControlsMenuRequest) {
+        match request {
+            ControlsMenuRequest::Back => self.set_state(PauseMenuState::Face),
         }
     }
 
@@ -112,6 +141,7 @@ impl PauseMenuStateMachine {
         match state {
             PauseMenuState::Face => self.face_pause_menu.clone().into_dyn().upcast(),
             PauseMenuState::Options => self.options_menu.clone().into_dyn().upcast(),
+            PauseMenuState::Controls => self.controls_menu.clone().into_dyn().upcast(),
         }
     }
 

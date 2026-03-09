@@ -9,6 +9,7 @@ pub enum PauseMenuButtonType {
     Start,
     Resume,
     Options,
+    Controls,
     MainMenu,
     Exit,    
 }
