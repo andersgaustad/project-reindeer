@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://buhhonnkkvo8t"]
+[gd_scene load_steps=6 format=3 uid="uid://buhhonnkkvo8t"]
 
 [ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme.tres" id="1_sl1te"]
 [ext_resource type="PackedScene" uid="uid://enihlfva4ccy" path="res://scenes/ui/main_menu/main_menu.tscn" id="2_1g8jr"]
 [ext_resource type="PackedScene" uid="uid://b34eprg0tr18k" path="res://scenes/ui/main_menu/load_map_menu.tscn" id="2_fe2o3"]
 [ext_resource type="PackedScene" uid="uid://bg3ubsvdotyio" path="res://scenes/ui/options_menu/options_menu.tscn" id="4_m1kxf"]
+[ext_resource type="PackedScene" uid="uid://clc6ct8pkrsgj" path="res://scenes/ui/main_menu/about_menu.tscn" id="5_nlu2l"]
 
 [node name="MainMenuStateMachine" type="MainMenuStateMachine"]
 anchors_preset = 15
@@ -23,6 +24,11 @@ visible = false
 layout_mode = 1
 
 [node name="OptionsMenu" parent="." instance=ExtResource("4_m1kxf")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="AboutMenu" parent="." instance=ExtResource("5_nlu2l")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1

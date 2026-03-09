@@ -1,3 +1,6 @@
+pub mod about_menu_request;
+pub mod about_menu;
+pub mod load_map_menu_request;
 pub mod load_map_menu;
 pub mod main_menu_state_machine;
 pub mod main_menu_state;

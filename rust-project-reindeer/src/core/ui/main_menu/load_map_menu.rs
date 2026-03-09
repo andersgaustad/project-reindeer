@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl, OptionButton, RichTextLabel, TextEdit, Texture2D}, prelude::*};
 
-use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, maze::maze::{Maze, NewMazeError}, ui::i_sub_menu_state::ISubMenuState};
+use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, maze::maze::{Maze, NewMazeError}, ui::{i_sub_menu_state::ISubMenuState, main_menu::load_map_menu_request::LoadMapMenuRequest}};
 
 
 #[derive(GodotClass)]
@@ -167,7 +167,7 @@ impl LoadMapMenu {
     pub fn notify_maze_created(info : Gd<GodotMainLevelConstructorInfo>);
 
     #[signal]
-    pub fn request_cancel();
+    pub fn request(request : LoadMapMenuRequest);
 
 
     #[func]
@@ -205,8 +205,8 @@ impl LoadMapMenu {
     fn on_cancel_pressed(&mut self) {
         self
             .signals()
-            .request_cancel()
-            .emit();
+            .request()
+            .emit(LoadMapMenuRequest::Back);
     }
 
 

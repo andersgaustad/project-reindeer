@@ -1,7 +1,7 @@
 use godot::{classes::{Control, IControl}, prelude::*};
 use strum::{EnumCount, VariantArray};
 
-use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, ui::{i_sub_menu_state::ISubMenuState, main_menu::{load_map_menu::LoadMapMenu, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}};
+use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, ui::{i_sub_menu_state::ISubMenuState, main_menu::{about_menu::AboutMenu, about_menu_request::AboutMenuRequest, load_map_menu::LoadMapMenu, load_map_menu_request::LoadMapMenuRequest, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}};
 
 
 #[derive(GodotClass)]
@@ -18,6 +18,10 @@ pub struct MainMenuStateMachine {
     #[var]
     #[init(node = "%OptionsMenu")]
     options_menu : OnReady<Gd<OptionsMenu>>,
+
+    #[var]
+    #[init(node = "%AboutMenu")]
+    about_menu : OnReady<Gd<AboutMenu>>,
 
     #[var(get, set = set_state)]
     #[init(val = MainMenuState::Title)]
@@ -69,12 +73,21 @@ impl IControl for MainMenuStateMachine {
         self
             .load_map_menu
             .signals()
-            .request_cancel()
+            .request()
             .connect_other(
                 self,
-                Self::on_load_map_requests_cancel
+                Self::on_load_map_requests
             );
         
+        // About -> Title
+        self
+            .about_menu
+            .signals()
+            .request()
+            .connect_other(
+                self,
+                Self::on_about_requests
+            );
 
         self.refresh();
     }
@@ -132,8 +145,18 @@ impl MainMenuStateMachine {
 
 
     #[func]
-    fn on_load_map_requests_cancel(&mut self) {
-        self.set_state(MainMenuState::Title);
+    fn on_load_map_requests(&mut self, request : LoadMapMenuRequest) {
+        match request {
+            LoadMapMenuRequest::Back => self.set_state(MainMenuState::Title),
+        }
+    }
+
+
+    #[func]
+    fn on_about_requests(&mut self, request : AboutMenuRequest) {
+        match request {
+            AboutMenuRequest::Back => self.set_state(MainMenuState::Title),
+        }
     }
 
 
@@ -148,6 +171,7 @@ impl MainMenuStateMachine {
             MainMenuState::Title => self.title_menu.clone().into_dyn().upcast(),
             MainMenuState::Options => self.options_menu.clone().into_dyn().upcast(),
             MainMenuState::LoadMap => self.load_map_menu.clone().into_dyn().upcast(),
+            MainMenuState::About => self.about_menu.clone().into_dyn().upcast(),
         }
     }
 

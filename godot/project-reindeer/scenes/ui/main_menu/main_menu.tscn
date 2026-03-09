@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://enihlfva4ccy"]
+[gd_scene load_steps=3 format=3 uid="uid://enihlfva4ccy"]
 
 [ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme.tres" id="1_1ch07"]
+[ext_resource type="Texture2D" uid="uid://c5h4yk6tahuhq" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/information.png" id="2_e8t4i"]
 
 [node name="MainMenu" type="MainMenu"]
 anchors_preset = 15
@@ -40,3 +41,26 @@ text = "Options"
 unique_name_in_owner = true
 layout_mode = 2
 text = "Exit"
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="AboutButton" type="Button" parent="MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 10
+icon = ExtResource("2_e8t4i")

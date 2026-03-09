@@ -7,5 +7,6 @@ use strum::{EnumCount, VariantArray};
 pub enum MainMenuState {
     Title,
     Options,
-    LoadMap    
+    LoadMap,
+    About,
 }

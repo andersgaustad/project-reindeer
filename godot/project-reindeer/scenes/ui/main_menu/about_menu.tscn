@@ -1,0 +1,104 @@
+[gd_scene load_steps=3 format=3 uid="uid://clc6ct8pkrsgj"]
+
+[ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme.tres" id="1_umkq1"]
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_ywvpg"]
+color = Color(1, 1, 1, 1)
+thickness = 10
+
+[node name="AboutMenu" type="AboutMenu"]
+credits_text_file = "res://about/credits/credits.bbcode.txt"
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_umkq1")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("1_umkq1")
+text = "Project Reindeer"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_ywvpg")
+
+[node name="TextMarginContainer" type="MarginContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 800)
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_right = 15
+
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/TextMarginContainer"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="TabContainer" type="TabContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/tab_separation = 8
+current_tab = 0
+
+[node name="About" type="MarginContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+metadata/_tab_index = 0
+
+[node name="AboutText" type="RichTextLabel" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/About"]
+layout_mode = 2
+bbcode_enabled = true
+text = "A simple pathfinding project based on:
+[url=https://adventofcode.com]Advent of Code[/url] 2024's Day 16: [url=https://adventofcode.com/2024/day/16]Reindeer Maze[/url]
+
+Advent of Code and its Puzzles, Code, & Design is made by
+[url=https://was.tl/]Eric Wastle[/url]
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Credits" type="MarginContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+metadata/_tab_index = 1
+
+[node name="CreditsText" type="RichTextLabel" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits"]
+unique_name_in_owner = true
+layout_mode = 2
+bbcode_enabled = true
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme = ExtResource("1_umkq1")
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="BackButton" type="Button" parent="VBoxContainer/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Back"
