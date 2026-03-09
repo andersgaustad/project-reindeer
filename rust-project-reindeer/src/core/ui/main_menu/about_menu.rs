@@ -14,6 +14,10 @@ pub struct AboutMenu {
     // Non-exported
 
     #[var]
+    #[init(node = "%AboutText")]
+    about_text_field : OnReady<Gd<RichTextLabel>>,
+
+    #[var]
     #[init(node = "%CreditsText")]
     credit_text_field : OnReady<Gd<RichTextLabel>>,
 
@@ -29,6 +33,16 @@ pub struct AboutMenu {
 #[godot_api]
 impl IControl for AboutMenu {
     fn ready(&mut self) {
+        // about_text_field
+        self
+            .about_text_field
+            .signals()
+            .meta_clicked()
+            .connect_other(
+                self,
+                Self::on_about_text_meta_clicked
+            );
+
         // credit_text_field
         self
             .credit_text_field
@@ -59,7 +73,11 @@ impl IControl for AboutMenu {
         }
 
         if event.is_action_pressed(CANCEL) {
-            self.back_button.set_pressed(true);
+            self.
+                run_deferred(|me| {
+                    me.on_back_pressed();
+                }
+            );
         }
     }
 }
@@ -104,11 +122,14 @@ impl AboutMenu {
 
 
     #[func]
-    fn on_credit_text_meta_clicked(&mut self, variant : Variant) {
-        let string = variant.stringify();
+    fn on_about_text_meta_clicked(&mut self, variant : Variant) {
+        self.handle_text_clicked(variant);
+    }
 
-        let mut os = Os::singleton();
-        os.shell_open(&string);
+
+    #[func]
+    fn on_credit_text_meta_clicked(&mut self, variant : Variant) {
+        self.handle_text_clicked(variant);
     }
 
 
@@ -118,6 +139,15 @@ impl AboutMenu {
             .signals()
             .request()
             .emit(AboutMenuRequest::Back);
+    }
+
+
+    fn handle_text_clicked(&mut self, variant : Variant) {
+        let string = variant.stringify();
+        println!(":?- Clicked: {}", &string);
+
+        let mut os = Os::singleton();
+        os.shell_open(&string);
     }
 
 

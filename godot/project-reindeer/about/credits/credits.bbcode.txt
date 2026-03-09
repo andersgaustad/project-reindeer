@@ -1,17 +1,17 @@
-[p]Credits and Acknowledgements[/p]
+[p][b]Credits and Acknowledgements[/b][/p]
 This project would not have been possible wothout the use of assets and creations from other creators.
 See the bundled Markdown file for a detailed list of assets, authors, and licenses.
 
 
 [b]Art:[/b]
 
-[i]Direction Arrow[/i] by Alihan ([url={https://sketchfab.com/3d-models/direction-arrow-6ef46718c7b242e39fcad7f27ee858a5}]{External link}[/url])
-[i]Game Icons[/i] by Kenney ([url={https://kenney.nl/assets/game-icons}]{External link}[/url])
-[i]Holiday Kit[/i] by Kenney ([url={https://kenney.nl/assets/holiday-kit}]{External link}[/url])
+[i]Direction Arrow[/i] by Alihan ([url=https://sketchfab.com/3d-models/direction-arrow-6ef46718c7b242e39fcad7f27ee858a5]External link[/url])
+[i]Game Icons[/i] by Kenney ([url=https://kenney.nl/assets/game-icons]External link[/url])
+[i]Holiday Kit[/i] by Kenney ([url=https://kenney.nl/assets/holiday-kit]External link[/url])
 
 
 [b]Fonts:[/b]
 
-[i]Asterisk Mono Font v1.0[/i] by GGBotNet ([url={https://ggbot.itch.io/asterisk-mono-font}]{External link}[/url])
+[i]Asterisk Mono Font v1.0[/i] by GGBotNet ([url=https://ggbot.itch.io/asterisk-mono-font]External link[/url])
 
 

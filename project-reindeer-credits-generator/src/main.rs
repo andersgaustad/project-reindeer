@@ -43,7 +43,6 @@ fn get_assets(asset_root : AssetsRoot, asset_info_file_name : &OsStr) -> Vec<Ass
         if file_name != asset_info_file_name {
             continue;
         };
-        println!("Found!");
 
         let entry_path = entry.path();
         let content_result = std::fs::read_to_string(entry_path);
@@ -87,7 +86,6 @@ fn type_sorted_assets(assets : impl Iterator<Item = AssetInfo>) -> BTreeMap<Stri
 
 
 fn write_markdown_credits(out_credits_file : &Path, map : &BTreeMap<String, Vec<AssetInfo>>) -> Result<(), std::io::Error> {
-    println!("Creating file {}", out_credits_file.display());
     let file : std::fs::File = std::fs::File::create(out_credits_file)?;
     let mut buffer = BufWriter::new(file);
 
@@ -145,7 +143,7 @@ fn write_bbcode_credits(out_credits_file : &Path, map : &BTreeMap<String, Vec<As
     let file : std::fs::File = std::fs::File::create(out_credits_file)?;
     let mut buffer = BufWriter::new(file);
 
-    writeln!(buffer, "[p]Credits and Acknowledgements[/p]")?;
+    writeln!(buffer, "[p][b]Credits and Acknowledgements[/b][/p]")?;
     writeln!(buffer, "This project would not have been possible wothout the use of assets and creations from other creators.")?;
     writeln!(buffer, "See the bundled Markdown file for a detailed list of assets, authors, and licenses.")?;
     writeln!(buffer, "\n")?;
@@ -167,7 +165,7 @@ fn write_bbcode_credits(out_credits_file : &Path, map : &BTreeMap<String, Vec<As
         for asset in assets.iter() {
             writeln!(
                 buffer,
-                "[i]{}[/i] by {} ([url={{{}}}]{{External link}}[/url])",
+                "[i]{}[/i] by {} ([url={}]External link[/url])",
                 &asset.name,
                 &asset.author,
                 &asset.source,
