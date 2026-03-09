@@ -23,6 +23,7 @@ pub struct Maze {
 
     reindeer : Reindeer,
 
+
     base : Base<RefCounted>,
 }
 
@@ -158,7 +159,7 @@ impl Maze {
 
 
     #[func]
-    pub fn find_paths(&self, maze_solver_info : Gd<MazeSolverInfo>) -> Gd<MazeFindPathsCommunicator> {
+    pub fn find_paths(&self, maze_solver_info : Gd<MazeSolverInfo>, cost_per_rotation : u32) -> Gd<MazeFindPathsCommunicator> {
         const REMEMBER_BEST_PATH : bool = true;
         const IMPLIED_UNVISITED_COST : usize = usize::MAX;
 
@@ -176,7 +177,7 @@ impl Maze {
         let communicator = MazeFindPathsCommunicator::new_gd();
         let interface = communicator.clone();
 
-        let rotations_are_free = maze_solver_info.bind().get_rotation_cost() == 0;
+        let rotations_are_free = cost_per_rotation == 0;
 
         godot::task::spawn(async move {
             // AWAIT
@@ -298,7 +299,7 @@ impl Maze {
                             direction: new_target_rotation,
                         };
 
-                        let target_cost = Self::rotation_cost(rotation_steps, maze_solver_info.clone());
+                        let target_cost = Self::rotation_cost(rotation_steps, cost_per_rotation);
 
                         let candidate_and_cost = (target, target_cost);
 
@@ -531,15 +532,14 @@ impl Maze {
     }
 
 
-    fn rotation_cost(rotations : usize, maze_solver_info : Gd<MazeSolverInfo>) -> u32 {
-        let one_rotation = maze_solver_info.bind().get_rotation_cost();
+    fn rotation_cost(rotations : usize, cost_per_rotation : u32) -> u32 {
         let clamped = rotations % Direction::COUNT;
         match clamped {
             0 => 0,
 
-            1 | 3 => one_rotation,
+            1 | 3 => cost_per_rotation,
 
-            2 => 2 * one_rotation,
+            2 => 2 * cost_per_rotation,
 
             // Should never happen
             _ => {

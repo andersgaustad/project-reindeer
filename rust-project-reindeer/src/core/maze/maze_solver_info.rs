@@ -21,10 +21,5 @@ pub struct MazeSolverInfo {
     #[init(val = 0.02)]
     pub wait_delay : f64,
 
-    #[export]
-    #[var]
-    #[init(val = 1000)]
-    pub rotation_cost : u32,
-
     base : Base<Resource>,
 }

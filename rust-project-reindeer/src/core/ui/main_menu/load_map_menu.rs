@@ -1,4 +1,4 @@
-use godot::{classes::{Button, Control, IControl, OptionButton, RichTextLabel, TextEdit, Texture2D}, prelude::*};
+use godot::{classes::{Button, Control, HSlider, IControl, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
 
 use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, maze::maze::{Maze, NewMazeError}, ui::{i_sub_menu_state::ISubMenuState, main_menu::load_map_menu_request::LoadMapMenuRequest}};
 
@@ -84,6 +84,18 @@ pub struct LoadMapMenu {
     #[init(node = "%ForestSizeDropDownButton")]
     forest_size_option_button : OnReady<Gd<OptionButton>>,
     default_forest_size_id : i32,
+
+    #[var]
+    #[init(node = "%TurningCostSpinBox")]
+    turn_cost_spin_box : OnReady<Gd<SpinBox>>,
+
+    #[var]
+    #[init(node = "%TurningCostSlider")]
+    turn_cost_slider : OnReady<Gd<HSlider>>,
+
+    #[var(get, set = set_turn_cost)]
+    turn_cost : u32,
+    default_turn_cost : u32,
     
 
     base : Base<Control>,
@@ -102,7 +114,7 @@ impl IControl for LoadMapMenu {
             .text_changed()
             .connect_other(
                 self,
-                Self::on_text_changed
+                Self::on_maze_text_changed
             );
         
         // On load
@@ -135,8 +147,36 @@ impl IControl for LoadMapMenu {
                 Self::on_show_or_hide_advanced_options_pressed
             );
         
+        // Turn cost - Text change
+        self
+            .turn_cost_spin_box
+            .signals()
+            .value_changed()
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(
+                self,
+                Self::on_turn_cost_spin_box_value_changed
+            );
+        
+        // Turn cost - Slider change
+        self
+            .turn_cost_slider
+            .signals()
+            .value_changed()
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(
+                self,
+                Self::on_turn_cost_slider_value_changed
+            );
+
         self.default_feedback_text = self.feedback_text.get_text();
         self.default_tree_density_id = self.tree_density_option_button.get_selected_id();
+
+        let set_turn_cost = self.turn_cost_slider.get_value() as u32;
+        self.turn_cost = set_turn_cost;
+        self.default_turn_cost = set_turn_cost;
 
         self.refresh();
     }
@@ -157,6 +197,8 @@ impl ISubMenuState for LoadMapMenu {
         self.seed_text_edit.clear();
         self.tree_density_option_button.select(self.default_tree_density_id);
         self.forest_size_option_button.select(self.default_forest_size_id);
+
+        self.set_turn_cost(self.default_turn_cost);
     }
 }
 
@@ -188,7 +230,35 @@ impl LoadMapMenu {
     }
 
 
-    fn on_text_changed(&mut self) {
+    #[func]
+    pub fn set_turn_cost(&mut self, turn_cost : u32) {
+        // Set
+        self.turn_cost = turn_cost;
+
+        if !self.base().is_node_ready() {
+            return;
+        }
+
+        let turn_cost_f64 = turn_cost as f64;
+
+        // Slider
+        let slider = &mut self.turn_cost_slider;
+        let value = slider.get_value();
+        if value != turn_cost_f64 {
+            slider.set_value(turn_cost_f64);
+        }
+
+        // Spin box
+        let spin_box = &mut self.turn_cost_spin_box;
+        let value = spin_box.get_value();
+        if value != turn_cost_f64 {
+            spin_box.set_value(turn_cost_f64);
+        }
+    }
+
+
+    #[func]
+    fn on_maze_text_changed(&mut self) {
         let empty_text_field = self.text_is_empty();
 
         let load_text = if empty_text_field {
@@ -202,6 +272,7 @@ impl LoadMapMenu {
     }
 
 
+    #[func]
     fn on_cancel_pressed(&mut self) {
         self
             .signals()
@@ -210,9 +281,30 @@ impl LoadMapMenu {
     }
 
 
+    #[func]
     fn on_show_or_hide_advanced_options_pressed(&mut self) {
         let showing_advanced_options = self.show_advanced_options;
         self.set_show_advanced_options(!showing_advanced_options);
+    }
+
+
+    #[func]
+    fn on_turn_cost_spin_box_value_changed(&mut self, value : f64) {
+        let as_u32 = value as u32;
+
+        self.run_deferred(move |me| {
+            me.set_turn_cost(as_u32);
+        });
+    }
+
+
+    #[func]
+    fn on_turn_cost_slider_value_changed(&mut self, value : f64) {
+        let as_u32 = value as u32;
+
+        self.run_deferred(move |me| {
+            me.set_turn_cost(as_u32);
+        });
     }
 
 
@@ -220,7 +312,7 @@ impl LoadMapMenu {
         let show_advanced_options = self.show_advanced_options;
         self.set_show_advanced_options(show_advanced_options);
 
-        self.on_text_changed();
+        self.on_maze_text_changed();
 
     }
 
@@ -255,12 +347,14 @@ impl LoadMapMenu {
 
                 let tree_density = self.get_tree_density();
                 let outer_forest_rings = self.get_outer_forest_rings();
+                let turning_cost = self.turn_cost;
 
                 let info = GodotMainLevelConstructorInfo::new(
                     maze,
                     seed,
                     tree_density,
                     outer_forest_rings,
+                    turning_cost,
                 );
 
                 self

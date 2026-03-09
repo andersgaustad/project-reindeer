@@ -87,6 +87,14 @@ pub struct MainLevel {
     random_seed : GString,
 
 
+    #[export_group(name = "Maze Parameters")]
+
+    #[export]
+    #[var]
+    #[init(val = 1000)]
+    turning_cost : u32,
+
+
     // Non-exported
 
     #[var]
@@ -1398,7 +1406,7 @@ impl MainLevel {
         let mut maze = maze_info.maze.clone();
 
         let maze_solver_info = self.maze_solver_info.clone();
-        let mut handle = maze.bind_mut().find_paths(maze_solver_info);
+        let mut handle = maze.bind_mut().find_paths(maze_solver_info, self.turning_cost);
 
         
         // Level -> Communicator

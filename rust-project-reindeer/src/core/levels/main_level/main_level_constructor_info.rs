@@ -20,6 +20,7 @@ impl GodotMainLevelConstructorInfo {
         seed : GString,
         tree_density : f32,
         outer_forest_rings : i32,
+        cost_per_rotation : u32,
 
     ) -> Gd<Self> {
         Gd::from_init_fn(|base| {
@@ -28,6 +29,7 @@ impl GodotMainLevelConstructorInfo {
                 seed,
                 tree_density,
                 outer_forest_rings,
+                cost_per_rotation
             };
 
             Self {
@@ -50,4 +52,6 @@ pub struct MainLevelConstructorInfo {
     pub tree_density : f32,
 
     pub outer_forest_rings : i32,
+
+    pub cost_per_rotation : u32,
 }

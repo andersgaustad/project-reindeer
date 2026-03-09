@@ -116,7 +116,8 @@ impl Run {
             maze,
             seed,
             tree_density,
-            outer_forest_rings, 
+            outer_forest_rings,
+            cost_per_rotation,
 
         } = inner;
 
@@ -124,6 +125,7 @@ impl Run {
         bound_main_level.set_random_seed(seed);
         bound_main_level.set_trees_per_square_unit(tree_density);
         bound_main_level.set_outer_forest_rings(outer_forest_rings);
+        bound_main_level.set_turning_cost(cost_per_rotation);
         drop(bound_main_level);
 
         self.base_mut().add_child(&main_level.clone().upcast::<Node>());
