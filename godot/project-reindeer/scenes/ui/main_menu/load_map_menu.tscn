@@ -229,3 +229,23 @@ size_flags_vertical = 1
 max_value = 2000.0
 value = 1000.0
 allow_greater = true
+
+[node name="ColorALabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]
+layout_mode = 2
+text = "Color A:"
+
+[node name="ColorAPickerButton" type="ColorPickerButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+color = Color(0.20392157, 0.23529412, 0.5647059, 1)
+edit_alpha = false
+
+[node name="ColorBLabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]
+layout_mode = 2
+text = "Color B:"
+
+[node name="ColorBPickerButton" type="ColorPickerButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+color = Color(0.105882354, 0.53333336, 0.7137255, 1)
+edit_alpha = false

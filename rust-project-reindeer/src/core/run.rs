@@ -118,6 +118,8 @@ impl Run {
             tree_density,
             outer_forest_rings,
             cost_per_rotation,
+            color_a,
+            color_b,
 
         } = inner;
 
@@ -126,6 +128,8 @@ impl Run {
         bound_main_level.set_trees_per_square_unit(tree_density);
         bound_main_level.set_outer_forest_rings(outer_forest_rings);
         bound_main_level.set_turning_cost(cost_per_rotation);
+        bound_main_level.set_color_a(color_a);
+        bound_main_level.set_color_b(color_b);
         drop(bound_main_level);
 
         self.base_mut().add_child(&main_level.clone().upcast::<Node>());

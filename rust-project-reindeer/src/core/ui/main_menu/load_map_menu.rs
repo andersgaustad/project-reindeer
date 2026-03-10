@@ -1,6 +1,6 @@
-use godot::{classes::{Button, Control, HSlider, IControl, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
+use godot::{classes::{Button, ColorPickerButton, Control, HSlider, IControl, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
 
-use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, maze::maze::{Maze, NewMazeError}, ui::{i_sub_menu_state::ISubMenuState, main_menu::load_map_menu_request::LoadMapMenuRequest}};
+use crate::core::{levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, ui::{i_sub_menu_state::ISubMenuState, main_menu::load_map_menu_request::LoadMapMenuRequest}};
 
 
 #[derive(GodotClass)]
@@ -92,6 +92,14 @@ pub struct LoadMapMenu {
     #[var]
     #[init(node = "%TurningCostSlider")]
     turn_cost_slider : OnReady<Gd<HSlider>>,
+
+    #[var]
+    #[init(node = "%ColorAPickerButton")]
+    color_a_picker : OnReady<Gd<ColorPickerButton>>,
+
+    #[var]
+    #[init(node = "%ColorBPickerButton")]
+    color_b_picker : OnReady<Gd<ColorPickerButton>>,
 
     #[var(get, set = set_turn_cost)]
     turn_cost : u32,
@@ -347,15 +355,21 @@ impl LoadMapMenu {
 
                 let tree_density = self.get_tree_density();
                 let outer_forest_rings = self.get_outer_forest_rings();
-                let turning_cost = self.turn_cost;
+                let cost_per_rotation = self.turn_cost;
+                let color_a = self.color_a_picker.get_pick_color();
+                let color_b = self.color_b_picker.get_pick_color();
 
-                let info = GodotMainLevelConstructorInfo::new(
+                let inner = MainLevelConstructorInfo {
                     maze,
                     seed,
                     tree_density,
                     outer_forest_rings,
-                    turning_cost,
-                );
+                    cost_per_rotation,
+                    color_a,
+                    color_b,
+                };
+
+                let info = GodotMainLevelConstructorInfo::new(inner);
 
                 self
                     .signals()
