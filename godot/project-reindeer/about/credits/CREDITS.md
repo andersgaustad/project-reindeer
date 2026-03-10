@@ -21,6 +21,11 @@ Huge thanks to all the creators!
 - Source: **[link](https://kenney.nl/assets/holiday-kit)**
 - License: **CC0**
 
+**Old Parchment Paper**
+- Author: **cron**
+- Source: **[link](https://opengameart.org/content/old-parchment-paper)**
+- License: **CC0**
+
 
 ## Fonts
 
@@ -29,5 +34,10 @@ Huge thanks to all the creators!
 - Source: **[link](https://ggbot.itch.io/asterisk-mono-font)**
 - License: **SIL Open Font License, Version 1.1**
 - License text can be found [here](../licenses/AsteriskMono_Font_1_0/License.txt).
+
+**Erratic Cursive Font - CC0**
+- Author: **GGBotNet**
+- Source: **[link](https://ggbot.itch.io/erratic-cursive-font)**
+- License: **CC0**
 
 

@@ -8,10 +8,12 @@ See the bundled Markdown file for a detailed list of assets, authors, and licens
 [i]Direction Arrow[/i] by Alihan ([url=https://sketchfab.com/3d-models/direction-arrow-6ef46718c7b242e39fcad7f27ee858a5]External link[/url])
 [i]Game Icons[/i] by Kenney ([url=https://kenney.nl/assets/game-icons]External link[/url])
 [i]Holiday Kit[/i] by Kenney ([url=https://kenney.nl/assets/holiday-kit]External link[/url])
+[i]Old Parchment Paper[/i] by cron ([url=https://opengameart.org/content/old-parchment-paper]External link[/url])
 
 
 [b]Fonts:[/b]
 
 [i]Asterisk Mono Font v1.0[/i] by GGBotNet ([url=https://ggbot.itch.io/asterisk-mono-font]External link[/url])
+[i]Erratic Cursive Font - CC0[/i] by GGBotNet ([url=https://ggbot.itch.io/erratic-cursive-font]External link[/url])
 
 

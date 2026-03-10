@@ -1,12 +1,19 @@
-use godot::{classes::{Button, Control, IControl, InputEvent, object::ConnectFlags}, prelude::*};
+use godot::{classes::{Button, Control, IControl, InputEvent, Texture2D, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{levels::main_level::pathfinding_state::PathfindingState, ui::{button_state_info::ButtonStateInfo, i_sub_menu_state::ISubMenuState, pause_menu::{pause_menu_button_types::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}}, input_map::CANCEL};
+use crate::{core::{levels::main_level::pathfinding_state::PathfindingState, ui::{button_state_info::ButtonStateInfo, i_sub_menu_state::ISubMenuState, letter_menu::{letter_menu::LetterMenu, letter_menu_inbox_state::LetterMenuInboxState}, pause_menu::{pause_menu_button_types::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}}, input_map::CANCEL};
 
 
 #[derive(GodotClass)]
 #[class(init, base=Control)]
 pub struct PauseMenuFace {
+    #[export]
+    #[var]
+    new_mail_icon : OnEditor<Gd<Texture2D>>,
+
+
+    // Non-exported
+
     #[var]
     #[init(node = "%StartButton")]
     start_button : OnReady<Gd<Button>>,
@@ -14,6 +21,10 @@ pub struct PauseMenuFace {
     #[var]
     #[init(node = "%ResumeButton")]
     resume_button : OnReady<Gd<Button>>,
+
+    #[var]
+    #[init(node = "%MailButton")]
+    mail_button : OnReady<Gd<Button>>,
 
     #[var]
     #[init(node = "%OptionsButton")]
@@ -30,6 +41,10 @@ pub struct PauseMenuFace {
     #[var]
     #[init(node = "%ExitButton")]
     exit_button : OnReady<Gd<Button>>,
+
+
+    #[var(get, set = set_letter_menu)]
+    letter_menu : Option<Gd<LetterMenu>>,
 
 
     base : Base<Control>,
@@ -57,6 +72,8 @@ impl IControl for PauseMenuFace {
                     pressed_callback
                 );
         }
+
+        self.refresh_mail_button();
     }
 
 
@@ -79,7 +96,16 @@ impl IControl for PauseMenuFace {
 #[godot_dyn]
 impl ISubMenuState for PauseMenuFace {
     fn enter(&mut self) {
-        self.resume_button.grab_focus();        
+        self.refresh_mail_button();
+
+        self.resume_button.grab_focus();
+
+        #[cfg(debug_assertions)]
+        {
+            if self.letter_menu.is_none() {
+                godot_warn!("PauseMenuFace has no LetterMenu reference - Mail button will not be updated!");
+            }
+        }
     }
 }
 
@@ -88,6 +114,15 @@ impl ISubMenuState for PauseMenuFace {
 impl PauseMenuFace {
     #[signal]
     pub fn request(request : PauseMenuFaceRequest);
+
+
+    #[func]
+    pub fn set_letter_menu(&mut self, letter_menu_option : Option<Gd<LetterMenu>>) {
+        // Set
+        self.letter_menu = letter_menu_option;
+
+        self.refresh_mail_button();
+    }
 
 
     #[func]
@@ -105,6 +140,15 @@ impl PauseMenuFace {
             .signals()
             .request()
             .emit(PauseMenuFaceRequest::Resume);
+    }
+
+
+    #[func]
+    fn on_mail_pressed(&mut self) {
+        self
+            .signals()
+            .request()
+            .emit(PauseMenuFaceRequest::ToMail);
     }
 
 
@@ -198,10 +242,35 @@ impl PauseMenuFace {
         match ty {
             PauseMenuButtonType::Start      => (self.start_button.clone(),      Box::new(Self::on_start_pressed)),
             PauseMenuButtonType::Resume     => (self.resume_button.clone(),     Box::new(Self::on_resume_pressed)),
+            PauseMenuButtonType::Mail       => (self.mail_button.clone(),       Box::new(Self::on_mail_pressed)),
             PauseMenuButtonType::Options    => (self.options_button.clone(),    Box::new(Self::on_options_pressed)),
             PauseMenuButtonType::Controls   => (self.controls_button.clone(),   Box::new(Self::on_controls_pressed)),
             PauseMenuButtonType::MainMenu   => (self.main_menu_button.clone(),  Box::new(Self::on_main_menu_pressed)),
             PauseMenuButtonType::Exit       => (self.exit_button.clone(),       Box::new(Self::on_exit_pressed)),
+        }
+    }
+
+
+    fn refresh_mail_button(&mut self) {
+        let Some(letter_menu) = self.letter_menu.clone() else {
+            return;
+        };
+
+        let mail_button = &mut self.mail_button;
+        let inbox_state = letter_menu.bind().rust_get_inbox_state();
+        match inbox_state {
+            LetterMenuInboxState::Empty => {
+                mail_button.set_disabled(true);
+                mail_button.set_button_icon(None::<Gd<Texture2D>>.as_ref());
+            },
+            LetterMenuInboxState::NewMail => {
+                mail_button.set_disabled(false);
+                mail_button.set_button_icon(&self.new_mail_icon.clone());
+            },
+            LetterMenuInboxState::AllRead => {
+                mail_button.set_disabled(false);
+                mail_button.set_button_icon(None::<Gd<Texture2D>>.as_ref());
+            },
         }
     }
 }

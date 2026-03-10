@@ -8,6 +8,7 @@ use strum::EnumIter;
 pub enum PauseMenuFaceRequest {
     Start,
     Resume,
+    ToMail,
     ToOptions,
     ToControls,
     ToMainMenu,

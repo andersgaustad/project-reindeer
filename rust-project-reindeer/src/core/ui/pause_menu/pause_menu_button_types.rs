@@ -8,6 +8,7 @@ use strum::EnumIter;
 pub enum PauseMenuButtonType {
     Start,
     Resume,
+    Mail,
     Options,
     Controls,
     MainMenu,
