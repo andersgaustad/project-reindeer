@@ -1,6 +1,8 @@
-use godot::{classes::{Button, Control, IControl, InputEventKey, InputMap, ScrollContainer, Texture2D}, prelude::*};
+use std::str::FromStr;
 
-use crate::{core::ui::{controls_menu::controls_menu_request::ControlsMenuRequest, i_sub_menu_state::ISubMenuState}, input_map::{MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_SPRINT, TOGGLE_VISIBILITY}};
+use godot::{classes::{Button, Control, IControl, InputEvent, InputEventKey, InputMap, ScrollContainer, Texture2D, object::ConnectFlags}, obj::WithBaseField, prelude::*};
+
+use crate::{core::ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, controls_menu_state::ControlsMenuState}, i_sub_menu_state::ISubMenuState}, input_map::{CANCEL, MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_SPRINT, TOGGLE_VISIBILITY}};
 
 
 #[derive(GodotClass)]
@@ -67,6 +69,9 @@ pub struct ControlsMenu {
     #[init(node = "%BackButton")]
     back_button : OnReady<Gd<Button>>,
 
+    
+    #[init(val = ControlsMenuState::Default)]
+    state : ControlsMenuState,
 
     base : Base<Control>
 }
@@ -74,7 +79,40 @@ pub struct ControlsMenu {
 
 #[godot_api]
 impl IControl for ControlsMenu {
-    fn ready(&mut self) {   
+    fn ready(&mut self) {
+        let gd = self.to_gd();
+
+        let event_names_and_buttons = self.get_binding_names_and_rebind_buttons();
+
+        for (event_name, event_button) in event_names_and_buttons.iter() {
+            let event_name_gstring = GString::from_str(*event_name).unwrap();
+            let event_button = event_button.clone();
+
+            event_button
+                .clone()
+                .signals()
+                .toggled()
+                .builder()
+                .flags(ConnectFlags::DEFERRED)
+                .connect_other_gd(
+                    &gd,
+                    move |mut me, toggled| {
+                        let event_name_gstring = event_name_gstring.clone();
+                        let event_button = event_button.clone();
+
+                        me
+                            .bind_mut()
+                            .on_rebind_button_toggled(
+                                event_name_gstring,
+                                event_button,
+                                toggled
+                            );
+                    }
+                );
+        }
+
+
+        // back_button
         self
             .back_button
             .signals()
@@ -86,12 +124,51 @@ impl IControl for ControlsMenu {
 
         self.refresh();
     }
+
+
+    fn unhandled_input(&mut self, event : Gd<InputEvent>) {
+        if !self.base().is_visible_in_tree() {
+            return;
+        }
+
+        match &self.state {
+            ControlsMenuState::Default => {
+                // Exit shortcut
+                if event.is_action_pressed(CANCEL) {
+                    self.on_back_pressed();
+                    return;
+                }
+            },
+
+            ControlsMenuState::WaitingForInput((event_name, event_button)) => {
+                let key_input_event_opt = event.clone().try_cast::<InputEventKey>().ok();
+                let Some(key_input_event) = key_input_event_opt else {
+                    return;
+                };
+
+                let mut input_map = InputMap::singleton();
+                input_map.action_erase_events(event_name.arg());
+
+                // Ignore cancel - treat as unassigned
+                if !event.is_action_pressed(CANCEL) {
+                    input_map.action_add_event(event_name.arg(), &key_input_event);
+                }
+
+                let mut event_button = event_button.clone();
+                event_button.set_pressed(false);
+
+                self.rust_set_state(ControlsMenuState::Default);
+            },
+        }
+    }
 }
 
 
 #[godot_dyn]
 impl ISubMenuState for ControlsMenu {
     fn enter(&mut self) {
+        self.rust_set_state(ControlsMenuState::Default);
+
         self.back_button.grab_focus();
 
         self
@@ -110,6 +187,51 @@ impl ISubMenuState for ControlsMenu {
 impl ControlsMenu {
     #[signal]
     pub fn request(request : ControlsMenuRequest);
+
+
+    fn rust_set_state(&mut self, state : ControlsMenuState) {
+        // Set
+        let previous_state = std::mem::replace(&mut self.state, state);
+
+        let buttons = self.get_binding_names_and_rebind_buttons();
+
+        match &self.state {
+            ControlsMenuState::Default => {
+                if let ControlsMenuState::WaitingForInput((_, mut previously_active_button)) = previous_state {
+                    previously_active_button.grab_focus();
+                }
+
+                for (_, mut button) in buttons {
+                    button.set_disabled(false);
+                }
+
+                self.refresh();
+            },
+            ControlsMenuState::WaitingForInput((_, event_button)) => {
+                for (_, mut button) in buttons {
+                    let is_event_button = &button == event_button;
+
+                    button.set_disabled(!is_event_button);
+                    if is_event_button {
+                        button.release_focus();
+                        button.set_text("Press any button...");
+                    }
+                }
+            },
+        }
+    }
+
+
+    #[func]
+    fn on_rebind_button_toggled(&mut self, event_name : GString, button : Gd<Button>, toggled : bool) {
+        let state = if toggled {
+            ControlsMenuState::WaitingForInput((event_name, button))
+        } else {
+            ControlsMenuState::Default
+        };
+        
+        self.rust_set_state(state);
+    }
 
 
     #[func]
@@ -146,7 +268,7 @@ impl ControlsMenu {
                 continue;
             };
 
-            let key_name = first_associated_input_event.as_text_physical_keycode();
+            let key_name = first_associated_input_event.as_text_keycode();
             
             if key_name.is_empty() {
                 continue;
@@ -158,7 +280,7 @@ impl ControlsMenu {
     }
 
 
-    fn get_binding_names_and_rebind_buttons(&self) -> [(&str, Gd<Button>); 9] {
+    fn get_binding_names_and_rebind_buttons(&self) -> [(&'static str, Gd<Button>); 9] {
         let names_and_rebinds = [
             // Movement
             (MOVE_FORWARD, self.move_forward_rebind.clone()),
