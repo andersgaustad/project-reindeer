@@ -1,3 +1,4 @@
+pub mod about_menu_icon_button_type;
 pub mod about_menu_request;
 pub mod about_menu;
 pub mod load_map_menu_request;

@@ -1,4 +1,4 @@
-pub mod pause_menu_button_types;
+pub mod pause_menu_button_type;
 pub mod pause_menu_face_request;
 pub mod pause_menu_request;
 pub mod pause_menu_face;

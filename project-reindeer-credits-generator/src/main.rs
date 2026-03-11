@@ -114,14 +114,24 @@ fn write_markdown_credits(out_credits_file : &Path, map : &BTreeMap<String, Vec<
                 author,
                 source,
                 license,
+                license_source,
                 ty : _ty,
                 custom_attribution,
             } = asset_info;
 
+            let not_attributed = "*(not attributed)*".to_string();
+
+            let author = if let Some(author) = author {
+                format!("**{}**", author)
+            } else {
+                not_attributed
+            };
+            
+
             writeln!(buffer, "**{}**", name)?;
-            writeln!(buffer, "- Author: **{}**", author)?;
+            writeln!(buffer, "- Author: {}", author)?;
             writeln!(buffer, "- Source: **[link]({})**", source)?;
-            writeln!(buffer, "- License: **{}**", license)?;
+            writeln!(buffer, "- License: **[{}]({})**", license, license_source)?;
             
             if let Some(custom_attribution_override) = custom_attribution {
                 writeln!(buffer, "- {}", custom_attribution_override)?;
@@ -163,11 +173,17 @@ fn write_bbcode_credits(out_credits_file : &Path, map : &BTreeMap<String, Vec<As
         writeln!(buffer, "[b]{}:[/b]\n", capitalized)?;
 
         for asset in assets.iter() {
+            let by_part = if let Some(author) = &asset.author {
+                format!(" by {}", author)
+            } else {
+                String::new()
+            };
+
             writeln!(
                 buffer,
-                "[i]{}[/i] by {} ([url={}]External link[/url])",
+                "[i]{}[/i]{} ([url={}]External link[/url])",
                 &asset.name,
-                &asset.author,
+                by_part,
                 &asset.source,
             )?;
         }

@@ -1,6 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://clc6ct8pkrsgj"]
+[gd_scene load_steps=6 format=3 uid="uid://clc6ct8pkrsgj"]
 
 [ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme.tres" id="1_umkq1"]
+[ext_resource type="Texture2D" uid="uid://dj6v00n4nnh6j" path="res://assets/dev_assets/source/godot_icon/icon.svg" id="2_q6njh"]
+[ext_resource type="Texture2D" uid="uid://dv4isvw8k5e18" path="res://assets/dev_assets/source/godot-rust-ferris/godot-rust-ferris.png" id="3_k0llh"]
+[ext_resource type="Texture2D" uid="uid://cp53iyg573o7b" path="res://assets/dev_assets/source/rust_logo/cropped-rust-lang-logo-black-300x300.webp" id="4_a061h"]
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_ywvpg"]
 color = Color(1, 1, 1, 1)
@@ -52,9 +55,10 @@ theme_override_constants/margin_bottom = 15
 [node name="TabContainer" type="TabContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer"]
 layout_mode = 2
 theme_override_constants/tab_separation = 8
-current_tab = 0
+current_tab = 1
 
 [node name="About" type="MarginContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer"]
+visible = false
 layout_mode = 2
 theme_override_constants/margin_left = 15
 theme_override_constants/margin_top = 15
@@ -66,7 +70,8 @@ metadata/_tab_index = 0
 unique_name_in_owner = true
 layout_mode = 2
 bbcode_enabled = true
-text = "A simple pathfinding project based on:
+text = "[b]Project Reindeer[/b]
+is a simple pathfinding project based on
 [url=https://adventofcode.com]Advent of Code[/url] 2024's Day 16: [url=https://adventofcode.com/2024/day/16]Reindeer Maze[/url]
 
 Advent of Code and its Puzzles, Code, & Design is made by
@@ -76,7 +81,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Credits" type="MarginContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer"]
-visible = false
 layout_mode = 2
 theme_override_constants/margin_left = 15
 theme_override_constants/margin_top = 15
@@ -84,10 +88,86 @@ theme_override_constants/margin_right = 15
 theme_override_constants/margin_bottom = 15
 metadata/_tab_index = 1
 
-[node name="CreditsText" type="RichTextLabel" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits"]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer/VBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer/VBoxContainer2/VBoxContainer"]
+layout_mode = 2
+text = "Made with:"
+horizontal_alignment = 1
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer/VBoxContainer2/VBoxContainer"]
+layout_mode = 2
+columns = 3
+
+[node name="GodotIcon" type="URLTextureButton" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer/VBoxContainer2/VBoxContainer/GridContainer"]
+url = "https://godotengine.org/"
+hover_color_multiplier = 1.15
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+texture_normal = ExtResource("2_q6njh")
+stretch_mode = 5
+
+[node name="GodotRustIcon" type="URLTextureButton" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer/VBoxContainer2/VBoxContainer/GridContainer"]
+url = "https://github.com/godot-rust/gdext?tab=readme-ov-file"
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+texture_normal = ExtResource("3_k0llh")
+stretch_mode = 5
+
+[node name="RustIcon" type="URLTextureButton" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer/VBoxContainer2/VBoxContainer/GridContainer"]
+url = "https://rust-lang.org/"
+hover_color_multiplier = 3.0
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+texture_normal = ExtResource("4_a061h")
+stretch_mode = 5
+
+[node name="GodotLabel" type="Label" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer/VBoxContainer2/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Godot"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GodotRustLabel" type="Label" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer/VBoxContainer2/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "godot-rust"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RustLabel" type="Label" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer/VBoxContainer2/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Rust"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Space" type="Control" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer/VBoxContainer2/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="CreditsText" type="RichTextLabel" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer/Credits/ScrollContainer/VBoxContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 3
 bbcode_enabled = true
+fit_content = true
+scroll_active = false
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -98,7 +178,10 @@ theme_override_constants/margin_top = 15
 theme_override_constants/margin_right = 15
 theme_override_constants/margin_bottom = 15
 
-[node name="BackButton" type="Button" parent="VBoxContainer/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="VBoxContainer/MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0

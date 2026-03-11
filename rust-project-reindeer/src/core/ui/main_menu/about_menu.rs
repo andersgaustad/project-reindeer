@@ -1,6 +1,6 @@
-use godot::{classes::{Button, Control, FileAccess, IControl, InputEvent, Os, RichTextLabel, file_access::ModeFlags}, prelude::*};
+use godot::{classes::{Button, Control, FileAccess, IControl, InputEvent, Os, RichTextLabel, TextureButton, file_access::ModeFlags}, prelude::*};
 
-use crate::{core::ui::{i_sub_menu_state::ISubMenuState, main_menu::about_menu_request::AboutMenuRequest}, input_map::CANCEL};
+use crate::{core::ui::{i_sub_menu_state::ISubMenuState, main_menu::{about_menu_icon_button_type::AboutMenuIconButtonType, about_menu_request::AboutMenuRequest}}, input_map::CANCEL};
 
 
 #[derive(GodotClass)]
@@ -16,6 +16,18 @@ pub struct AboutMenu {
     #[var]
     #[init(node = "%AboutText")]
     about_text_field : OnReady<Gd<RichTextLabel>>,
+
+    #[var]
+    #[init(node = "%GodotIcon")]
+    godot_icon : OnReady<Gd<TextureButton>>,
+
+    #[var]
+    #[init(node = "%GodotRustIcon")]
+    godot_rust_icon : OnReady<Gd<TextureButton>>,
+
+    #[var]
+    #[init(node = "%RustIcon")]
+    rust_icon : OnReady<Gd<TextureButton>>,
 
     #[var]
     #[init(node = "%CreditsText")]
