@@ -55,10 +55,9 @@ theme_override_constants/margin_bottom = 15
 [node name="TabContainer" type="TabContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer"]
 layout_mode = 2
 theme_override_constants/tab_separation = 8
-current_tab = 1
+current_tab = 0
 
 [node name="About" type="MarginContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer"]
-visible = false
 layout_mode = 2
 theme_override_constants/margin_left = 15
 theme_override_constants/margin_top = 15
@@ -81,6 +80,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Credits" type="MarginContainer" parent="VBoxContainer/TextMarginContainer/PanelContainer/MarginContainer/TabContainer"]
+visible = false
 layout_mode = 2
 theme_override_constants/margin_left = 15
 theme_override_constants/margin_top = 15
