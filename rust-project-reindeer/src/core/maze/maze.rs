@@ -411,7 +411,7 @@ impl Maze {
                 // AWAIT
             }
 
-            if let Some(score) = score_opt {
+            let path_info_opt = score_opt.map(|score| {
                 let end_state = Direction::iter().map(|direction| {
                     let state = CoordinateAndDirecton {
                         coordinate : end_coordinate.clone(),
@@ -454,9 +454,11 @@ impl Maze {
                 }).collect::<Vec<_>>();
 
                 let path_info = PathInfo::new_gd(paths, score);
+                path_info
 
-                communicator.signals().commit_found_path().emit(&path_info);
-            };
+            });
+
+            communicator.signals().commit_finished().emit(path_info_opt.as_ref());
         });
 
         interface

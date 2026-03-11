@@ -1,7 +1,7 @@
 use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, Control, Input, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextLabel, StandardMaterial3D, Timer, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::{option_change::OptionChange, options::Options}, player::Player, props::cabin::Cabin, run::Run, ui::pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}, utility::{bounding_box_utility, node_utility}}, input_map::CANCEL};
+use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::{option_change::OptionChange, options::Options}, player::Player, props::cabin::Cabin, run::Run, ui::pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}, utility::{bounding_box_utility, node_utility}}, input_map::CANCEL};
 
 
 const N_VISIBLE_TREES_IN_LOW_PERFORMANCE_MODE : i32 = 100;
@@ -259,7 +259,12 @@ impl INode3D for MainLevel {
                     self,
                     Self::on_pause_menu_request
                 );
-
+        
+        // Reset arrow count
+        // Needed as arrows persist even after main level is freed?
+        if let Some(mut arrow_spawner) = self.arrow_spawner.get_multimesh() {
+            arrow_spawner.set_instance_count(0);
+        }
         
         self.refresh();
     }
@@ -319,7 +324,12 @@ impl MainLevel {
         self.level_run_state = new_state;
 
         let paused = new_state == LevelRunState::Paused;
-        self.pause_menu.set_visible(paused);
+
+        let pause_menu = &mut self.pause_menu;
+        if paused {
+            pause_menu.bind_mut().refresh();
+        }
+        pause_menu.set_visible(paused);
 
         let mouse_mode = if paused {
             MouseMode::VISIBLE
@@ -789,7 +799,7 @@ impl MainLevel {
                 let basis = Basis::default();
                 let transform = Transform3D::new(basis, vector);
 
-                let color = if i % 2 == 0 { self.color_a } else { self.color_b };
+                let color = if (x + y) % 2 == 0 { self.color_a } else { self.color_b };
 
                 tile_multimesh.set_instance_transform(i, transform);
                 tile_multimesh.set_instance_color(i, color);
@@ -1278,99 +1288,102 @@ impl MainLevel {
 
 
     #[func]
-    fn on_maze_commit_found_path(&mut self, path_info : Gd<PathInfo>) {
+    fn on_maze_commit_found_path(&mut self, path_info_opt : Option<Gd<PathInfo>>) {
         godot_print!("Path commited!");
         self.set_pathfinding_state(PathfindingState::Done);
 
         self.maze_ghost_reindeer.hide();
 
-        let bound = path_info.bind();
-        let paths = bound.rust_get_paths();
+        let mail = path_info_opt.generate_mail();
+        self.send_mail_to_letter_menu(mail);
 
-        let Some(first_path) = paths.first() else {
-            godot_print!("TODO: No paths found!");
-            return;
-        };
+        if let Some(path_info) = &path_info_opt {
+            let bound = path_info.bind();
+            let paths = bound.rust_get_paths();
 
-        let n_arrows = first_path.len().checked_sub(1).unwrap_or(0);
+            let empty = Vec::new();
+            let first_path = paths.first().unwrap_or(&empty);
 
-        // Configure arrow spawner
+            let n_arrows = first_path.len().checked_sub(1).unwrap_or(0);
 
-        let Some(mut arrow_multimesh) = self.arrow_spawner.get_multimesh() else {
-            godot_error!("Could not find Arrow Spawner MultiMesh!");
-            return;
-        };
+            // Configure arrow spawner
 
-        arrow_multimesh.set_instance_count(0);
-
-        arrow_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
-        arrow_multimesh.set_use_colors(true);
-
-        arrow_multimesh.set_instance_count(n_arrows.try_into().unwrap());
-
-        let mut material = StandardMaterial3D::new_gd();
-        material.set_albedo(Color::WHITE);
-        material.set_flag(Flags::ALBEDO_FROM_VERTEX_COLOR, true);
-
-        let Some(mut arrow_mesh) = arrow_multimesh.get_mesh() else {
-            godot_error!("Could not get Arrow Mesh!");
-            return;
-        };
-
-        arrow_mesh.surface_set_material(0, &material);
-
-        let maze_top_left_corner_offset = self.maze_top_left_corner.get_position();
-
-        for i in 0..n_arrows {
-            let Some(current) = first_path.get(i) else {
-                break;
+            let Some(mut arrow_multimesh) = self.arrow_spawner.get_multimesh() else {
+                godot_error!("Could not find Arrow Spawner MultiMesh!");
+                return;
             };
 
-            let Some(next) = first_path.get(i + 1) else {
-                break;
+            arrow_multimesh.set_instance_count(0);
+
+            arrow_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
+            arrow_multimesh.set_use_colors(true);
+
+            arrow_multimesh.set_instance_count(n_arrows.try_into().unwrap());
+
+            let mut material = StandardMaterial3D::new_gd();
+            material.set_albedo(Color::WHITE);
+            material.set_flag(Flags::ALBEDO_FROM_VERTEX_COLOR, true);
+
+            let Some(mut arrow_mesh) = arrow_multimesh.get_mesh() else {
+                godot_error!("Could not get Arrow Mesh!");
+                return;
             };
 
-            let x = current.x;
-            let y = current.y;
+            arrow_mesh.surface_set_material(0, &material);
 
-            let Some(tile_position) = self.get_tile_position(
-                x.try_into().unwrap(),
-                y.try_into().unwrap()
-            
-            ) else {
-                continue;
-            };
+            let maze_top_left_corner_offset = self.maze_top_left_corner.get_position();
 
-            let position_coordinates = tile_position.coordinates;
-            let tile_height = tile_position.height;
+            for i in 0..n_arrows {
+                let Some(current) = first_path.get(i) else {
+                    break;
+                };
 
-            let position = Vector3::new(
-                position_coordinates.x,
-                tile_height,
-                position_coordinates.y
+                let Some(next) = first_path.get(i + 1) else {
+                    break;
+                };
 
-            ) + maze_top_left_corner_offset;
+                let x = current.x;
+                let y = current.y;
 
-            let mut transform = self.arrow_spawner.bind().create_object_transform(position, self.rng.clone());
+                let Some(tile_position) = self.get_tile_position(
+                    x.try_into().unwrap(),
+                    y.try_into().unwrap()
+                
+                ) else {
+                    continue;
+                };
 
-            let direction_from_current_to_next_opt = next.try_get_direction_of_other(current);
-            if let Some(direction_from_current_to_next) = direction_from_current_to_next_opt {
-                let alignment = self.arrow_spawner.bind().rust_get_mesh_directional_alignment();
-                let rotations = alignment.counter_clockwise_rotations_to(&direction_from_current_to_next);
+                let position_coordinates = tile_position.coordinates;
+                let tile_height = tile_position.height;
 
-                let rotations_in_radians = std::f32::consts::FRAC_PI_2 * (rotations as f32);
+                let position = Vector3::new(
+                    position_coordinates.x,
+                    tile_height,
+                    position_coordinates.y
 
-                let new_basis = transform.basis.rotated(Vector3::UP, rotations_in_radians);
-                transform.basis = new_basis;
+                ) + maze_top_left_corner_offset;
+
+                let mut transform = self.arrow_spawner.bind().create_object_transform(position, self.rng.clone());
+
+                let direction_from_current_to_next_opt = next.try_get_direction_of_other(current);
+                if let Some(direction_from_current_to_next) = direction_from_current_to_next_opt {
+                    let alignment = self.arrow_spawner.bind().rust_get_mesh_directional_alignment();
+                    let rotations = alignment.counter_clockwise_rotations_to(&direction_from_current_to_next);
+
+                    let rotations_in_radians = std::f32::consts::FRAC_PI_2 * (rotations as f32);
+
+                    let new_basis = transform.basis.rotated(Vector3::UP, rotations_in_radians);
+                    transform.basis = new_basis;
+                }
+
+                let i_i32 = i32::try_from(i).unwrap();
+
+                arrow_multimesh.set_instance_transform(i_i32, transform);
+                arrow_multimesh.set_instance_color(i_i32, self.arrow_color);
             }
 
-            let i_i32 = i32::try_from(i).unwrap();
-
-            arrow_multimesh.set_instance_transform(i_i32, transform);
-            arrow_multimesh.set_instance_color(i_i32, self.arrow_color);
-        }
-
-        godot_print!("Found path!");
+            godot_print!("Found path!");
+        };
     }
 
 
@@ -1442,7 +1455,7 @@ impl MainLevel {
 
         handle
             .signals()
-            .commit_found_path()
+            .commit_finished()
             .builder()
             .connect_other_mut(self, Self::on_maze_commit_found_path);
 
@@ -1511,6 +1524,11 @@ impl MainLevel {
         };
 
         visible_trees
+    }
+
+
+    fn send_mail_to_letter_menu(&mut self, mail : GString) {
+        self.pause_menu.bind_mut().send_mail_to_letter_menu(mail);
     }
 }
 

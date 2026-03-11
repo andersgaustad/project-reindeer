@@ -55,6 +55,7 @@ placeholder_text = "###############
 ###############
 "
 scroll_smooth = true
+caret_blink = true
 
 [node name="FeedbackText" type="RichTextLabel" parent="HBoxContainer/LoadMap"]
 unique_name_in_owner = true

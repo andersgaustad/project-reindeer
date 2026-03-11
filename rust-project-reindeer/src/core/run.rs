@@ -52,6 +52,7 @@ impl Run {
         // Handle existing
         let existing_level_opt = std::mem::take(&mut self.main_level);
         if let Some(mut existing_level) = existing_level_opt {
+            godot_print!(":?- Freeing old level...");
             existing_level.queue_free();
         }
 

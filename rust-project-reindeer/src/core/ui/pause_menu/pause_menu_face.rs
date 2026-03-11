@@ -252,6 +252,7 @@ impl PauseMenuFace {
 
 
     fn refresh_mail_button(&mut self) {
+        godot_print!(":?- Refreshing mail button...");
         let Some(letter_menu) = self.letter_menu.clone() else {
             return;
         };

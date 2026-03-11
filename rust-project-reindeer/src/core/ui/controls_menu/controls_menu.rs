@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use godot::{classes::{Button, Control, IControl, InputEvent, InputEventKey, InputMap, ScrollContainer, Texture2D, object::ConnectFlags}, obj::WithBaseField, prelude::*};
 
 use crate::{core::ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, controls_menu_state::ControlsMenuState}, i_sub_menu_state::ISubMenuState}, input_map::{CANCEL, MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_SPRINT, TOGGLE_VISIBILITY}};
@@ -85,7 +83,7 @@ impl IControl for ControlsMenu {
         let event_names_and_buttons = self.get_binding_names_and_rebind_buttons();
 
         for (event_name, event_button) in event_names_and_buttons.iter() {
-            let event_name_gstring = GString::from_str(*event_name).unwrap();
+            let event_name_gstring = GString::from(*event_name);
             let event_button = event_button.clone();
 
             event_button

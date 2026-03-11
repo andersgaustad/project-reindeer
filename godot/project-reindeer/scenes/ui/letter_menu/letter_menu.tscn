@@ -49,9 +49,12 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/default_color = Color(0, 0, 0, 1)
 bbcode_enabled = true
-text = "Dear Player,
+text = "Dear [i]Player[/i],
 
-Here are some stats."
+Here are some stats.
+
+Sincerly
+- [i]Reindeer[/i]"
 fit_content = true
 
 [node name="BackButton" type="Button" parent="TextureRect/MarginContainer/VBoxContainer"]

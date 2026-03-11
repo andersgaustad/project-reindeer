@@ -27,7 +27,7 @@ impl MazeFindPathsCommunicator {
     pub fn update_idx(idx : i32, state : MazeTileState, direction : Direction, acknowledger : Gd<Communicator>);
 
     #[signal]
-    pub fn commit_found_path(path_info : Gd<PathInfo>);
+    pub fn commit_finished(path_info_opt : Option<Gd<PathInfo>>);
 
     
     // Methods

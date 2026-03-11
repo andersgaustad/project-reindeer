@@ -1,7 +1,10 @@
-[gd_resource type="Theme" load_steps=2 format=3 uid="uid://b30a8hve56jss"]
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://b30a8hve56jss"]
 
 [ext_resource type="FontFile" uid="uid://c8oigf1dcahw" path="res://assets/dev_assets/source/ErraticCursive_Font_1_0/OpenType (.otf)/ErraticCursive-Regular.otf" id="1_espgi"]
+[ext_resource type="FontFile" uid="uid://cuiju3dijpqa8" path="res://assets/dev_assets/source/ErraticCursive_Font_1_0/OpenType (.otf)/ErraticCursive-Italic.otf" id="1_wqikc"]
 
 [resource]
 default_font = ExtResource("1_espgi")
-default_font_size = 24
+default_font_size = 32
+RichTextLabel/fonts/italics_font = ExtResource("1_wqikc")
+RichTextLabel/fonts/normal_font = ExtResource("1_espgi")

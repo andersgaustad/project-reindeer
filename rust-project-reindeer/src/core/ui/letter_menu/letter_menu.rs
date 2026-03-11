@@ -74,6 +74,13 @@ impl LetterMenu {
     }
 
 
+    pub fn send_mail(&mut self, mail : GString) {
+        godot_print!(":?- Got mail!");
+        self.letter_text_label.set_text(&mail);
+        self.inbox_state = LetterMenuInboxState::NewMail;
+    }
+
+
     pub fn rust_get_inbox_state(&self) -> LetterMenuInboxState {
         self.inbox_state
     }

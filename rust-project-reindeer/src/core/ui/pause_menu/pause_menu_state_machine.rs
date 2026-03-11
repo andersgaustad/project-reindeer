@@ -157,7 +157,7 @@ impl PauseMenuStateMachine {
     }
 
 
-    fn refresh(&mut self) {
+    pub fn refresh(&mut self) {
         let current_state = self.state;
         self.set_state(current_state);
     }
@@ -179,5 +179,10 @@ impl PauseMenuStateMachine {
         states.map(|state| {
             self.get_submenu_control(state)
         })
+    }
+
+
+    pub fn send_mail_to_letter_menu(&mut self, mail : GString) {
+        self.letter_menu.bind_mut().send_mail(mail);
     }
 }
