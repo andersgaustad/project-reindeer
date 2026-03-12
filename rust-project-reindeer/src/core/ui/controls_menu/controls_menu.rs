@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl, InputEvent, InputEventKey, InputMap, ScrollContainer, Texture2D, object::ConnectFlags}, obj::WithBaseField, prelude::*};
 
-use crate::{core::ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, controls_menu_state::ControlsMenuState}, i_sub_menu_state::ISubMenuState}, input_map::{CANCEL, MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_SPRINT, TOGGLE_VISIBILITY}};
+use crate::{core::ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, controls_menu_state::ControlsMenuState}, i_sub_menu_state::IState}, input_map::{CANCEL, MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_SPRINT, TOGGLE_VISIBILITY}};
 
 
 #[derive(GodotClass)]
@@ -163,8 +163,10 @@ impl IControl for ControlsMenu {
 
 
 #[godot_dyn]
-impl ISubMenuState for ControlsMenu {
-    fn enter(&mut self) {
+impl IState for ControlsMenu {
+    fn do_enter(&mut self) {
+        self.base_mut().set_process_unhandled_input(true);
+
         self.rust_set_state(ControlsMenuState::Default);
 
         self.back_button.grab_focus();
@@ -172,11 +174,14 @@ impl ISubMenuState for ControlsMenu {
         self
             .scroll_containter
             .set_v_scroll(0);
+        
+        self.base_mut().show();
     }
 
 
-    fn reset(&mut self) {
-
+    fn do_exit(&mut self) {
+        self.base_mut().set_process_unhandled_input(false);
+        self.base_mut().hide();
     }
 }
 

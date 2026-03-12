@@ -1,6 +1,6 @@
 use godot::{classes::{Input, input::MouseMode, object::ConnectFlags}, prelude::*};
 
-use crate::core::{levels::main_level::{main_level::MainLevel, main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}}, options::options::Options, ui::main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}};
+use crate::core::{levels::main_level::{main_level::MainLevel, main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}}, options::options::Options, ui::{i_sub_menu_state::IState, main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}}};
 
 
 #[derive(GodotClass)]
@@ -52,9 +52,12 @@ impl Run {
         // Handle existing
         let existing_level_opt = std::mem::take(&mut self.main_level);
         if let Some(mut existing_level) = existing_level_opt {
-            godot_print!(":?- Freeing old level...");
+            existing_level.clone().into_dyn::<dyn IState>().dyn_bind_mut().do_exit();
             existing_level.queue_free();
         }
+
+        // Exit menu state as well
+        self.main_menu_state_machine.clone().into_dyn::<dyn IState>().dyn_bind_mut().do_exit();
 
         // Setting
         self.main_level = main_level;
@@ -83,6 +86,9 @@ impl Run {
                             me.set_main_level(None);
                         }
                     );
+                
+                main_level.into_dyn::<dyn IState>().dyn_bind_mut().do_enter();
+                
             },
             None => {
                 let mut input = Input::singleton();
@@ -90,7 +96,7 @@ impl Run {
 
                 // Reset to title
                 let main_menu_state_machine = &mut self.main_menu_state_machine;
-                main_menu_state_machine.clone().into_dyn().dyn_bind_mut().reset();
+                main_menu_state_machine.clone().into_dyn().dyn_bind_mut().do_enter();
                 main_menu_state_machine.bind_mut().set_state(MainMenuState::Title);
             },
         }

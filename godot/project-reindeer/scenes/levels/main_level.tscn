@@ -1,4 +1,4 @@
-[gd_scene load_steps=49 format=3 uid="uid://bhaqw7kkuvp2d"]
+[gd_scene load_steps=51 format=3 uid="uid://bhaqw7kkuvp2d"]
 
 [ext_resource type="PackedScene" uid="uid://dffs3axw6pbr3" path="res://scenes/reindeers/reindeer.tscn" id="1_geiq8"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_lx3qq"]
@@ -29,6 +29,8 @@
 [ext_resource type="PackedScene" uid="uid://b1li531q4jhe3" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/tree-decorated.fbx" id="23_xl3jb"]
 [ext_resource type="PackedScene" uid="uid://d1adqsqoxpnk5" path="res://scenes/ui/pause_menu/pause_menu_state_machine.tscn" id="29_lf3sc"]
 [ext_resource type="FontFile" uid="uid://c32cp4lupcblh" path="res://assets/dev_assets/source/AsteriskMono_Font_1_0/OpenType (.otf)/AsteriskMono-Regular.otf" id="29_xl3jb"]
+[ext_resource type="AudioStream" uid="uid://8p756i7tic8p" path="res://music_playlists/main_level_playlist.tres" id="30_qsr70"]
+[ext_resource type="AudioStream" uid="uid://dj8k0ims2t7q2" path="res://assets/dev_assets/source/doorbell_sfx/doorbell.wav" id="31_xl3jb"]
 
 [sub_resource type="MazeSolverInfo" id="MazeSolverInfo_geiq8"]
 
@@ -305,3 +307,13 @@ one_shot = true
 unique_name_in_owner = true
 process_mode = 3
 visible = false
+
+[node name="BackgroundMusicPlayer" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+process_mode = 3
+stream = ExtResource("30_qsr70")
+
+[node name="MailNotificationSFXPlayer" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("31_xl3jb")
+pitch_scale = 0.5

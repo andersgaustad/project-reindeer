@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl}, prelude::*};
 
-use crate::core::ui::{i_sub_menu_state::ISubMenuState, main_menu::main_menu_state::MainMenuState};
+use crate::core::ui::{i_sub_menu_state::IState, main_menu::main_menu_state::MainMenuState};
 
 
 #[derive(GodotClass)]
@@ -25,6 +25,7 @@ pub struct MainMenu {
     #[var]
     #[init(node = "%AboutButton")]
     about_button : OnReady<Gd<Button>>,
+
 
     base : Base<Control>,
 }
@@ -87,10 +88,17 @@ impl IControl for MainMenu {
 
 
 #[godot_dyn]
-impl ISubMenuState for MainMenu {
-    fn enter(&mut self) {
+impl IState for MainMenu {
+    fn do_enter(&mut self) {
         self.start_button.grab_focus();
     }
+
+
+    fn do_exit(&mut self) {
+        
+    }
+
+
 }
 
 

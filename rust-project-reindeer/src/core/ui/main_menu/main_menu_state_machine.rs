@@ -1,7 +1,7 @@
-use godot::{classes::{Control, IControl}, prelude::*};
+use godot::{classes::{AudioStreamPlayer, Control, IControl}, prelude::*};
 use strum::{EnumCount, VariantArray};
 
-use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_sub_menu_state::ISubMenuState, main_menu::{about_menu::AboutMenu, about_menu_request::AboutMenuRequest, load_map_menu::LoadMapMenu, load_map_menu_request::LoadMapMenuRequest, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}};
+use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_sub_menu_state::IState, main_menu::{about_menu::AboutMenu, about_menu_request::AboutMenuRequest, load_map_menu::LoadMapMenu, load_map_menu_request::LoadMapMenuRequest, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}};
 
 
 #[derive(GodotClass)]
@@ -27,9 +27,16 @@ pub struct MainMenuStateMachine {
     #[init(node = "%AboutMenu")]
     about_menu : OnReady<Gd<AboutMenu>>,
 
+
+    #[var]
+    #[init(node = "%AudioStreamPlayer")]
+    audio_stream_player : OnReady<Gd<AudioStreamPlayer>>,
+
+
     #[var(get, set = set_state)]
     #[init(val = MainMenuState::Title)]
     state : MainMenuState,
+
 
     base : Base<Control>,
 }
@@ -109,12 +116,28 @@ impl IControl for MainMenuStateMachine {
 
 
 #[godot_dyn]
-impl ISubMenuState for MainMenuStateMachine {
-    fn reset(&mut self) {
+impl IState for MainMenuStateMachine {
+    fn do_enter(&mut self) {
+        self.base_mut().set_process_unhandled_input(true);
+
+        self.audio_stream_player.play();
+
+        self.refresh();
+        self.base_mut().show();
+    }
+
+
+    fn do_exit(&mut self) {
+        self.base_mut().set_process_unhandled_input(false);
+
+        self.audio_stream_player.stop();
+
         let submenus = self.get_all_submenu_controls();
         for mut submenu in submenus {
-            submenu.dyn_bind_mut().reset();
+            submenu.dyn_bind_mut().do_exit();
         }
+        
+        self.base_mut().hide();
     }
 }
 
@@ -139,7 +162,7 @@ impl MainMenuStateMachine {
         }
 
         let mut active_submenu = self.get_submenu_control(state);
-        active_submenu.dyn_bind_mut().enter();
+        active_submenu.dyn_bind_mut().do_enter();
         active_submenu.show();
     }
 
@@ -188,7 +211,7 @@ impl MainMenuStateMachine {
     }
 
 
-    fn get_submenu_control(&self, state : MainMenuState) -> DynGd<Control, dyn ISubMenuState> {
+    fn get_submenu_control(&self, state : MainMenuState) -> DynGd<Control, dyn IState> {
         match state {
             MainMenuState::Title => self.title_menu.clone().into_dyn().upcast(),
             MainMenuState::Options => self.options_menu.clone().into_dyn().upcast(),
@@ -199,7 +222,7 @@ impl MainMenuStateMachine {
     }
 
 
-    fn get_all_submenu_controls(&self) -> [DynGd<Control, dyn ISubMenuState>; MainMenuState::COUNT] {
+    fn get_all_submenu_controls(&self) -> [DynGd<Control, dyn IState>; MainMenuState::COUNT] {
         let states : &[MainMenuState; MainMenuState::COUNT] = MainMenuState::VARIANTS.try_into().unwrap();
 
         states.map(|state| {

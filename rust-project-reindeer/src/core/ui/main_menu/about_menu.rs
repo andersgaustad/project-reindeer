@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, FileAccess, IControl, InputEvent, Os, RichTextLabel, TextureButton, file_access::ModeFlags}, prelude::*};
 
-use crate::{core::ui::{i_sub_menu_state::ISubMenuState, main_menu::about_menu_request::AboutMenuRequest}, input_map::CANCEL};
+use crate::{core::ui::{i_sub_menu_state::IState, main_menu::about_menu_request::AboutMenuRequest}, input_map::CANCEL};
 
 
 #[derive(GodotClass)]
@@ -96,12 +96,15 @@ impl IControl for AboutMenu {
 
 
 #[godot_dyn]
-impl ISubMenuState for AboutMenu {
-    fn enter(&mut self) {
+impl IState for AboutMenu {
+    fn do_enter(&mut self) {
         self.back_button.grab_focus();
-    }
 
-    fn reset(&mut self) {
+        self.refresh();
+    }
+    
+
+    fn do_exit(&mut self) {
 
     }
 }
@@ -156,7 +159,6 @@ impl AboutMenu {
 
     fn handle_text_clicked(&mut self, variant : Variant) {
         let string = variant.stringify();
-        println!(":?- Clicked: {}", &string);
 
         let mut os = Os::singleton();
         os.shell_open(&string);

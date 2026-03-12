@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl, RichTextLabel}, prelude::*};
 
-use crate::core::ui::{i_sub_menu_state::ISubMenuState, letter_menu::{letter_menu_inbox_state::LetterMenuInboxState, letter_menu_request::LetterMenuRequest}};
+use crate::core::ui::{i_sub_menu_state::IState, letter_menu::{letter_menu_inbox_state::LetterMenuInboxState, letter_menu_request::LetterMenuRequest}};
 
 
 #[derive(GodotClass)]
@@ -41,8 +41,8 @@ impl IControl for LetterMenu {
 
 
 #[godot_dyn]
-impl ISubMenuState for LetterMenu {
-    fn enter(&mut self) {
+impl IState for LetterMenu {
+    fn do_enter(&mut self) {
         if self.inbox_state == LetterMenuInboxState::NewMail {
             self.inbox_state = LetterMenuInboxState::AllRead;
         }
@@ -50,11 +50,13 @@ impl ISubMenuState for LetterMenu {
         self
             .back_button
             .grab_focus();
+        
+        self.base_mut().show();
     }
 
 
-    fn reset(&mut self) {
-
+    fn do_exit(&mut self) {
+        self.base_mut().hide();
     }
 }
 
@@ -75,7 +77,6 @@ impl LetterMenu {
 
 
     pub fn send_mail(&mut self, mail : GString) {
-        godot_print!(":?- Got mail!");
         self.letter_text_label.set_text(&mail);
         self.inbox_state = LetterMenuInboxState::NewMail;
     }

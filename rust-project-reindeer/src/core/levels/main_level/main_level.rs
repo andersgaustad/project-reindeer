@@ -1,7 +1,7 @@
-use godot::{classes::{BoxMesh, BoxShape3D, CollisionShape3D, Control, Input, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextLabel, StandardMaterial3D, Timer, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use godot::{classes::{AudioStreamPlayer, BoxMesh, BoxShape3D, CollisionShape3D, Control, Input, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextLabel, StandardMaterial3D, Timer, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::{option_change::OptionChange, options::Options}, player::Player, props::cabin::Cabin, run::Run, ui::pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}, utility::{bounding_box_utility, node_utility}}, input_map::CANCEL};
+use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::{option_change::OptionChange, options::Options}, player::Player, props::cabin::Cabin, run::Run, ui::{i_sub_menu_state::IState, pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}}, utility::{bounding_box_utility, node_utility}}, input_map::CANCEL};
 
 
 const N_VISIBLE_TREES_IN_LOW_PERFORMANCE_MODE : i32 = 100;
@@ -181,6 +181,14 @@ pub struct MainLevel {
     #[init(node = "%CountdownToStartTimer")]
     countdown_to_start_timer : OnReady<Gd<Timer>>,
 
+    #[var]
+    #[init(node = "%BackgroundMusicPlayer")]
+    background_music_player : OnReady<Gd<AudioStreamPlayer>>,
+
+    #[var]
+    #[init(node = "%MailNotificationSFXPlayer")]
+    mail_notification_sfx_player : OnReady<Gd<AudioStreamPlayer>>,
+
 
     #[var(get, set = set_level_run_state)]
     #[init(val = LevelRunState::Running)]
@@ -300,6 +308,25 @@ impl INode3D for MainLevel {
 }
 
 
+#[godot_dyn]
+impl IState for MainLevel {
+    fn do_enter(&mut self) {
+        self.base_mut().set_process_unhandled_input(true);
+
+        self.background_music_player.play();
+
+        self.refresh();
+    }
+
+
+    fn do_exit(&mut self) {
+        self.base_mut().set_process_unhandled_input(false);
+
+        self.background_music_player.stop();
+    }
+}
+
+
 #[godot_api]
 impl MainLevel {
     #[signal]
@@ -325,11 +352,12 @@ impl MainLevel {
 
         let paused = new_state == LevelRunState::Paused;
 
-        let pause_menu = &mut self.pause_menu;
+        let mut pause_menu = self.pause_menu.clone().into_dyn::<dyn IState>();
         if paused {
-            pause_menu.bind_mut().refresh();
+            pause_menu.dyn_bind_mut().do_enter();
+        } else {
+            pause_menu.dyn_bind_mut().do_exit();
         }
-        pause_menu.set_visible(paused);
 
         let mouse_mode = if paused {
             MouseMode::VISIBLE
@@ -1528,6 +1556,7 @@ impl MainLevel {
 
 
     fn send_mail_to_letter_menu(&mut self, mail : GString) {
+        self.mail_notification_sfx_player.play();
         self.pause_menu.bind_mut().send_mail_to_letter_menu(mail);
     }
 }

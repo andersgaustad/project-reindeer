@@ -51,3 +51,24 @@ Huge thanks to all the creators!
 - License: **[CC0](https://creativecommons.org/publicdomain/zero/1.0/)**
 
 
+## Music
+
+**Snowland Town**
+- Author: **Matthew Pablo**
+- Source: **[link](https://opengameart.org/content/snowland-town)**
+- License: **[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)**
+
+**Wintery loop**
+- Author: **Emma_MA**
+- Source: **[link](https://opengameart.org/content/wintery-loop)**
+- License: **[CC0](https://creativecommons.org/publicdomain/zero/1.0/)**
+
+
+## Sfx
+
+**Doorbell**
+- Author: **frosty ham**
+- Source: **[link](https://opengameart.org/content/doorbell)**
+- License: **[CC0](https://creativecommons.org/publicdomain/zero/1.0/)**
+
+

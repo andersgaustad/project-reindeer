@@ -1,7 +1,7 @@
 use godot::{classes::{Control, IControl, object::ConnectFlags}, prelude::*};
 use strum::{EnumCount, VariantArray};
 
-use crate::core::ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_sub_menu_state::ISubMenuState, letter_menu::{letter_menu::LetterMenu, letter_menu_request::LetterMenuRequest}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}, pause_menu::{pause_menu_face::PauseMenuFace, pause_menu_face_request::PauseMenuFaceRequest, pause_menu_request::PauseMenuRequest, pause_menu_state::PauseMenuState}};
+use crate::core::ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_sub_menu_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_request::LetterMenuRequest}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}, pause_menu::{pause_menu_face::PauseMenuFace, pause_menu_face_request::PauseMenuFaceRequest, pause_menu_request::PauseMenuRequest, pause_menu_state::PauseMenuState}};
 
 
 #[derive(GodotClass)]
@@ -26,6 +26,10 @@ pub struct PauseMenuStateMachine {
     #[var(get, set = set_state)]
     #[init(val = PauseMenuState::Face)]
     state : PauseMenuState,
+
+
+    #[init(val = false)]
+    is_active : bool,
 
     
     base : Base<Control>,
@@ -92,6 +96,23 @@ impl IControl for PauseMenuStateMachine {
 }
 
 
+#[godot_dyn]
+impl IState for PauseMenuStateMachine {
+    fn do_enter(&mut self) {
+        self.is_active = true;
+        self.refresh();
+        self.base_mut().show();
+    }
+
+
+    fn do_exit(&mut self) {
+        self.is_active = false;
+        self.exit_all_substates();
+        self.base_mut().hide();
+    }
+}
+
+
 #[godot_api]
 impl PauseMenuStateMachine {
     #[signal]
@@ -107,15 +128,14 @@ impl PauseMenuStateMachine {
             return;
         }
 
-        let all_submenus = self.get_all_submenu_controls();
+        self.exit_all_substates();
 
-        for mut submenu in all_submenus {
-            submenu.hide();
+        if self.is_active {
+            let mut active_submenu = self.get_submenu_control(new_state);
+            active_submenu.dyn_bind_mut().do_enter();
+            active_submenu.show();
         }
-
-        let mut active_submenu = self.get_submenu_control(new_state);
-        active_submenu.dyn_bind_mut().enter();
-        active_submenu.show();
+        
     }
 
 
@@ -163,7 +183,18 @@ impl PauseMenuStateMachine {
     }
 
 
-    fn get_submenu_control(&self, state : PauseMenuState) -> DynGd<Control, dyn ISubMenuState> {
+    fn exit_all_substates(&mut self) {
+        let all_submenus = self.get_all_submenu_controls();
+
+        for mut submenu in all_submenus {
+            submenu.dyn_bind_mut().do_exit();
+            submenu.hide();
+        }
+
+    }
+
+
+    fn get_submenu_control(&self, state : PauseMenuState) -> DynGd<Control, dyn IState> {
         match state {
             PauseMenuState::Face => self.face_pause_menu.clone().into_dyn().upcast(),
             PauseMenuState::Mail => self.letter_menu.clone().into_dyn().upcast(),
@@ -173,7 +204,7 @@ impl PauseMenuStateMachine {
     }
 
 
-    fn get_all_submenu_controls(&self) -> [DynGd<Control, dyn ISubMenuState>; PauseMenuState::COUNT] {
+    fn get_all_submenu_controls(&self) -> [DynGd<Control, dyn IState>; PauseMenuState::COUNT] {
         let states : &[PauseMenuState; PauseMenuState::COUNT] = PauseMenuState::VARIANTS.try_into().unwrap();
 
         states.map(|state| {

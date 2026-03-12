@@ -1,7 +1,7 @@
 use godot::{classes::{Button, Control, IControl, InputEvent, Texture2D, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{levels::main_level::pathfinding_state::PathfindingState, ui::{buttons::button_state_info::ButtonStateInfo, i_sub_menu_state::ISubMenuState, letter_menu::{letter_menu::LetterMenu, letter_menu_inbox_state::LetterMenuInboxState}, pause_menu::{pause_menu_button_type::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}}, input_map::CANCEL};
+use crate::{core::{levels::main_level::pathfinding_state::PathfindingState, ui::{buttons::button_state_info::ButtonStateInfo, i_sub_menu_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_inbox_state::LetterMenuInboxState}, pause_menu::{pause_menu_button_type::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}}, input_map::CANCEL};
 
 
 #[derive(GodotClass)]
@@ -94,10 +94,8 @@ impl IControl for PauseMenuFace {
 
 
 #[godot_dyn]
-impl ISubMenuState for PauseMenuFace {
-    fn enter(&mut self) {
-        self.refresh_mail_button();
-
+impl IState for PauseMenuFace {
+    fn do_enter(&mut self) {
         self.resume_button.grab_focus();
 
         #[cfg(debug_assertions)]
@@ -106,6 +104,8 @@ impl ISubMenuState for PauseMenuFace {
                 godot_warn!("PauseMenuFace has no LetterMenu reference - Mail button will not be updated!");
             }
         }
+
+        self.refresh_mail_button();
     }
 }
 
@@ -252,7 +252,6 @@ impl PauseMenuFace {
 
 
     fn refresh_mail_button(&mut self) {
-        godot_print!(":?- Refreshing mail button...");
         let Some(letter_menu) = self.letter_menu.clone() else {
             return;
         };

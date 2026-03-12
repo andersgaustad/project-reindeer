@@ -1,0 +1,8 @@
+[gd_resource type="AudioStreamPlaylist" load_steps=2 format=3 uid="uid://dnhqiq746bqd0"]
+
+[ext_resource type="AudioStream" uid="uid://b06frwpt41682" path="res://assets/dev_assets/source/wintery_loop_music/wintery_loop.wav" id="1_e8umh"]
+
+[resource]
+fade_time = 0.0
+stream_count = 1
+stream_0 = ExtResource("1_e8umh")

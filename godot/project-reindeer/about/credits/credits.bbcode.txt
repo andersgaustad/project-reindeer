@@ -19,3 +19,14 @@ See the bundled Markdown file for a detailed list of assets, authors, and licens
 [i]Erratic Cursive Font - CC0[/i] by GGBotNet ([url=https://ggbot.itch.io/erratic-cursive-font]External link[/url])
 
 
+[b]Music:[/b]
+
+[i]Snowland Town[/i] by Matthew Pablo ([url=https://opengameart.org/content/snowland-town]External link[/url])
+[i]Wintery loop[/i] by Emma_MA ([url=https://opengameart.org/content/wintery-loop]External link[/url])
+
+
+[b]Sfx:[/b]
+
+[i]Doorbell[/i] by frosty ham ([url=https://opengameart.org/content/doorbell]External link[/url])
+
+

@@ -1,6 +1,6 @@
 use godot::{classes::{Button, ColorPickerButton, Control, HSlider, IControl, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
 
-use crate::core::{levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, ui::{i_sub_menu_state::ISubMenuState, main_menu::load_map_menu_request::LoadMapMenuRequest}};
+use crate::core::{levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, ui::{i_sub_menu_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}};
 
 
 #[derive(GodotClass)]
@@ -192,12 +192,15 @@ impl IControl for LoadMapMenu {
 
 
 #[godot_dyn]
-impl ISubMenuState for LoadMapMenu {
-    fn enter(&mut self) {
+impl IState for LoadMapMenu {
+    fn do_enter(&mut self) {
         self.maze_text_edit.grab_focus();
-    }
 
-    fn reset(&mut self) {
+        self.refresh();
+    }
+    
+
+    fn do_exit(&mut self) {
         self.maze_text_edit.clear();
         self.feedback_text.set_text(&self.default_feedback_text);
 
