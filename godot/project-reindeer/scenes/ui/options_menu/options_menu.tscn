@@ -52,7 +52,7 @@ horizontal_alignment = 1
 [node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/TitleVBox"]
 layout_mode = 2
 size_flags_vertical = 0
-theme_override_constants/separation = 4
+theme_override_constants/separation = 8
 theme_override_styles/separator = SubResource("StyleBoxLine_ta2k2")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer"]
@@ -63,34 +63,108 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="CenterContainer" type="CenterContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
+horizontal_scroll_mode = 0
 
-[node name="GridContainer" type="GridContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/CenterContainer"]
+[node name="VBoxContainer2" type="VBoxContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 40
+
+[node name="VBoxContainer1" type="VBoxContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer1"]
+layout_mode = 2
+text = "Performance"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer1"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer1"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/h_separation = 128
 columns = 2
 
-[node name="LowPerformanceModeText" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/CenterContainer/GridContainer"]
+[node name="LowPerformanceModeText" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer1/GridContainer"]
+custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
-text = "Low-performance mode"
+text = "Low-performance mode:"
 
-[node name="ToggleLowPerformanceModeButton" type="CheckButton" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/CenterContainer/GridContainer"]
+[node name="ToggleLowPerformanceModeButton" type="CheckButton" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer1/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 6
 
-[node name="Label2" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/CenterContainer/GridContainer"]
-visible = false
+[node name="VBoxContainer2" type="VBoxContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2"]
 layout_mode = 2
-text = "Low-performance mode"
+size_flags_horizontal = 3
 
-[node name="HSlider" type="HSlider" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/CenterContainer/GridContainer"]
-visible = false
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2"]
 layout_mode = 2
+text = "Audio"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_constants/h_separation = 64
+columns = 3
+
+[node name="MusicVolumeLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+custom_minimum_size = Vector2(760, 0)
+layout_mode = 2
+text = "Music Volume:"
+
+[node name="MusicVolumeSlider" type="HSlider" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+max_value = 2.0
+step = 0.01
+value = 1.0
+scrollable = false
+tick_count = 3
+ticks_on_borders = true
+
+[node name="MusicVolumePercentageLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 0)
+layout_mode = 2
+text = "100%"
+
+[node name="SFXVolumeLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+custom_minimum_size = Vector2(760, 0)
+layout_mode = 2
+text = "Sound Effect Volume:"
+
+[node name="SFXVolumeSlider" type="HSlider" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+max_value = 2.0
+step = 0.01
+value = 1.0
+scrollable = false
+tick_count = 3
+ticks_on_borders = true
+
+[node name="SFXVolumePercentageLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 0)
+layout_mode = 2
+text = "100%"
 
 [node name="MarginContainer2" type="MarginContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer"]
 layout_mode = 2

@@ -184,10 +184,12 @@ pub struct MainLevel {
     #[var]
     #[init(node = "%BackgroundMusicPlayer")]
     background_music_player : OnReady<Gd<AudioStreamPlayer>>,
+    default_background_music_player_volume : f32,
 
     #[var]
     #[init(node = "%MailNotificationSFXPlayer")]
     mail_notification_sfx_player : OnReady<Gd<AudioStreamPlayer>>,
+    default_mail_notification_sfx_player_volume : f32,
 
 
     #[var(get, set = set_level_run_state)]
@@ -273,6 +275,9 @@ impl INode3D for MainLevel {
         if let Some(mut arrow_spawner) = self.arrow_spawner.get_multimesh() {
             arrow_spawner.set_instance_count(0);
         }
+
+        self.default_background_music_player_volume = self.background_music_player.get_volume_linear();
+        self.default_mail_notification_sfx_player_volume = self.background_music_player.get_volume_linear();
         
         self.refresh();
     }
@@ -1180,10 +1185,12 @@ impl MainLevel {
     fn on_options_changed(&mut self, options_change : OptionChange) {
         match options_change {
             OptionChange::LowPerformanceMode => self.on_low_performance_mode_change(),
+            OptionChange::VolumeChange => self.on_volume_change(),
         }
     }
 
 
+    #[func]
     fn on_low_performance_mode_change(&mut self) {
         let Some(options) = self.options.clone() else {
             return;
@@ -1213,6 +1220,39 @@ impl MainLevel {
         }
 
         self.cabin.bind_mut().toggle_effects(!low_performance_mode);
+    }
+
+
+    #[func]
+    fn on_volume_change(&mut self) {
+        let Some(options) = self.options.clone() else {
+            return;
+        };
+
+        let mut music = [
+            (self.background_music_player.clone(), self.default_background_music_player_volume)
+        ];
+
+        let mut sfx = [
+            (self.mail_notification_sfx_player.clone(), self.default_mail_notification_sfx_player_volume)
+        ];
+
+        let bound_options = options.bind();
+        let music_volume_factor = bound_options.get_music_volume();
+        let sfx_volume_factor = bound_options.get_sfx_volume();
+        drop(bound_options);
+
+        let components_and_default_factors = [
+            (&mut music, music_volume_factor),
+            (&mut sfx, sfx_volume_factor) 
+        ];
+
+        for (item, volume_factor) in components_and_default_factors {
+            for (component, default_factor) in item {
+                let volume = volume_factor * *default_factor;
+                component.set_volume_linear(volume);
+            }
+        }
     }
 
 

@@ -1,7 +1,7 @@
 use godot::{classes::{AudioStreamPlayer, Control, IControl}, prelude::*};
-use strum::{EnumCount, VariantArray};
+use strum::{EnumCount, IntoEnumIterator, VariantArray};
 
-use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_sub_menu_state::IState, main_menu::{about_menu::AboutMenu, about_menu_request::AboutMenuRequest, load_map_menu::LoadMapMenu, load_map_menu_request::LoadMapMenuRequest, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}};
+use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, options::{option_change::OptionChange, options::Options}, run::Run, ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_sub_menu_state::IState, main_menu::{about_menu::AboutMenu, about_menu_request::AboutMenuRequest, load_map_menu::LoadMapMenu, load_map_menu_request::LoadMapMenuRequest, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}, utility::node_utility};
 
 
 #[derive(GodotClass)]
@@ -29,13 +29,17 @@ pub struct MainMenuStateMachine {
 
 
     #[var]
-    #[init(node = "%AudioStreamPlayer")]
-    audio_stream_player : OnReady<Gd<AudioStreamPlayer>>,
+    #[init(node = "%BackgroundMusicPlayer")]
+    background_music_player : OnReady<Gd<AudioStreamPlayer>>,
+    default_background_music_player_volume : f32,
 
 
     #[var(get, set = set_state)]
     #[init(val = MainMenuState::Title)]
     state : MainMenuState,
+
+
+    options : Option<Gd<Options>>,
 
 
     base : Base<Control>,
@@ -45,6 +49,27 @@ pub struct MainMenuStateMachine {
 #[godot_api]
 impl IControl for MainMenuStateMachine {
     fn ready(&mut self) {
+        let gd = self.to_gd();
+
+        // Connect signals
+
+        // Globals
+        let run_opt = node_utility::try_find_parent_of_type::<Run>(gd.upcast());
+        if let Some(run) = run_opt {
+            let options_opt = run.bind().get_options();
+            if let Some(options) = options_opt {
+                options
+                    .signals()
+                    .option_changed()
+                    .connect_other(
+                        self,
+                        Self::on_options_changed
+                    );
+                
+                self.options = Some(options);
+            }
+        }
+
         // Forward request_set_maze
         self
             .load_map_menu
@@ -109,6 +134,8 @@ impl IControl for MainMenuStateMachine {
                 self,
                 Self::on_about_requests
             );
+        
+        self.default_background_music_player_volume = self.background_music_player.get_volume_linear();
 
         self.refresh();
     }
@@ -120,7 +147,7 @@ impl IState for MainMenuStateMachine {
     fn do_enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
 
-        self.audio_stream_player.play();
+        self.background_music_player.play();
 
         self.refresh();
         self.base_mut().show();
@@ -130,7 +157,7 @@ impl IState for MainMenuStateMachine {
     fn do_exit(&mut self) {
         self.base_mut().set_process_unhandled_input(false);
 
-        self.audio_stream_player.stop();
+        self.background_music_player.stop();
 
         let submenus = self.get_all_submenu_controls();
         for mut submenu in submenus {
@@ -205,9 +232,56 @@ impl MainMenuStateMachine {
     }
 
 
+    #[func]
+    fn on_options_changed(&mut self, change : OptionChange) {
+        match change {
+            OptionChange::LowPerformanceMode => {
+                // Do nothing
+            },
+            OptionChange::VolumeChange => self.on_volume_change(),
+        }
+    }
+
+
+    #[func]
+    fn on_volume_change(&mut self) {
+        let Some(options) = self.options.clone() else {
+            return;
+        };
+
+        let mut music = [
+            (self.background_music_player.clone(), self.default_background_music_player_volume)
+        ];
+
+        let mut sfx = [
+        ];
+
+        let bound_options = options.bind();
+        let music_volume_factor = bound_options.get_music_volume();
+        let sfx_volume_factor = bound_options.get_sfx_volume();
+        drop(bound_options);
+
+        let components_and_default_factors : [(&mut [(Gd<AudioStreamPlayer>, f32)], f32); 2] = [
+            (&mut music, music_volume_factor),
+            (&mut sfx, sfx_volume_factor) 
+        ];
+
+        for (item, volume_factor) in components_and_default_factors {
+            for (component, default_factor) in item {
+                let volume = volume_factor * *default_factor;
+                component.set_volume_linear(volume as f32);
+            }
+        }
+    }
+
+
     fn refresh(&mut self) {
         let current_state = self.state;
         self.set_state(current_state);
+
+        for possible_option_change in OptionChange::iter() {
+            self.on_options_changed(possible_option_change);
+        }
     }
 
 

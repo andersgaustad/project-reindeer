@@ -316,4 +316,5 @@ stream = ExtResource("30_qsr70")
 [node name="MailNotificationSFXPlayer" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("31_xl3jb")
-pitch_scale = 0.5
+volume_db = 10.0
+pitch_scale = 0.75

@@ -7,4 +7,5 @@ use strum::EnumIter;
 #[repr(u8)]
 pub enum OptionChange {
     LowPerformanceMode,
+    VolumeChange,
 }
