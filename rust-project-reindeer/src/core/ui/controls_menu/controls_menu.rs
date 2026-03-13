@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl, InputEvent, InputEventKey, InputMap, ScrollContainer, Texture2D, object::ConnectFlags}, obj::WithBaseField, prelude::*};
 
-use crate::{core::ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, controls_menu_state::ControlsMenuState}, i_sub_menu_state::IState}, input_map::{CANCEL, MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_SPRINT, TOGGLE_VISIBILITY}};
+use crate::{core::ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, controls_menu_state::ControlsMenuState}, i_sub_menu_state::IState}, input_map::{UI_CANCEL, MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_SPRINT, TOGGLE_VISIBILITY}};
 
 
 #[derive(GodotClass)]
@@ -132,7 +132,7 @@ impl IControl for ControlsMenu {
         match &self.state {
             ControlsMenuState::Default => {
                 // Exit shortcut
-                if event.is_action_pressed(CANCEL) {
+                if event.is_action_pressed(UI_CANCEL) {
                     self.on_back_pressed();
                     return;
                 }
@@ -148,7 +148,7 @@ impl IControl for ControlsMenu {
                 input_map.action_erase_events(event_name.arg());
 
                 // Ignore cancel - treat as unassigned
-                if !event.is_action_pressed(CANCEL) {
+                if !event.is_action_pressed(UI_CANCEL) {
                     input_map.action_add_event(event_name.arg(), &key_input_event);
                 }
 

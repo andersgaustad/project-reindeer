@@ -1,6 +1,6 @@
 use godot::{classes::{Camera3D, CharacterBody3D, ICharacterBody3D, Input, InputEvent, InputEventMouseMotion, OmniLight3D, input::MouseMode, light_3d::Param}, global::move_toward, prelude::*};
 
-use crate::input_map::{MOUSE_LEFT, MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_SPRINT, TOGGLE_VISIBILITY};
+use crate::input_map::{CAMERA_DOWN, CAMERA_LEFT, CAMERA_RIGHT, CAMERA_UP, MOUSE_LEFT, MOVE_BACK, MOVE_DOWN, MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, TOGGLE_LIGHT, TOGGLE_SPRINT, TOGGLE_VISIBILITY, UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -10,6 +10,14 @@ pub struct Player {
     #[var]
     #[init(val = 5.0)]
     speed : f32,
+
+    #[export(range=(0.0, 10.0))]
+    #[var]
+    #[init(val = 3.0)]
+    camera_sensitivity_for_controller : f32,
+
+
+    // Non-exported
 
     #[var]
     #[init(node = "%Camera3D")]
@@ -55,11 +63,27 @@ impl ICharacterBody3D for Player {
 
     fn physics_process(&mut self, _delta: f64) {
         let input = Input::singleton();
-        
+
+        // Check camera input (for controllers)
+        let camera_vector = input.get_vector(
+            CAMERA_LEFT,
+            CAMERA_RIGHT,
+            CAMERA_UP,
+            CAMERA_DOWN,
+        );
+
+        // If camera movement, handle rotation
+        // Note: Vector is normalized, so multipliying with a sensitivity factor
+        if !camera_vector.is_zero_approx() {
+            self.handle_camera_vector_movement(camera_vector * self.camera_sensitivity_for_controller);
+        }
+
+        // Double speed if sprinting        
         let mut speed = self.speed;
         if self.sprint_toggled {
             speed *= 2.0;
         }
+
 
         let movement_vector_2d = input.get_vector(
             MOVE_RIGHT,
@@ -105,7 +129,7 @@ impl ICharacterBody3D for Player {
     fn unhandled_input(&mut self, event : Gd<InputEvent>) {
         // Check cancel
         let mut input = Input::singleton();
-        if event.is_action_pressed("ui_cancel") {
+        if event.is_action_pressed(UI_CANCEL) {
             input.set_mouse_mode(MouseMode::VISIBLE);
             return;
         }
@@ -120,18 +144,7 @@ impl ICharacterBody3D for Player {
         let input_event_mouse_motion_result = event.clone().try_cast::<InputEventMouseMotion>();
         if let Ok(input_event_mouse_motion) = input_event_mouse_motion_result {
             let event_relative = input_event_mouse_motion.get_relative();
-
-            let mut rotation_degrees = self.base().get_rotation_degrees();
-            rotation_degrees.y -= event_relative.x * 0.5;
-
-            let mut camera_rotation_degrees = self.camera.get_rotation_degrees();
-            camera_rotation_degrees.x -= event_relative.y * 0.2;
-            camera_rotation_degrees.x = camera_rotation_degrees.x.clamp(-60.0, 60.0);
-
-
-            self.base_mut().set_rotation_degrees(rotation_degrees);
-            self.camera.set_rotation_degrees(camera_rotation_degrees);
-
+            self.handle_camera_vector_movement(event_relative);
             return;
         }
 
@@ -175,5 +188,19 @@ impl Player {
         self.body_visible = value;
 
         self.body.set_visible(value);
+    }
+
+
+    fn handle_camera_vector_movement(&mut self, delta_vector : Vector2) {
+        let mut rotation_degrees = self.base().get_rotation_degrees();
+        rotation_degrees.y -= delta_vector.x * 0.5;
+
+        let mut camera_rotation_degrees = self.camera.get_rotation_degrees();
+        camera_rotation_degrees.x -= delta_vector.y * 0.2;
+        camera_rotation_degrees.x = camera_rotation_degrees.x.clamp(-60.0, 60.0);
+
+
+        self.base_mut().set_rotation_degrees(rotation_degrees);
+        self.camera.set_rotation_degrees(camera_rotation_degrees);
     }
 }

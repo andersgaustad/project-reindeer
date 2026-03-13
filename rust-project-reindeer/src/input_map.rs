@@ -11,6 +11,11 @@ pub const TOGGLE_SPRINT : &str = "sprint";
 pub const TOGGLE_LIGHT : &str = "toggle_light";
 pub const TOGGLE_VISIBILITY : &str = "toggle_visibility";
 
-pub const CANCEL : &str = "cancel";
+pub const CAMERA_LEFT : &str = "camera_left";
+pub const CAMERA_RIGHT : &str = "camera_right";
+pub const CAMERA_UP : &str = "camera_up";
+pub const CAMERA_DOWN : &str = "camera_down";
+
+pub const UI_CANCEL : &str = "ui_cancel";
 
 pub const DEBUG : &str = "debug";

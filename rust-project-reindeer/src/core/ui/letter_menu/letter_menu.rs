@@ -1,6 +1,6 @@
-use godot::{classes::{Button, Control, IControl, RichTextLabel}, prelude::*};
+use godot::{classes::{Button, Control, IControl, InputEvent, RichTextLabel}, prelude::*};
 
-use crate::core::ui::{i_sub_menu_state::IState, letter_menu::{letter_menu_inbox_state::LetterMenuInboxState, letter_menu_request::LetterMenuRequest}};
+use crate::{core::ui::{i_sub_menu_state::IState, letter_menu::{letter_menu_inbox_state::LetterMenuInboxState, letter_menu_request::LetterMenuRequest}}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -37,12 +37,22 @@ impl IControl for LetterMenu {
                 Self::on_back_pressed
             );
     }
+
+
+    fn unhandled_input(&mut self, event : Gd<InputEvent>) {
+        if event.is_action_pressed(UI_CANCEL) {
+            self.on_back_pressed();
+            return;
+        }
+    }
 }
 
 
 #[godot_dyn]
 impl IState for LetterMenu {
     fn do_enter(&mut self) {
+        self.base_mut().set_process_unhandled_input(true);
+
         if self.inbox_state == LetterMenuInboxState::NewMail {
             self.inbox_state = LetterMenuInboxState::AllRead;
         }
@@ -56,6 +66,8 @@ impl IState for LetterMenu {
 
 
     fn do_exit(&mut self) {
+        self.base_mut().set_process_unhandled_input(false);
+
         self.base_mut().hide();
     }
 }

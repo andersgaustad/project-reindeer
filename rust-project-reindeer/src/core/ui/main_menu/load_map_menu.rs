@@ -1,6 +1,6 @@
-use godot::{classes::{Button, ColorPickerButton, Control, HSlider, IControl, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
+use godot::{classes::{Button, ColorPickerButton, Control, HSlider, IControl, InputEvent, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
 
-use crate::core::{levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, ui::{i_sub_menu_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}};
+use crate::{core::{levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, ui::{i_sub_menu_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -188,12 +188,22 @@ impl IControl for LoadMapMenu {
 
         self.refresh();
     }
+
+
+    fn unhandled_input(&mut self, event : Gd<InputEvent>) {
+        if event.is_action_pressed(UI_CANCEL) {
+            self.on_cancel_pressed();
+            return;
+        }
+    }
 }
 
 
 #[godot_dyn]
 impl IState for LoadMapMenu {
     fn do_enter(&mut self) {
+        self.base_mut().set_process_unhandled_input(true);
+
         self.maze_text_edit.grab_focus();
 
         self.refresh();
@@ -201,6 +211,8 @@ impl IState for LoadMapMenu {
     
 
     fn do_exit(&mut self) {
+        self.base_mut().set_process_unhandled_input(false);
+
         self.maze_text_edit.clear();
         self.feedback_text.set_text(&self.default_feedback_text);
 

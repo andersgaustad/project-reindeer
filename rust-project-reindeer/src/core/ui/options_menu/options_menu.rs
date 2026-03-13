@@ -1,7 +1,7 @@
 use godot::{classes::{Button, CheckButton, Control, HSlider, IControl, InputEvent, Label, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{options::{option_change::OptionChange, options::Options}, run::Run, ui::{i_sub_menu_state::IState, options_menu::options_menu_request::OptionsMenuRequest}, utility::node_utility}, input_map::CANCEL};
+use crate::{core::{options::{option_change::OptionChange, options::Options}, run::Run, ui::{i_sub_menu_state::IState, options_menu::options_menu_request::OptionsMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -132,7 +132,7 @@ impl IControl for OptionsMenu {
             return;
         }
 
-        if event.is_action_pressed(CANCEL) {
+        if event.is_action_pressed(UI_CANCEL) {
             self
                 .back_button
                 .signals()

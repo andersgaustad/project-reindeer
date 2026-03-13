@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, FileAccess, IControl, InputEvent, Os, RichTextLabel, TextureButton, file_access::ModeFlags}, prelude::*};
 
-use crate::{core::ui::{i_sub_menu_state::IState, main_menu::about_menu_request::AboutMenuRequest}, input_map::CANCEL};
+use crate::{core::ui::{i_sub_menu_state::IState, main_menu::about_menu_request::AboutMenuRequest}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -84,7 +84,7 @@ impl IControl for AboutMenu {
             return;
         }
 
-        if event.is_action_pressed(CANCEL) {
+        if event.is_action_pressed(UI_CANCEL) {
             self.
                 run_deferred(|me| {
                     me.on_back_pressed();

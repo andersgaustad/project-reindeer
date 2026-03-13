@@ -1,7 +1,7 @@
 use godot::{classes::{Button, Control, IControl, InputEvent, Texture2D, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{levels::main_level::pathfinding_state::PathfindingState, ui::{buttons::button_state_info::ButtonStateInfo, i_sub_menu_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_inbox_state::LetterMenuInboxState}, pause_menu::{pause_menu_button_type::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}}, input_map::CANCEL};
+use crate::{core::{levels::main_level::pathfinding_state::PathfindingState, ui::{buttons::button_state_info::ButtonStateInfo, i_sub_menu_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_inbox_state::LetterMenuInboxState}, pause_menu::{pause_menu_button_type::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -82,7 +82,7 @@ impl IControl for PauseMenuFace {
             return;
         }
 
-        if event.is_action_pressed(CANCEL) {
+        if event.is_action_pressed(UI_CANCEL) {
             self
                 .resume_button
                 .signals()
