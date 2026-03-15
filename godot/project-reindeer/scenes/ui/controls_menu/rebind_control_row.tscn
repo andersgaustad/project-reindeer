@@ -1,0 +1,43 @@
+[gd_scene load_steps=5 format=3 uid="uid://cisvl7ug3che5"]
+
+[ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme.tres" id="1_ils1g"]
+[ext_resource type="Texture2D" uid="uid://c1p8xe1vcoitq" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/plus.png" id="1_p185e"]
+[ext_resource type="Texture2D" uid="uid://s50r6ej5qha6" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/mouse.png" id="2_kg4db"]
+[ext_resource type="Texture2D" uid="uid://c3xi7a2u8xe4b" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/gamepad.png" id="3_rqkde"]
+
+[node name="RebindControlRow" type="RebindControlRow"]
+unassigned_icon = ExtResource("1_p185e")
+keyboard_icon = ExtResource("2_kg4db")
+controller_icon = ExtResource("3_rqkde")
+offset_right = 1110.0
+offset_bottom = 108.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme = ExtResource("1_ils1g")
+theme_override_constants/separation = 30
+
+[node name="ActionNameLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 1
+text = "<ACTION_NAME>:"
+vertical_alignment = 1
+
+[node name="VSeparator" type="VSeparator" parent="."]
+layout_mode = 2
+
+[node name="RebindButton1" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+text = "<UNASSIGNED>"
+icon = ExtResource("1_p185e")
+
+[node name="RebindButton2" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+text = "<UNASSIGNED>"
+icon = ExtResource("1_p185e")

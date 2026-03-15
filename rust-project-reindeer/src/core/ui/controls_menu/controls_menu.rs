@@ -125,10 +125,6 @@ impl IControl for ControlsMenu {
 
 
     fn unhandled_input(&mut self, event : Gd<InputEvent>) {
-        if !self.base().is_visible_in_tree() {
-            return;
-        }
-
         match &self.state {
             ControlsMenuState::Default => {
                 // Exit shortcut
@@ -145,6 +141,11 @@ impl IControl for ControlsMenu {
                 };
 
                 let mut input_map = InputMap::singleton();
+                let events = input_map.action_get_events(event_name.arg());
+                for event in events.iter_shared() {
+                    godot_print!(":?- Event: {:?}", &event);
+                }
+
                 input_map.action_erase_events(event_name.arg());
 
                 // Ignore cancel - treat as unassigned
