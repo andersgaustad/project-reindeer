@@ -32,6 +32,7 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
+focus_neighbor_right = NodePath("../RebindButton2")
 text = "<UNASSIGNED>"
 icon = ExtResource("1_p185e")
 
@@ -39,5 +40,6 @@ icon = ExtResource("1_p185e")
 unique_name_in_owner = true
 custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
+focus_neighbor_left = NodePath("../RebindButton1")
 text = "<UNASSIGNED>"
 icon = ExtResource("1_p185e")

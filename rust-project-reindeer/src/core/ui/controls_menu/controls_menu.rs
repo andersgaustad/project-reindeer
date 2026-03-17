@@ -75,8 +75,17 @@ pub struct ControlsMenu {
 #[godot_api]
 impl IControl for ControlsMenu {
     fn ready(&mut self) {
-        let mut rebind_rows = self.get_rebind_control_rows();
-        for row in rebind_rows.iter_mut() {
+        let back_button_path = self.back_button.get_path();
+
+        let rebind_rows = self.get_rebind_control_rows();
+
+        // Iterate over vertical neighbors
+        let n_rows = rebind_rows.len();
+        for i in 0..n_rows {
+            let Some(row) = rebind_rows.get(i).cloned() else {
+                continue;
+            };
+
             // notify_waiting_for_input
             let row_gd = row.clone();
             row
@@ -104,6 +113,52 @@ impl IControl for ControlsMenu {
                         me.on_row_notify_finished_rebinding(row_gd.clone());
                     }
                 );
+            
+            // Focus
+            let mut left_most_button = row.bind().get_rebind_button_1();
+            left_most_button.set_focus_neighbor(Side::LEFT, &back_button_path);
+
+            let mut buttons = row.bind().get_rebind_buttons();
+            for button in buttons.iter() {
+                let button = button.clone();
+                let button_gd = button.clone();
+
+                // scroll_container__ensure_control_visible
+                button
+                    .signals()
+                    .focus_entered()
+                    .builder()
+                    .flags(ConnectFlags::DEFERRED)
+                    .connect_other_gd(
+                        &self.scroll_containter.clone(),
+                        move |mut scroll_container| {
+                            scroll_container.ensure_control_visible(&button_gd);
+                        }
+                    );
+            }
+            
+            let north_neighbor_opt = (|| {
+                let north_i = i.checked_sub(1)?;
+                rebind_rows.get(north_i).cloned()
+            })();
+
+            let south_neighbor_opt = rebind_rows.get(i + 1).cloned();
+
+            if let Some(north_neighbor) = north_neighbor_opt {
+                let neighbor_buttons = north_neighbor.bind().get_rebind_buttons();
+
+                for (row_button, neighbor) in buttons.iter_mut().zip(neighbor_buttons) {
+                    row_button.set_focus_neighbor(Side::TOP, &neighbor.get_path());
+                }
+            }
+
+            if let Some(south_neighbor) = south_neighbor_opt {
+                let neighbor_buttons = south_neighbor.bind().get_rebind_buttons();
+
+                for (row_button, neighbor) in buttons.iter_mut().zip(neighbor_buttons) {
+                    row_button.set_focus_neighbor(Side::BOTTOM, &neighbor.get_path());
+                }               
+            }
         }
 
         // back_button

@@ -90,49 +90,42 @@ label_name = "Move Forward:"
 input_action_name = "move_forward"
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../BackButton")
 
 [node name="MoveLeftRebind" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/VBoxContainer" instance=ExtResource("3_5ajlj")]
 label_name = "Move Left:"
 input_action_name = "move_left"
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../BackButton")
 
 [node name="MoveBackRebind" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/VBoxContainer" instance=ExtResource("3_5ajlj")]
 label_name = "Move Back:"
 input_action_name = "move_back"
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../BackButton")
 
 [node name="MoveRightRebind" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/VBoxContainer" instance=ExtResource("3_5ajlj")]
 label_name = "Move Right:"
 input_action_name = "move_right"
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../BackButton")
 
 [node name="ToggleSprintRebind" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/VBoxContainer" instance=ExtResource("3_5ajlj")]
 label_name = "Toggle Sprint:"
 input_action_name = "sprint"
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../BackButton")
 
 [node name="MoveUpRebind" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/VBoxContainer" instance=ExtResource("3_5ajlj")]
 label_name = "Move Up:"
 input_action_name = "move_up"
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../BackButton")
 
 [node name="MoveDownRebind" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MovementContainer/CenterContainer/VBoxContainer" instance=ExtResource("3_5ajlj")]
 label_name = "Move Down:"
 input_action_name = "move_down"
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../BackButton")
 
 [node name="MiscContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
@@ -157,14 +150,12 @@ label_name = "Show/hide Player:"
 input_action_name = "toggle_visibility"
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../BackButton")
 
 [node name="ToggleLightRebind" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MiscContainer/CenterContainer/VBoxContainer" instance=ExtResource("3_5ajlj")]
 label_name = "Toggle Light:"
 input_action_name = "toggle_light"
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../BackButton")
 
 [node name="BackButton" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true

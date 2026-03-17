@@ -342,7 +342,6 @@ impl RebindControlRow {
 
         let mut input_map = InputMap::singleton();
         let bindings = input_map.action_get_events(self.input_action_name.arg());
-        godot_print!(":?- Bindings for '{}' are currently: {:?}", &self.input_action_name, &bindings);
 
         let events_and_text_and_icons = bindings
             .iter_shared()
@@ -365,7 +364,7 @@ impl RebindControlRow {
     }
 
 
-    fn get_rebind_buttons(&self) -> [Gd<Button>; 2] {
+    pub fn get_rebind_buttons(&self) -> [Gd<Button>; 2] {
         [
             self.rebind_button_1.clone(),
             self.rebind_button_2.clone(),
@@ -379,7 +378,6 @@ impl RebindControlRow {
 
 
     fn parse_input_event(&self, event : Gd<InputEvent>) -> Option<(Gd<InputEvent>, GString, Option<Gd<Texture2D>>)> {
-        godot_print!(":?- Parsing input event: {:?}", &event);
         // Key event
         let as_key_event_result = event.clone().try_cast::<InputEventKey>();
         if let Ok(ok) = as_key_event_result {
@@ -408,7 +406,6 @@ impl RebindControlRow {
             const SIGNIFICANT_TRESHOLD : f32 = 0.9;
             let abs_axis_value = ok.get_axis_value().abs();
 
-            godot_print!("Parsing controller axis: {} {}", &name, ok.get_axis_value());
             if abs_axis_value >= SIGNIFICANT_TRESHOLD {
                 return Some((event, name, icon));
             }
@@ -441,6 +438,5 @@ fn simplify_controller_text(gstring : GString) -> GString {
     })();
 
     let simplified = part_2;
-    godot_print!(":?- Simplified from {} to {}", &gstring, &simplified);
     simplified
 }
