@@ -1,10 +1,13 @@
-use godot::{classes::Button, prelude::*};
+use godot::prelude::*;
+
+use crate::core::ui::controls_menu::rebind_control_row::RebindControlRow;
 
 
 #[derive(Debug)]
 pub enum ControlsMenuState {
     Default,
-    WaitingForInput((GString, Gd<Button>)),
+    // RebindControlRow and button ID
+    WaitingForInput((Gd<RebindControlRow>, usize)),
 
 }
 

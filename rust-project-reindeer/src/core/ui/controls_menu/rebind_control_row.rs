@@ -1,4 +1,6 @@
-use godot::{classes::{Button, Engine, HBoxContainer, IHBoxContainer, InputEventJoypadButton, InputEventJoypadMotion, InputEventKey, InputMap, Label, Texture2D}, prelude::*};
+use godot::{classes::{Button, Engine, HBoxContainer, IHBoxContainer, InputEvent, InputEventJoypadButton, InputEventJoypadMotion, InputEventKey, InputMap, Label, Texture2D, object::ConnectFlags}, prelude::*};
+
+use crate::{core::ui::{controls_menu::rebind_control_row_state::RebindControlRowState, i_sub_menu_state::IState}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -46,14 +48,111 @@ pub struct RebindControlRow {
     rebind_button_2 : OnReady<Gd<Button>>,
 
 
+    // set = rust_set_state
+    #[init(val = RebindControlRowState::Default)]
+    state : RebindControlRowState,
+
+
     base : Base<HBoxContainer>,
+}
+
+
+#[godot_dyn]
+impl IState for RebindControlRow {
+    fn do_enter(&mut self) {
+        self.base_mut().set_process_unhandled_input(true);
+    }
+
+    fn do_exit(&mut self) {
+        self.base_mut().set_process_unhandled_input(false);
+    }
 }
 
 
 #[godot_api]
 impl IHBoxContainer for RebindControlRow {
     fn ready(&mut self) {
+        let buttons = self.get_rebind_buttons();
+
+        for (i, button) in buttons.iter().enumerate() {
+            let button = button.clone();
+            let button_gd = button.clone();
+
+            // pressed
+            button
+                .signals()
+                .pressed()
+                .builder()
+                .flags(ConnectFlags::DEFERRED)
+                .connect_other_mut(
+                    self,
+                    move |me| {
+                        me.on_rebind_button_pressed(button_gd.clone(), i as i32);
+                    }
+                );
+        }
+
         self.refresh();
+    }
+
+
+    fn unhandled_input(&mut self, event : Gd<InputEvent>) {
+        match &self.state {
+            RebindControlRowState::Default => {
+                // Do nothing
+            },
+            RebindControlRowState::ListeningForInput((_, button_id)) => {
+                let mut input_map = InputMap::singleton();
+                let mut action_events = input_map
+                    .action_get_events(self.input_action_name.arg())
+                    .iter_shared()
+                    .collect::<Vec<Gd<InputEvent>>>();
+                
+                let mut committed_new_rebinds_opt = None;
+                
+                if event.is_action_pressed(UI_CANCEL) {
+                    committed_new_rebinds_opt = Some(Vec::new());
+                }
+
+                if committed_new_rebinds_opt.is_none() {
+                    // Check if valid event - don't rebind if input is unrecognized
+                    if let Some((event, _, _)) = self.parse_input_event(event) {
+                        // Accepted event, figure out where to put it
+                        let button_id = *button_id as usize;
+
+                        if let Some(existing) = action_events.get_mut(button_id) {
+                            *existing = event;
+                            
+                        } else {
+                            action_events.push(event);
+                        }
+
+                        committed_new_rebinds_opt = Some(action_events);
+                    }
+                }
+
+
+                // Rebind if committed
+                if let Some(committed_rebinds) = committed_new_rebinds_opt {
+                    let input_action_name = &self.input_action_name;
+                    input_map.action_erase_events(input_action_name.arg());
+
+                    for event in committed_rebinds {
+                        input_map.action_add_event(input_action_name.arg(), &event);
+                    }
+
+                    self.rust_set_state(RebindControlRowState::Default);
+                    self.update_ui_with_bindings();
+                    self
+                        .signals()
+                        .notify_finished_rebinding()
+                        .emit();
+                }
+            },
+            RebindControlRowState::Overshadowed => {
+                // Do nothing
+            },
+        }
     }
 }
 
@@ -61,7 +160,10 @@ impl IHBoxContainer for RebindControlRow {
 #[godot_api]
 impl RebindControlRow {
     #[signal]
-    pub fn notify_ready_for_input();
+    pub fn notify_waiting_for_input();
+
+    #[signal]
+    pub fn notify_finished_rebinding();
 
 
     #[func]
@@ -74,8 +176,6 @@ impl RebindControlRow {
         }
 
         self.action_name_label.set_text(&label_name);
-
-        godot_print!(":?- Set label name to {}", &label_name);
     }
 
 
@@ -87,8 +187,6 @@ impl RebindControlRow {
         if !self.base().is_node_ready() {
             return;
         }
-        
-        godot_print!(":?- Set input name to {}", &input_action_name);
     }
 
 
@@ -142,6 +240,77 @@ impl RebindControlRow {
     }
 
 
+    fn set_buttons_disabled(&mut self, disabled : bool) {
+        let mut buttons = self.get_rebind_buttons();
+        for button in buttons.iter_mut() {
+            button.set_disabled(disabled);
+        }
+    }
+
+
+    fn rust_set_state(&mut self, state : RebindControlRowState) {
+        // Set
+        let previous_state = std::mem::replace(&mut self.state, state);
+
+        let state = &self.state;
+        let mut disabled = false;
+
+        match state {
+            RebindControlRowState::Default => {
+                if let RebindControlRowState::ListeningForInput((mut previous_button, _)) = previous_state {
+                    previous_button.grab_focus();
+                }
+            },
+            RebindControlRowState::ListeningForInput((event_button, _id)) => {
+                let mut event_button = event_button.clone();
+                event_button.release_focus();
+                event_button.set_text("Press any button...");
+
+                let mut buttons = self.get_rebind_buttons();
+                for button in buttons.iter_mut() {
+                    let is_event_button = *button == event_button;
+
+                    button.set_disabled(!is_event_button);
+                }
+
+
+                self
+                    .signals()
+                    .notify_waiting_for_input()
+                    .emit();
+            },
+            RebindControlRowState::Overshadowed => {
+                // Explicitly changing disabled here for clarity
+                disabled = true;
+            }
+        }
+
+        self.set_buttons_disabled(disabled);
+    }
+
+
+    #[func]
+    pub fn on_become_overshadowed(&mut self) {
+        self.rust_set_state(RebindControlRowState::Overshadowed);
+    }
+
+
+    #[func]
+    pub fn on_release_overshadowed(&mut self) {
+        if self.state == RebindControlRowState::Overshadowed {
+            self.rust_set_state(RebindControlRowState::Default);
+        }
+    }
+
+
+    #[func]
+    fn on_rebind_button_pressed(&mut self, button : Gd<Button>, id : i32) {
+        if self.state == RebindControlRowState::Default {
+            self.rust_set_state(RebindControlRowState::ListeningForInput((button, id)));
+        }
+    }
+
+
     fn refresh(&mut self) {
         let label_name = std::mem::take(&mut self.label_name);
         self.set_label_name(label_name);
@@ -161,7 +330,6 @@ impl RebindControlRow {
         let controller_icon = std::mem::take(&mut self.controller_icon);
         self.set_controller_icon(controller_icon);
 
-
         self.update_ui_with_bindings();
     }
 
@@ -174,50 +342,12 @@ impl RebindControlRow {
 
         let mut input_map = InputMap::singleton();
         let bindings = input_map.action_get_events(self.input_action_name.arg());
+        godot_print!(":?- Bindings for '{}' are currently: {:?}", &self.input_action_name, &bindings);
 
-        let binding_names = bindings
+        let events_and_text_and_icons = bindings
             .iter_shared()
             .filter_map(|event| {
-                let mut event = event;
-
-                // Key event
-                let as_key_event_result = event.try_cast::<InputEventKey>();
-                match as_key_event_result {
-                    Ok(ok) => {
-                        let name = ok.as_text_keycode();
-                        return Some((name, self.keyboard_icon.clone()));
-                    },
-                    Err(returned) => {
-                        event = returned;
-                    },
-                }
-
-                // Controller button
-                let as_controller_button_event_result = event.try_cast::<InputEventJoypadButton>();
-                match as_controller_button_event_result {
-                    Ok(ok) => {
-                        let name = ok.as_text();
-                        let simplified = simplify_controller_text(name);
-                        return Some((simplified, self.controller_icon.clone()));
-                    },
-                    Err(returned) => {
-                        event = returned;
-                    },
-                }
-
-                let as_controller_axis_event_result = event.try_cast::<InputEventJoypadMotion>();
-                match as_controller_axis_event_result {
-                    Ok(ok) => {
-                        let name = ok.as_text();
-                        let simplified = simplify_controller_text(name);
-                        return Some((simplified, self.controller_icon.clone()));
-                    },
-                    Err(_returned) => {
-                        
-                    },
-                }
-
-                None
+                self.parse_input_event(event)
             })
             .take(2);
 
@@ -227,9 +357,9 @@ impl RebindControlRow {
             button.set_button_icon(self.unassigned_icon.as_ref());
         }
 
-        let name_and_button = binding_names.zip(buttons.iter_mut());
-        for ((name, button_icon), button) in name_and_button {
-            button.set_text(&name);
+        let parsed_and_buttons = events_and_text_and_icons.zip(buttons.iter_mut());
+        for ((_, button_text, button_icon), button) in parsed_and_buttons {
+            button.set_text(&button_text);
             button.set_button_icon(button_icon.as_ref());
         }
     }
@@ -241,17 +371,76 @@ impl RebindControlRow {
             self.rebind_button_2.clone(),
         ]
     }
+
+
+    pub fn get_button(&self, idx : usize) -> Option<Gd<Button>> {
+        self.get_rebind_buttons().get(idx).cloned()
+    }
+
+
+    fn parse_input_event(&self, event : Gd<InputEvent>) -> Option<(Gd<InputEvent>, GString, Option<Gd<Texture2D>>)> {
+        godot_print!(":?- Parsing input event: {:?}", &event);
+        // Key event
+        let as_key_event_result = event.clone().try_cast::<InputEventKey>();
+        if let Ok(ok) = as_key_event_result {
+            let name = ok.as_text_keycode();
+            let icon = self.keyboard_icon.clone();
+
+            return Some((event, name, icon));
+        }
+
+        // Controller button
+        let as_controller_button_event_result = event.clone().try_cast::<InputEventJoypadButton>();
+        if let Ok(ok) = as_controller_button_event_result {
+            let name = simplify_controller_text(ok.as_text());
+            let icon = self.controller_icon.clone();
+
+            return Some((event, name, icon));
+        }
+        
+        // Controller axis
+        let as_controller_axis_event_result = event.clone().try_cast::<InputEventJoypadMotion>();
+        if let Ok(ok) = as_controller_axis_event_result {
+            let name = simplify_controller_text(ok.as_text());
+            let icon = self.controller_icon.clone();
+
+            // Only react if axis value is significant
+            const SIGNIFICANT_TRESHOLD : f32 = 0.9;
+            let abs_axis_value = ok.get_axis_value().abs();
+
+            godot_print!("Parsing controller axis: {} {}", &name, ok.get_axis_value());
+            if abs_axis_value >= SIGNIFICANT_TRESHOLD {
+                return Some((event, name, icon));
+            }
+        }
+
+        None
+    }
 }
 
 
 // Utility
 
 fn simplify_controller_text(gstring : GString) -> GString {
-    gstring
-        .split("(")
-        .get(1)
-        .unwrap_or_default()
-        .split(",")
-        .get(0)
-        .unwrap_or_default()
+    let part_1 = gstring.split("(").get(1).unwrap_or_default();
+
+    let end_tokens = [
+        ",",
+        ")"
+    ];
+
+    let part_2 = (|| {
+        for token in end_tokens {
+            let split = part_1.split(token);
+            if split.len() > 1 {
+                return split.get(0).unwrap_or_default()
+            }
+        }
+
+        part_1.split(",").get(0).unwrap_or_default()
+    })();
+
+    let simplified = part_2;
+    godot_print!(":?- Simplified from {} to {}", &gstring, &simplified);
+    simplified
 }
