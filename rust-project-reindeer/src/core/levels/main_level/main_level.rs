@@ -1,4 +1,4 @@
-use godot::{classes::{AudioStreamPlayer, BoxMesh, BoxShape3D, CollisionShape3D, Control, Input, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextLabel, StandardMaterial3D, Timer, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use godot::{classes::{AudioStreamPlayer, BoxMesh, BoxShape3D, CollisionShape3D, Input, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextLabel, StandardMaterial3D, Timer, Tween, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
 use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::{option_change::OptionChange, options::Options}, player::Player, props::cabin::Cabin, run::Run, ui::{i_sub_menu_state::IState, pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}}, utility::{bounding_box_utility, node_utility}}, input_map::UI_CANCEL};
@@ -87,6 +87,19 @@ pub struct MainLevel {
     random_seed : GString,
 
 
+    #[export_group(name = "Mail")]
+
+    #[export]
+    #[var]
+    #[init(val = default_mail_color_array())]
+    mail_notification_colors : Array<Color>,
+
+    #[export]
+    #[var]
+    #[init(val = 0.5)]
+    mail_color_change_interval : f64,
+
+
     #[export_group(name = "Maze Parameters")]
 
     #[export]
@@ -101,13 +114,21 @@ pub struct MainLevel {
     #[init(node = "%PauseMenuStateMachine")]
     pause_menu : OnReady<Gd<PauseMenuStateMachine>>,
 
-    #[var]
-    #[init(node = "%InGameUI")]
-    in_game_ui : OnReady<Gd<Control>>,
 
     #[var]
     #[init(node = "%StartingInLabel")]
     starting_in_label : OnReady<Gd<RichTextLabel>>,
+
+    #[var]
+    #[init(node = "%CountdownToStartTimer")]
+    countdown_to_start_timer : OnReady<Gd<Timer>>,
+
+    #[var]
+    #[init(node = "%MailMessageLabel")]
+    mail_message_label : OnReady<Gd<RichTextLabel>>,
+    default_mail_message_text : GString,
+    mail_message_tween : Option<Gd<Tween>>,
+
 
     #[var]
     #[init(node = "%GroundMesh")]
@@ -176,10 +197,6 @@ pub struct MainLevel {
     #[var]
     #[init(node = "%SnowBunkerSpawner")]
     snow_bunker_spawner : OnReady<Gd<MultiMeshInstance3D>>,
-
-    #[var]
-    #[init(node = "%CountdownToStartTimer")]
-    countdown_to_start_timer : OnReady<Gd<Timer>>,
 
     #[var]
     #[init(node = "%BackgroundMusicPlayer")]
@@ -276,6 +293,7 @@ impl INode3D for MainLevel {
             arrow_spawner.set_instance_count(0);
         }
 
+        self.default_mail_message_text = self.mail_message_label.get_text();
         self.default_background_music_player_volume = self.background_music_player.get_volume_linear();
         self.default_mail_notification_sfx_player_volume = self.background_music_player.get_volume_linear();
         
@@ -392,9 +410,6 @@ impl MainLevel {
         // Set
         self.pathfinding_state = new_state;
 
-        self.in_game_ui.hide();
-        self.countdown_to_start_timer.stop();
-
         match new_state {
             PathfindingState::NotStarted => {
                 // Do nothing
@@ -402,7 +417,7 @@ impl MainLevel {
             PathfindingState::Countdown => {
                 // Only start countdown if we get here from NotStarted
                 if previous_state == PathfindingState::NotStarted {
-                    self.in_game_ui.show();
+                    self.starting_in_label.show();
                     self.countdown_to_start_timer.start();
 
                     self
@@ -419,6 +434,9 @@ impl MainLevel {
                 }
             },
             PathfindingState::InProgress => {
+                self.starting_in_label.hide();
+                self.countdown_to_start_timer.stop();
+                
                 self.run_maze_solver();
             },
             PathfindingState::Done => {
@@ -1455,6 +1473,17 @@ impl MainLevel {
     }
 
 
+    #[func]
+    fn on_mail_tween_finished(&mut self) {
+        let tween_opt = std::mem::take(&mut self.mail_message_tween);
+        if let Some(mut tween) = tween_opt {
+            tween.kill();
+        }
+
+        self.mail_message_label.hide();
+    }
+
+
     fn refresh(&mut self) {
         let seed = self.random_seed.hash_u32();
         let seed_u64 = u64::from(seed);
@@ -1598,6 +1627,52 @@ impl MainLevel {
     fn send_mail_to_letter_menu(&mut self, mail : GString) {
         self.mail_notification_sfx_player.play();
         self.pause_menu.bind_mut().send_mail_to_letter_menu(mail);
+
+        let tween_opt = self.base_mut().create_tween();
+        let old_tween_opt = std::mem::replace(&mut self.mail_message_tween, tween_opt);
+        if let Some(mut old_tween) = old_tween_opt {
+            old_tween.stop();
+        }
+
+        let tween_opt = self.mail_message_tween.clone();
+        if let Some(mut tween) = tween_opt {
+            self.mail_message_label.show();
+
+            let interval = self.mail_color_change_interval;
+
+            let colors = &self.mail_notification_colors;
+
+            for color in colors.iter_shared() {
+                let color_string = color.to_html();
+                let new_string = format!(
+                    "[color=#{}]{}[/color]",
+                    &color_string,
+                    &self.default_mail_message_text,
+                );
+
+                let mut mail_label = self.mail_message_label.clone();
+
+                tween.tween_callback(
+                    &Callable::from_fn(
+                        &format!("set_mail_color_{}", &color_string),
+                        move |_| {
+                            mail_label.set_text(&new_string);
+                        }
+                    )
+                );
+                tween.tween_interval(interval);
+            }
+
+            tween
+                .signals()
+                .finished()
+                .builder()
+                .flags(ConnectFlags::DEFERRED | ConnectFlags::ONE_SHOT)
+                .connect_other_mut(
+                    self,
+                    Self::on_mail_tween_finished
+                );
+        }
     }
 }
 
@@ -1607,4 +1682,25 @@ impl MainLevel {
 struct TileCenterPosition {
     coordinates : Vector2,
     height : f32,
+}
+
+fn default_mail_color_array() -> Array<Color> {
+    // Using colors suggested by:
+    // https://www.schemecolor.com/retro-disco-colors.php
+    const COLOR_ARRAY : [&str; 6] = [
+        "FFFFFF",
+        "A414D9",
+        "FF802B",
+        "F9E105",
+        "34C7A5",
+        "5D50CE",
+    ];
+
+    let rust_colors = COLOR_ARRAY
+        .map(|color_code| {
+            Color::from_html(color_code).unwrap()
+        });
+    
+    let colors = Array::from_iter(rust_colors);
+    colors
 }

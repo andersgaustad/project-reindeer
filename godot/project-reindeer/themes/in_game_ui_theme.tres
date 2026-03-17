@@ -1,0 +1,7 @@
+[gd_resource type="Theme" load_steps=2 format=3 uid="uid://bmgnihm1sx3au"]
+
+[ext_resource type="FontFile" uid="uid://c32cp4lupcblh" path="res://assets/dev_assets/source/AsteriskMono_Font_1_0/OpenType (.otf)/AsteriskMono-Regular.otf" id="1_23u7h"]
+
+[resource]
+default_font = ExtResource("1_23u7h")
+default_font_size = 96

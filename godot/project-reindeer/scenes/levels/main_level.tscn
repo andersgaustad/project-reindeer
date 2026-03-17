@@ -27,8 +27,8 @@
 [ext_resource type="PackedScene" uid="uid://wk8lhstoo2l1" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/snowman-hat.fbx" id="21_lf3sc"]
 [ext_resource type="PackedScene" uid="uid://dju0s05r0mt3n" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/snowman.fbx" id="22_qsr70"]
 [ext_resource type="PackedScene" uid="uid://b1li531q4jhe3" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/tree-decorated.fbx" id="23_xl3jb"]
+[ext_resource type="Theme" uid="uid://bmgnihm1sx3au" path="res://themes/in_game_ui_theme.tres" id="28_xl3jb"]
 [ext_resource type="PackedScene" uid="uid://d1adqsqoxpnk5" path="res://scenes/ui/pause_menu/pause_menu_state_machine.tscn" id="29_lf3sc"]
-[ext_resource type="FontFile" uid="uid://c32cp4lupcblh" path="res://assets/dev_assets/source/AsteriskMono_Font_1_0/OpenType (.otf)/AsteriskMono-Regular.otf" id="29_xl3jb"]
 [ext_resource type="AudioStream" uid="uid://8p756i7tic8p" path="res://music_playlists/main_level_playlist.tres" id="30_qsr70"]
 [ext_resource type="AudioStream" uid="uid://dj8k0ims2t7q2" path="res://assets/dev_assets/source/doorbell_sfx/doorbell.wav" id="31_xl3jb"]
 
@@ -274,7 +274,6 @@ sky_mode = 2
 
 [node name="InGameUI" type="Control" parent="."]
 unique_name_in_owner = true
-visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -282,26 +281,40 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-
-[node name="StartingInLabel" type="RichTextLabel" parent="InGameUI"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(1920, 80)
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 100.0
-grow_horizontal = 2
-theme_override_colors/default_color = Color(1, 1, 1, 1)
-theme_override_fonts/normal_font = ExtResource("29_xl3jb")
-theme_override_font_sizes/normal_font_size = 96
-bbcode_enabled = true
-text = "Starting in: ???"
-horizontal_alignment = 2
+theme = ExtResource("28_xl3jb")
 
 [node name="CountdownToStartTimer" type="Timer" parent="InGameUI"]
 unique_name_in_owner = true
 wait_time = 3.0
 one_shot = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="InGameUI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StartingInLabel" type="RichTextLabel" parent="InGameUI/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(1920, 80)
+layout_mode = 2
+bbcode_enabled = true
+text = "Starting in: ???"
+fit_content = true
+horizontal_alignment = 2
+
+[node name="MailMessageLabel" type="RichTextLabel" parent="InGameUI/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(1920, 80)
+layout_mode = 2
+bbcode_enabled = true
+text = "YOU GOT MAIL!"
+fit_content = true
+horizontal_alignment = 2
 
 [node name="PauseMenuStateMachine" parent="." instance=ExtResource("29_lf3sc")]
 unique_name_in_owner = true
