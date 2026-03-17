@@ -86,6 +86,7 @@ unique_name_in_owner = true
 layout_mode = 2
 focus_neighbor_left = NodePath("../LoadButton")
 focus_neighbor_top = NodePath("../../MazeTextEdit")
+focus_neighbor_right = NodePath("../../../ExpandAdvancedOptionsButton")
 text = "Cancel"
 
 [node name="ExpandAdvancedOptionsButton" type="Button" parent="HBoxContainer"]
@@ -93,7 +94,6 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 focus_neighbor_left = NodePath("../LoadMap/MazeTextEdit")
-focus_neighbor_right = NodePath("../AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid/SeedTextEdit")
 icon = ExtResource("1_v4wla")
 
 [node name="AdvancedOptions" type="Control" parent="HBoxContainer"]
@@ -154,12 +154,12 @@ columns = 2
 layout_mode = 2
 text = "Seed:"
 
-[node name="SeedTextEdit" type="TextEdit" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid"]
+[node name="SeedTextEdit" type="LineEdit" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-focus_neighbor_left = NodePath("../../../../../../..")
 placeholder_text = "Reindeer"
+select_all_on_focus = true
 
 [node name="TreeDensityLabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid"]
 layout_mode = 2
@@ -168,7 +168,6 @@ text = "Tree Density:"
 [node name="TreeDensityOptionDropDownButton" type="OptionButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid"]
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../..")
 selected = 1
 allow_reselect = true
 item_count = 3
@@ -186,7 +185,6 @@ text = "Forest Size:"
 [node name="ForestSizeDropDownButton" type="OptionButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid"]
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../..")
 selected = 0
 allow_reselect = true
 item_count = 3
@@ -250,7 +248,6 @@ text = "Color A:"
 [node name="ColorAPickerButton" type="ColorPickerButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../..")
 color = Color(0.20392157, 0.23529412, 0.5647059, 1)
 edit_alpha = false
 
@@ -261,6 +258,5 @@ text = "Color B:"
 [node name="ColorBPickerButton" type="ColorPickerButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_left = NodePath("../../../../../../..")
 color = Color(0.105882354, 0.53333336, 0.7137255, 1)
 edit_alpha = false

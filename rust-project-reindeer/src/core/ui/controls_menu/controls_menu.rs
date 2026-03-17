@@ -1,6 +1,6 @@
-use godot::{classes::{Button, Control, IControl, ScrollContainer, Texture2D, object::ConnectFlags}, obj::WithBaseField, prelude::*};
+use godot::{classes::{Button, Control, IControl, InputEvent, ScrollContainer, Texture2D, object::ConnectFlags}, obj::WithBaseField, prelude::*};
 
-use crate::core::ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, rebind_control_row::RebindControlRow}, i_sub_menu_state::IState};
+use crate::{core::ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, rebind_control_row::RebindControlRow}, i_sub_menu_state::IState}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -173,6 +173,14 @@ impl IControl for ControlsMenu {
 
         self.refresh();
     }
+
+
+    fn unhandled_input(&mut self, event : Gd<InputEvent>) {
+        if event.is_action_pressed(UI_CANCEL) {
+            self.on_back_pressed();
+            return;
+        }
+    }
 }
 
 
@@ -181,17 +189,22 @@ impl IState for ControlsMenu {
     fn do_enter(&mut self) {
         let rows = self.get_rebind_control_rows();
 
-        for row in rows.into_iter() {
+        for row in rows.iter() {
+            let row = row.clone();
             row.into_dyn().dyn_bind_mut().do_enter();
         }
 
         self.base_mut().set_process_unhandled_input(true);
 
-        self.back_button.grab_focus();
-
         self
             .scroll_containter
             .set_v_scroll(0);
+
+        let first_row_opt = rows.first().cloned();
+        if let Some(first_row) = first_row_opt {
+            let mut first_button = first_row.bind().get_rebind_button_1();
+            first_button.grab_focus();
+        }
         
         self.base_mut().show();
     }

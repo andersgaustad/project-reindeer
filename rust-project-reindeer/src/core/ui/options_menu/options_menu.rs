@@ -69,7 +69,7 @@ impl IControl for OptionsMenu {
                         Self::on_options_changed
                     );
                 
-                self.options = Some(options);
+                self.set_options(Some(options));
             }
         }
 
@@ -121,6 +121,31 @@ impl IControl for OptionsMenu {
                 Self::on_back_pressed
             );
 
+        // Focus
+        let controls = self.get_focusable_controls_in_order();
+        let n_controls = controls.len();
+
+        for i in 0..n_controls {
+            let Some(mut control) = controls.get(i).cloned() else {
+                continue;
+            };
+
+            let north_neighbor_opt = (|| {
+                let north_i = i.checked_sub(1)?;
+                let north_neighbor_opt = controls.get(north_i).cloned();
+                north_neighbor_opt
+            })();
+
+            let south_neighbor_opt = controls.get(i + 1).cloned();
+
+            if let Some(north_neighbor) = north_neighbor_opt {
+                control.set_focus_neighbor(Side::TOP, &north_neighbor.get_path());
+            }
+
+            if let Some(south_neighbor) = south_neighbor_opt {
+                control.set_focus_neighbor(Side::BOTTOM, &south_neighbor.get_path());
+            }
+        }
 
         // Refresh
         self.refresh();        
@@ -128,10 +153,6 @@ impl IControl for OptionsMenu {
 
 
     fn unhandled_input(&mut self, event : Gd<InputEvent>) {
-        if !self.base().is_visible_in_tree() {
-            return;
-        }
-
         if event.is_action_pressed(UI_CANCEL) {
             self
                 .back_button
@@ -146,7 +167,16 @@ impl IControl for OptionsMenu {
 #[godot_dyn]
 impl IState for OptionsMenu {
     fn do_enter(&mut self) {
+        self.base_mut().set_process_unhandled_input(true);
+
+        self.low_performance_toggle_button.grab_focus();
+
         self.refresh();
+    }
+
+
+    fn do_exit(&mut self) {
+        self.base_mut().set_process_unhandled_input(false);
     }
 }
 
@@ -165,19 +195,6 @@ impl OptionsMenu {
         if !self.base().is_node_ready() {
             return;
         }
-        let options_opt = self.options.clone();
-
-        let good_config = options_opt.is_some();
-
-        let tooltip = if options_opt.is_some() {
-            ""
-        } else {
-            "Could not find Options!"
-        };
-
-        let low_performance_toggle_button = &mut self.low_performance_toggle_button;
-        low_performance_toggle_button.set_disabled(!good_config);
-        low_performance_toggle_button.set_tooltip_text(tooltip);
 
 
         // Sync
@@ -273,6 +290,34 @@ impl OptionsMenu {
     fn refresh(&mut self) {
         let options = std::mem::take(&mut self.options);
         self.set_options(options);
+
+        self.update_ui();
+    }
+
+
+    fn update_ui(&mut self) {
+        let has_options = self.options.is_some();
+
+        let tooltip = if has_options {
+            ""
+        } else {
+            "Could not find Options!"
+        };
+
+        let low_performance_toggle_button = &mut self.low_performance_toggle_button;
+        low_performance_toggle_button.set_disabled(!has_options);
+        low_performance_toggle_button.set_tooltip_text(tooltip);
+    }
+
+
+    fn get_focusable_controls_in_order(&self) -> [Gd<Control>; 3] {
+        let controls = [
+            self.low_performance_toggle_button.clone().upcast(),
+            self.music_volume_slider.clone().upcast(),
+            self.sfx_volume_slider.clone().upcast(),
+        ];
+
+        controls
     }
 }
 

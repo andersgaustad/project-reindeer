@@ -126,7 +126,6 @@ impl IHBoxContainer for RebindControlRow {
                     if let Some((event, _, _)) = self.parse_input_event(event) {
                         // Accepted event, figure out where to put it
                         
-
                         if let Some(existing) = action_events.get_mut(button_id) {
                             *existing = event;
                             

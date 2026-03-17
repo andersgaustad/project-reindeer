@@ -1,4 +1,4 @@
-use godot::{classes::{Button, ColorPickerButton, Control, HSlider, IControl, InputEvent, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
+use godot::{classes::{Button, ColorPickerButton, Control, HSlider, IControl, InputEvent, LineEdit, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
 
 use crate::{core::{levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, ui::{i_sub_menu_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}}, input_map::UI_CANCEL};
 
@@ -70,10 +70,11 @@ pub struct LoadMapMenu {
     #[var]
     #[init(node = "%AdvancedOptions")]
     advanced_options : OnReady<Gd<Control>>,
+
     
     #[var]
     #[init(node = "%SeedTextEdit")]
-    seed_text_edit : OnReady<Gd<TextEdit>>,
+    seed_text_edit : OnReady<Gd<LineEdit>>,
 
     #[var]
     #[init(node = "%TreeDensityOptionDropDownButton")]
@@ -179,6 +180,39 @@ impl IControl for LoadMapMenu {
                 Self::on_turn_cost_slider_value_changed
             );
 
+
+        // Focus
+        let advanced_option_controls = self.get_focusable_advanced_option_controls();
+        let n_advanced_option_controls = advanced_option_controls.len();
+
+        for i in 0..n_advanced_option_controls {
+            let Some(mut control) = advanced_option_controls.get(i).cloned() else {
+                continue;                
+            };
+
+            let north_neighbor_opt = (|| {
+                let i_north = i.checked_sub(1)?;
+                let north = advanced_option_controls.get(i_north).cloned();
+
+                north
+            })();
+
+            let south_neighbor_opt = advanced_option_controls.get(i + 1).cloned();
+
+            if let Some(north_neighbor) = north_neighbor_opt {
+                control.set_focus_neighbor(Side::TOP, &north_neighbor.get_path());
+            }
+
+            if let Some(south_neighbor) = south_neighbor_opt {
+                control.set_focus_neighbor(Side::BOTTOM, &south_neighbor.get_path());
+            }
+
+            control.set_focus_neighbor(Side::LEFT, &self.expand_advanced_options_button.get_path());
+        }
+
+
+        // Set and refresh
+
         self.default_feedback_text = self.feedback_text.get_text();
         self.default_tree_density_id = self.tree_density_option_button.get_selected_id();
 
@@ -192,6 +226,15 @@ impl IControl for LoadMapMenu {
 
     fn unhandled_input(&mut self, event : Gd<InputEvent>) {
         if event.is_action_pressed(UI_CANCEL) {
+            // Escape maze text field if focuse
+            if self.maze_text_edit.has_focus() {
+                self.cancel_button.grab_focus();
+                return;
+            }
+
+
+            // Else, emulate cancel pressed
+
             self.on_cancel_pressed();
             return;
         }
@@ -205,8 +248,6 @@ impl IState for LoadMapMenu {
         self.base_mut().set_process_unhandled_input(true);
 
         self.maze_text_edit.grab_focus();
-
-        self.refresh();
     }
     
 
@@ -240,14 +281,36 @@ impl LoadMapMenu {
         // Set
         self.show_advanced_options = show_advanced_options;
 
-        let texture = if show_advanced_options {
-            self.close_advanced_options_button_texture.clone()
+        let (
+            texture,
+            button_right_focus_opt,
+
+        ) = if show_advanced_options {
+            let first_advanced_control_path = self
+                .get_focusable_advanced_option_controls()
+                .first()
+                .cloned()
+                .map(|control| control.get_path());
+
+            (
+                self.close_advanced_options_button_texture.clone(),
+                first_advanced_control_path,
+            )
 
         } else {
-            self.open_advanced_options_button_texture.clone()
+            (
+                self.open_advanced_options_button_texture.clone(),
+                None
+            )
         };
+
         
-        self.expand_advanced_options_button.set_button_icon(&texture);
+        let expand_advanced_options_button = &mut self.expand_advanced_options_button;
+
+        let button_right_focus = button_right_focus_opt.unwrap_or(expand_advanced_options_button.get_path());
+
+        expand_advanced_options_button.set_button_icon(&texture);
+        expand_advanced_options_button.set_focus_neighbor(Side::RIGHT, &button_right_focus);
 
         self.advanced_options.set_visible(show_advanced_options);
     }
@@ -419,6 +482,21 @@ impl LoadMapMenu {
 
     fn text_is_empty(&self) -> bool {
         self.maze_text_edit.get_text().is_empty()
+    }
+
+
+    fn get_focusable_advanced_option_controls(&self) -> [Gd<Control>; 7] {
+        let controls = [
+            self.seed_text_edit.clone().upcast(),
+            self.tree_density_option_button.clone().upcast(),
+            self.forest_size_option_button.clone().upcast(),
+            self.turn_cost_spin_box.clone().upcast(),
+            self.turn_cost_slider.clone().upcast(),
+            self.color_a_picker.clone().upcast(),
+            self.color_b_picker.clone().upcast(),
+        ];
+
+        controls
     }
 
 
