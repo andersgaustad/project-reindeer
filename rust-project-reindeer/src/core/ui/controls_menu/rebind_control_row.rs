@@ -102,6 +102,8 @@ impl IHBoxContainer for RebindControlRow {
                 // Do nothing
             },
             RebindControlRowState::ListeningForInput((_, button_id)) => {
+                let button_id = *button_id as usize;
+
                 let mut input_map = InputMap::singleton();
                 let mut action_events = input_map
                     .action_get_events(self.input_action_name.arg())
@@ -111,14 +113,19 @@ impl IHBoxContainer for RebindControlRow {
                 let mut committed_new_rebinds_opt = None;
                 
                 if event.is_action_pressed(UI_CANCEL) {
-                    committed_new_rebinds_opt = Some(Vec::new());
+                    if button_id < action_events.len() {
+                        action_events.remove(button_id);
+                    }
+
+                    let committed_action_events = std::mem::take(&mut action_events);
+                    committed_new_rebinds_opt = Some(committed_action_events);
                 }
 
                 if committed_new_rebinds_opt.is_none() {
                     // Check if valid event - don't rebind if input is unrecognized
                     if let Some((event, _, _)) = self.parse_input_event(event) {
                         // Accepted event, figure out where to put it
-                        let button_id = *button_id as usize;
+                        
 
                         if let Some(existing) = action_events.get_mut(button_id) {
                             *existing = event;
