@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl, InputEvent, RichTextLabel}, prelude::*};
 
-use crate::{core::ui::{i_sub_menu_state::IState, letter_menu::{letter_menu_inbox_state::LetterMenuInboxState, letter_menu_request::LetterMenuRequest}}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, letter_menu::{letter_menu_inbox_state::LetterMenuInboxState, letter_menu_request::LetterMenuRequest}}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -19,6 +19,9 @@ pub struct LetterMenu {
     #[init(val = LetterMenuInboxState::Empty)]
     inbox_state : LetterMenuInboxState,
 
+    
+    run : Option<Gd<Run>>,
+
 
     base : Base<Control>,
 }
@@ -27,6 +30,10 @@ pub struct LetterMenu {
 #[godot_api]
 impl IControl for LetterMenu {
     fn ready(&mut self) {
+        let gd = self.to_gd();
+
+        self.run = node_utility::try_find_parent_of_type(gd.upcast());
+
         // back_button
         self
             .back_button
@@ -44,6 +51,13 @@ impl IControl for LetterMenu {
             self.on_back_pressed();
             return;
         }
+    }
+}
+
+
+impl IHasRun for LetterMenu {
+    fn get_run(&self) -> Option<Gd<Run>> {
+        self.run.clone()
     }
 }
 
@@ -81,6 +95,7 @@ impl LetterMenu {
 
     #[func]
     fn on_back_pressed(&mut self) {
+        self.make_click_sound();
         self
             .signals()
             .request()
@@ -91,6 +106,12 @@ impl LetterMenu {
     pub fn send_mail(&mut self, mail : GString) {
         self.letter_text_label.set_text(&mail);
         self.inbox_state = LetterMenuInboxState::NewMail;
+    }
+
+
+    fn make_click_sound(&mut self) {
+        let mut sfx = self.get_sfx_mananger();
+        sfx.play(SFXEntry::Click);
     }
 
 
