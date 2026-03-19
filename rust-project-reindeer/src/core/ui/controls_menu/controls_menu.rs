@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl, InputEvent, ScrollContainer, Texture2D, object::ConnectFlags}, obj::WithBaseField, prelude::*};
 
-use crate::{core::ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, rebind_control_row::RebindControlRow}, i_sub_menu_state::IState}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, rebind_control_row::RebindControlRow}, i_sub_menu_state::IState}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -68,6 +68,9 @@ pub struct ControlsMenu {
     back_button : OnReady<Gd<Button>>,
 
 
+    run : Option<Gd<Run>>,
+
+
     base : Base<Control>
 }
 
@@ -75,6 +78,10 @@ pub struct ControlsMenu {
 #[godot_api]
 impl IControl for ControlsMenu {
     fn ready(&mut self) {
+        let gd = self.to_gd();
+
+        self.run = node_utility::try_find_parent_of_type(gd.upcast());
+
         let back_button_path = self.back_button.get_path();
 
         let rebind_rows = self.get_rebind_control_rows();
@@ -185,13 +192,21 @@ impl IControl for ControlsMenu {
 
 
 #[godot_dyn]
+impl IHasRun for ControlsMenu {
+    fn get_run(&self) -> Option<Gd<Run>> {
+        self.run.clone()
+    }
+}
+
+
+#[godot_dyn]
 impl IState for ControlsMenu {
     fn do_enter(&mut self) {
         let rows = self.get_rebind_control_rows();
 
         for row in rows.iter() {
             let row = row.clone();
-            row.into_dyn().dyn_bind_mut().do_enter();
+            row.into_dyn::<dyn IState>().dyn_bind_mut().do_enter();
         }
 
         self.base_mut().set_process_unhandled_input(true);
@@ -214,7 +229,7 @@ impl IState for ControlsMenu {
         let rows = self.get_rebind_control_rows();
 
         for row in rows.into_iter() {
-            row.into_dyn().dyn_bind_mut().do_exit();
+            row.into_dyn::<dyn IState>().dyn_bind_mut().do_exit();
         }
 
         self.base_mut().set_process_unhandled_input(false);
@@ -259,6 +274,9 @@ impl ControlsMenu {
 
     #[func]
     fn on_back_pressed(&mut self) {
+        let mut sfx = self.get_sfx_mananger();
+        sfx.play(SFXEntry::Click);
+
         self
             .signals()
             .request()

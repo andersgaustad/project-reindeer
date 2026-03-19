@@ -1,6 +1,6 @@
 use godot::{classes::{Input, input::MouseMode, object::ConnectFlags}, prelude::*};
 
-use crate::core::{levels::main_level::{main_level::MainLevel, main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}}, options::options::Options, ui::{i_sub_menu_state::IState, main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}}};
+use crate::core::{audio::sfx_manager::SFXManager, levels::main_level::{main_level::MainLevel, main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}}, options::options::Options, ui::{i_sub_menu_state::IState, main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}}};
 
 
 #[derive(GodotClass)]
@@ -12,7 +12,14 @@ pub struct Run {
 
     #[export]
     #[var]
+    sfx_mananger : OnEditor<Gd<SFXManager>>,
+
+    #[export]
+    #[var]
     main_level_scene : OnEditor<Gd<PackedScene>>,
+
+
+    // Non-exported
 
     #[var(get, set = set_main_level)]
     main_level : Option<Gd<MainLevel>>,
@@ -57,6 +64,7 @@ impl Run {
         }
 
         // Exit menu state as well
+        
         self.main_menu_state_machine.clone().into_dyn::<dyn IState>().dyn_bind_mut().do_exit();
 
         // Setting
@@ -67,6 +75,8 @@ impl Run {
 
         let main_menu_visible = self.main_level.is_none();
         self.main_menu_state_machine.set_visible(main_menu_visible);
+
+        
 
         match self.main_level.clone() {
             Some(main_level) => {

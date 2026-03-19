@@ -1,7 +1,7 @@
-use godot::{classes::{AudioStreamPlayer, object::ConnectFlags}, prelude::*, register::ConnectHandle};
+use godot::{classes::AudioStreamPlayer, prelude::*};
 use strum::{EnumCount, IntoEnumIterator, VariantArray};
 
-use crate::core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, options::{option_change::OptionChange, options::Options}, run::Run, utility::node_utility};
+use crate::core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, options::option_change::OptionChange, run::{i_has_run::IHasRun, run::Run}, utility::node_utility};
 
 
 #[derive(GodotClass)]
@@ -17,10 +17,18 @@ pub struct SFXManager {
     error : OnReady<Gd<AudioStreamPlayer>>,
     default_error_volume : f32,
 
+    #[var]
+    #[init(node = "%RebindStart")]
+    rebind_start : OnReady<Gd<AudioStreamPlayer>>,
+    default_rebind_start_volume : f32,
 
-    #[var(get, set = set_options)]
-    options : Option<Gd<Options>>,
-    option_listeners : Vec<ConnectHandle>,
+    #[var]
+    #[init(node = "%RebindEnd")]
+    rebind_end : OnReady<Gd<AudioStreamPlayer>>,
+    default_rebind_end_volume : f32,
+
+
+    run : Option<Gd<Run>>,
 
 
     base : Base<Node>,
@@ -33,12 +41,12 @@ impl INode for SFXManager {
     fn ready(&mut self) {
         let gd = self.to_gd();
 
-        let options_opt = (|| {
-            let run = node_utility::try_find_parent_of_type::<Run>(gd.upcast())?;
-            let options = run.bind().get_options();
-            options
-        })();
-        self.options = options_opt;
+        self.run = node_utility::try_find_parent_of_type(gd.upcast());
+
+        for entry in SFXEntry::iter() {
+            let (sfx, value) = self.get_sfx_and_base_mut(entry);
+            *value = sfx.get_volume_linear();
+        }
 
         self.refresh();
     }
@@ -46,9 +54,17 @@ impl INode for SFXManager {
 
 
 #[godot_dyn]
+impl IHasRun for SFXManager {
+    fn get_run(&self) -> Option<Gd<Run>> {
+        self.run.clone()
+    }
+}
+
+
+#[godot_dyn]
 impl ISFXManager for SFXManager {
     fn play(&mut self, entry : SFXEntry) {
-        let (mut sfx, _) = self.get_sfx_and_base(entry);
+        let (mut sfx, _) = self.get_sfx_and_base_mut(entry);
         sfx.play();
     }
 }
@@ -57,38 +73,8 @@ impl ISFXManager for SFXManager {
 #[godot_api]
 impl SFXManager {
     #[func]
-    pub fn set_options(&mut self, options : Option<Gd<Options>>) {
-        // Set
-        self.options = options;
-
-        let old_option_listeners = std::mem::take(&mut self.option_listeners);
-        for old_listener in old_option_listeners {
-            old_listener.disconnect();
-        }
-        
-        if let Some(options) = self.options.clone() {
-            let handle = options
-                .signals()
-                .option_changed()
-                .builder()
-                .flags(ConnectFlags::DEFERRED)
-                .connect_other_mut(
-                    self,
-                    Self::on_option_change
-                );
-            
-            self.option_listeners.push(handle);
-        }
-
-        for potential_change in OptionChange::iter() {
-            self.on_option_change(potential_change);
-        }
-    }
-
-
-    #[func]
     fn on_option_change(&mut self, change : OptionChange) {
-        let Some(option) = self.options.clone() else {
+        let Some(option) = self.get_options() else {
             return;
         };
 
@@ -110,24 +96,41 @@ impl SFXManager {
 
 
     fn refresh(&mut self) {
-        let options = std::mem::take(&mut self.options);
-        self.set_options(options);
+        for potential_change in OptionChange::iter() {
+            self.on_option_change(potential_change);
+        }
     }
 
 
     fn get_sfx_and_base(&self, entry : SFXEntry) -> (Gd<AudioStreamPlayer>, f32) {
         match entry {
-            SFXEntry::Click => (self.click.clone(), self.default_click_volume),
-            SFXEntry::Error => (self.error.clone(), self.default_error_volume),
+            SFXEntry::Click         => (self.click.clone(), self.default_click_volume),
+            SFXEntry::Error         => (self.error.clone(), self.default_error_volume),
+            SFXEntry::RebindStart   => (self.rebind_start.clone(), self.default_rebind_start_volume),
+            SFXEntry::RebindEnd     => (self.rebind_end.clone(), self.default_rebind_end_volume),
+        }
+    }
+
+    fn get_sfx_and_base_mut(&mut self, entry : SFXEntry) -> (Gd<AudioStreamPlayer>, &mut f32) {
+        match entry {
+            SFXEntry::Click         => (self.click.clone(), &mut self.default_click_volume),
+            SFXEntry::Error         => (self.error.clone(), &mut self.default_error_volume),
+            SFXEntry::RebindStart   => (self.rebind_start.clone(), &mut self.default_rebind_start_volume),
+            SFXEntry::RebindEnd     => (self.rebind_end.clone(), &mut self.default_rebind_end_volume),
         }
     }
 
 
     fn get_all_sfxs_and_bases(&self) -> [(Gd<AudioStreamPlayer>, f32); SFXEntry::COUNT] {
-        let entries : [SFXEntry; SFXEntry::COUNT] = SFXEntry::VARIANTS.try_into().unwrap();
+        let entries = self.get_sfx_entries();
         let mapped = entries.map(|entry| self.get_sfx_and_base(entry));
 
         mapped
+    }
+
+
+    fn get_sfx_entries(&self) -> [SFXEntry; SFXEntry::COUNT] {
+        SFXEntry::VARIANTS.try_into().unwrap()
     }
 }
 
@@ -137,7 +140,7 @@ impl SFXManager {
 impl ISFXManager for Option<Gd<SFXManager>> {
     fn play(&mut self, entry : SFXEntry) {
         if let Some(some) = self.clone() {
-            some.into_dyn().dyn_bind_mut().play(entry);
+            some.into_dyn::<dyn ISFXManager>().dyn_bind_mut().play(entry);
 
         } else {
             godot_warn!("Tried to play entry from None::<SFXManager>.");

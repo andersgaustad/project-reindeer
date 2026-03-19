@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Engine, HBoxContainer, IHBoxContainer, InputEvent, InputEventJoypadButton, InputEventJoypadMotion, InputEventKey, InputMap, Label, Texture2D, object::ConnectFlags}, prelude::*};
 
-use crate::{core::ui::{controls_menu::rebind_control_row_state::RebindControlRowState, i_sub_menu_state::IState}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{controls_menu::rebind_control_row_state::RebindControlRowState, i_sub_menu_state::IState}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -53,25 +53,20 @@ pub struct RebindControlRow {
     state : RebindControlRowState,
 
 
+    run : Option<Gd<Run>>,
+
+
     base : Base<HBoxContainer>,
-}
-
-
-#[godot_dyn]
-impl IState for RebindControlRow {
-    fn do_enter(&mut self) {
-        self.base_mut().set_process_unhandled_input(true);
-    }
-
-    fn do_exit(&mut self) {
-        self.base_mut().set_process_unhandled_input(false);
-    }
 }
 
 
 #[godot_api]
 impl IHBoxContainer for RebindControlRow {
     fn ready(&mut self) {
+        let gd = self.to_gd();
+
+        self.run = node_utility::try_find_parent_of_type(gd.upcast());
+
         let buttons = self.get_rebind_buttons();
 
         for (i, button) in buttons.iter().enumerate() {
@@ -140,6 +135,9 @@ impl IHBoxContainer for RebindControlRow {
 
                 // Rebind if committed
                 if let Some(committed_rebinds) = committed_new_rebinds_opt {
+                    let mut sfx = self.get_sfx_mananger();
+                    sfx.play(SFXEntry::RebindEnd);
+
                     let input_action_name = &self.input_action_name;
                     input_map.action_erase_events(input_action_name.arg());
 
@@ -159,6 +157,26 @@ impl IHBoxContainer for RebindControlRow {
                 // Do nothing
             },
         }
+    }
+}
+
+
+#[godot_dyn]
+impl IHasRun for RebindControlRow {
+    fn get_run(&self) -> Option<Gd<Run>> {
+        self.run.clone()
+    }
+}
+
+
+#[godot_dyn]
+impl IState for RebindControlRow {
+    fn do_enter(&mut self) {
+        self.base_mut().set_process_unhandled_input(true);
+    }
+
+    fn do_exit(&mut self) {
+        self.base_mut().set_process_unhandled_input(false);
     }
 }
 
@@ -268,6 +286,9 @@ impl RebindControlRow {
                 }
             },
             RebindControlRowState::ListeningForInput((event_button, _id)) => {
+                let mut sfx = self.get_sfx_mananger();
+                sfx.play(SFXEntry::RebindStart);
+
                 let mut event_button = event_button.clone();
                 event_button.release_focus();
                 event_button.set_text("Press any button...");

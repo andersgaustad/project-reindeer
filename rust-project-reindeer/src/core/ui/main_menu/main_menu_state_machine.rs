@@ -1,7 +1,7 @@
 use godot::{classes::{AudioStreamPlayer, Control, IControl}, prelude::*};
 use strum::{EnumCount, IntoEnumIterator, VariantArray};
 
-use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, options::{option_change::OptionChange, options::Options}, run::Run, ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_sub_menu_state::IState, main_menu::{about_menu::AboutMenu, about_menu_request::AboutMenuRequest, load_map_menu::LoadMapMenu, load_map_menu_request::LoadMapMenuRequest, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}, utility::node_utility};
+use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, options::option_change::OptionChange, run::{run::Run, i_has_run::IHasRun}, ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_sub_menu_state::IState, main_menu::{about_menu::AboutMenu, about_menu_request::AboutMenuRequest, load_map_menu::LoadMapMenu, load_map_menu_request::LoadMapMenuRequest, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}, utility::node_utility};
 
 
 #[derive(GodotClass)]
@@ -39,7 +39,7 @@ pub struct MainMenuStateMachine {
     state : MainMenuState,
 
 
-    options : Option<Gd<Options>>,
+    run : Option<Gd<Run>>,
 
 
     base : Base<Control>,
@@ -53,21 +53,17 @@ impl IControl for MainMenuStateMachine {
 
         // Connect signals
 
-        // Globals
-        let run_opt = node_utility::try_find_parent_of_type::<Run>(gd.upcast());
-        if let Some(run) = run_opt {
-            let options_opt = run.bind().get_options();
-            if let Some(options) = options_opt {
-                options
-                    .signals()
-                    .option_changed()
-                    .connect_other(
-                        self,
-                        Self::on_options_changed
-                    );
-                
-                self.options = Some(options);
-            }
+        self.run = node_utility::try_find_parent_of_type(gd.upcast());
+
+        let options_opt = self.get_options();
+        if let Some(options) = options_opt {
+            options
+                .signals()
+                .option_changed()
+                .connect_other(
+                    self,
+                    Self::on_options_changed
+                );
         }
 
         // Forward request_set_maze
@@ -142,14 +138,18 @@ impl IControl for MainMenuStateMachine {
 }
 
 
+impl IHasRun for MainMenuStateMachine {
+    fn get_run(&self) -> Option<Gd<Run>> {
+        self.run.clone()
+    }
+}
+
 #[godot_dyn]
 impl IState for MainMenuStateMachine {
     fn do_enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
 
         self.background_music_player.play();
-
-        self.refresh();
         self.base_mut().show();
     }
 
@@ -245,7 +245,7 @@ impl MainMenuStateMachine {
 
     #[func]
     fn on_volume_change(&mut self) {
-        let Some(options) = self.options.clone() else {
+        let Some(options) = self.get_options() else {
             return;
         };
 

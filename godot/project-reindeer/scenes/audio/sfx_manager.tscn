@@ -1,3 +1,24 @@
-[gd_scene format=3 uid="uid://b4f4n45irwc7"]
+[gd_scene load_steps=5 format=3 uid="uid://b4f4n45irwc7"]
+
+[ext_resource type="AudioStream" uid="uid://bwhgc7m20i86p" path="res://assets/dev_assets/source/kenney_interface-sounds/Audio/click_002.ogg" id="1_3kn1s"]
+[ext_resource type="AudioStream" uid="uid://b8m7i160r7nw5" path="res://assets/dev_assets/source/kenney_interface-sounds/Audio/error_008.ogg" id="2_0wnxj"]
+[ext_resource type="AudioStream" uid="uid://cu156rykxnxag" path="res://assets/dev_assets/source/kenney_interface-sounds/Audio/maximize_008.ogg" id="3_nrtiv"]
+[ext_resource type="AudioStream" uid="uid://cwluxouj76jc5" path="res://assets/dev_assets/source/kenney_interface-sounds/Audio/minimize_008.ogg" id="4_yopdx"]
 
 [node name="SFXManager" type="SFXManager"]
+
+[node name="Click" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("1_3kn1s")
+
+[node name="Error" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("2_0wnxj")
+
+[node name="RebindStart" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("3_nrtiv")
+
+[node name="RebindEnd" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("4_yopdx")

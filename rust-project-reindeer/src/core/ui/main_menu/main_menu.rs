@@ -1,6 +1,6 @@
-use godot::{classes::{AudioStreamPlayer, Button, Control, IControl}, prelude::*};
+use godot::{classes::{Button, Control, IControl}, prelude::*};
 
-use crate::core::{options::options::Options, run::Run, ui::{i_sub_menu_state::IState, main_menu::main_menu_state::MainMenuState}, utility::node_utility};
+use crate::core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, main_menu::main_menu_state::MainMenuState}, utility::node_utility};
 
 
 #[derive(GodotClass)]
@@ -26,14 +26,8 @@ pub struct MainMenu {
     #[init(node = "%AboutButton")]
     about_button : OnReady<Gd<Button>>,
 
-    #[var]
-    #[init(node = "%ClickSoundAudioStreamPlayer")]
-    click_sound_audio_stream_player : OnReady<Gd<AudioStreamPlayer>>,
-    default_click_sound_volume : f32,
 
-
-    #[var(get, set = set_options)]
-    options : Option<Gd<Options>>,
+    run : Option<Gd<Run>>,
 
 
     base : Base<Control>,
@@ -95,15 +89,15 @@ impl IControl for MainMenu {
                 Self::on_exit_pressed
             );
         
-        self.default_click_sound_volume = self.click_sound_audio_stream_player.get_volume_linear();
+        self.run = node_utility::try_find_parent_of_type(gd.upcast());
+    }
+}
 
-        let options_opt = (|| {
-            let run = node_utility::try_find_parent_of_type::<Run>(gd.upcast())?;
-            let options = run.bind().get_options();
-            options
-        })();
-        
-        self.set_options(options_opt);
+
+#[godot_dyn]
+impl IHasRun for MainMenu {
+    fn get_run(&self) -> Option<Gd<Run>> {
+        self.run.clone()
     }
 }
 
@@ -112,8 +106,6 @@ impl IControl for MainMenu {
 impl IState for MainMenu {
     fn do_enter(&mut self) {
         self.start_button.grab_focus();
-
-        self.sync_with_options();
     }
 
 
@@ -127,14 +119,6 @@ impl IState for MainMenu {
 impl MainMenu {
     #[signal]
     pub fn request_state(main_menu_state : MainMenuState);
-
-
-    #[func]
-    pub fn set_options(&mut self, options : Option<Gd<Options>>) {
-        // Set
-        self.options = options;
-        self.sync_with_options();
-    }
 
 
     fn on_start_pressed(&mut self) {
@@ -176,18 +160,7 @@ impl MainMenu {
 
 
     fn make_click_sound(&mut self) {
-        self.click_sound_audio_stream_player.play();
-    }
-
-
-    fn sync_with_options(&mut self) {
-        let Some(options) = self.options.clone() else {
-            return;
-        };
-
-        let sfx_volume_factor = options.bind().get_sfx_volume();
-
-        let volume = sfx_volume_factor * self.default_click_sound_volume;
-        self.click_sound_audio_stream_player.set_volume_linear(volume);
+        let mut sfx_opt = self.get_sfx_mananger();
+        sfx_opt.play(SFXEntry::Click);
     }
 }

@@ -1,6 +1,6 @@
-use godot::{classes::{AudioStreamPlayer, Button, ColorPickerButton, Control, HSlider, IControl, InputEvent, LineEdit, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
+use godot::{classes::{Button, ColorPickerButton, Control, HSlider, IControl, InputEvent, LineEdit, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, options::options::Options, run::Run, ui::{i_sub_menu_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -107,19 +107,7 @@ pub struct LoadMapMenu {
     default_turn_cost : u32,
 
 
-    #[var]
-    #[init(node = "%ClickSoundAudioStreamPlayer")]
-    click_sound_audio_stream_player : OnReady<Gd<AudioStreamPlayer>>,
-    default_click_sound_volume : f32,
-
-    #[var]
-    #[init(node = "%ErrorAudioStreamPlayer")]
-    error_audio_stream_player : OnReady<Gd<AudioStreamPlayer>>,
-    default_error_sound_volume : f32,
-
-
-    #[var(get, set = set_options)]
-    options : Option<Gd<Options>>,
+    run : Option<Gd<Run>>,
     
 
     base : Base<Control>,
@@ -237,14 +225,7 @@ impl IControl for LoadMapMenu {
         self.turn_cost = set_turn_cost;
         self.default_turn_cost = set_turn_cost;
 
-        self.default_click_sound_volume = self.click_sound_audio_stream_player.get_volume_linear();
-        self.default_error_sound_volume = self.error_audio_stream_player.get_volume_linear();
-
-        self.options = (|| {
-            let run = node_utility::try_find_parent_of_type::<Run>(gd.upcast())?;
-            let options = run.bind().get_options();
-            options
-        })();
+        self.run = node_utility::try_find_parent_of_type(gd.upcast());
 
         self.refresh();
     }
@@ -269,11 +250,17 @@ impl IControl for LoadMapMenu {
 
 
 #[godot_dyn]
+impl IHasRun for LoadMapMenu {
+    fn get_run(&self) -> Option<Gd<Run>> {
+        self.run.clone()
+    }
+}
+
+
+#[godot_dyn]
 impl IState for LoadMapMenu {
     fn do_enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
-
-        self.sync_with_options();
 
         self.maze_text_edit.grab_focus();
     }
@@ -372,15 +359,6 @@ impl LoadMapMenu {
 
 
     #[func]
-    pub fn set_options(&mut self, options_opt : Option<Gd<Options>>) {
-        // Set
-        self.options = options_opt;
-
-        self.sync_with_options();
-    }
-
-
-    #[func]
     fn on_maze_text_changed(&mut self) {
         let empty_text_field = self.text_is_empty();
 
@@ -397,14 +375,14 @@ impl LoadMapMenu {
 
     #[func]
     fn on_load_pressed(&mut self) {
-        self.click_sound_audio_stream_player.play();
+        self.make_sound(SFXEntry::Click);
         self.try_load_text_or_default();
     }
 
 
     #[func]
     fn on_cancel_pressed(&mut self) {
-        self.click_sound_audio_stream_player.play();
+        self.make_sound(SFXEntry::Click);
         self
             .signals()
             .request()
@@ -414,7 +392,7 @@ impl LoadMapMenu {
 
     #[func]
     fn on_show_or_hide_advanced_options_pressed(&mut self) {
-        self.click_sound_audio_stream_player.play();
+        self.make_sound(SFXEntry::Click);
         let showing_advanced_options = self.show_advanced_options;
         self.set_show_advanced_options(!showing_advanced_options);
     }
@@ -443,9 +421,6 @@ impl LoadMapMenu {
     fn refresh(&mut self) {
         let show_advanced_options = self.show_advanced_options;
         self.set_show_advanced_options(show_advanced_options);
-
-        let options = std::mem::take(&mut self.options);
-        self.set_options(options);
 
         self.on_maze_text_changed();
     }
@@ -517,7 +492,7 @@ impl LoadMapMenu {
                     )
                 );
 
-                self.error_audio_stream_player.play();
+                self.make_sound(SFXEntry::Error);
 
                 if let Some((origin_line, origin_column)) = line_and_column_index_opt {
                     let caret_line = origin_line;
@@ -530,17 +505,9 @@ impl LoadMapMenu {
     }
 
 
-    fn sync_with_options(&mut self) {
-        let Some(options) = self.options.clone() else {
-            return;
-        };
-        let sfx_factor = options.bind().get_sfx_volume();
-
-        let click_volume = self.default_click_sound_volume * sfx_factor;
-        self.click_sound_audio_stream_player.set_volume_linear(click_volume);
-
-        let error_volume = self.default_error_sound_volume * sfx_factor;
-        self.error_audio_stream_player.set_volume_linear(error_volume);
+    fn make_sound(&mut self, entry : SFXEntry) {
+        let mut sfx = self.get_sfx_mananger();
+        sfx.play(entry);
     }
 
 

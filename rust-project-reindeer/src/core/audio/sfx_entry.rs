@@ -8,4 +8,6 @@ use strum::{EnumCount, EnumIter, VariantArray};
 pub enum SFXEntry {
     Click,
     Error,
+    RebindStart,
+    RebindEnd,
 }

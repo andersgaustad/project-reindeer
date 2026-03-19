@@ -1,7 +1,7 @@
-use godot::{classes::{AudioStreamPlayer, Button, CheckButton, Control, HSlider, IControl, InputEvent, Label, object::ConnectFlags}, prelude::*};
+use godot::{classes::{Button, CheckButton, Control, HSlider, IControl, InputEvent, Label, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{options::{option_change::OptionChange, options::Options}, run::Run, ui::{i_sub_menu_state::IState, options_menu::options_menu_request::OptionsMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, options::option_change::OptionChange, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, options_menu::options_menu_request::OptionsMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -35,14 +35,8 @@ pub struct OptionsMenu {
     #[init(node = "%BackButton")]
     back_button : OnReady<Gd<Button>>,
 
-    #[var]
-    #[init(node = "%ClickSoundAudioStreamPlayer")]
-    click_sound_audio_stream_player : OnReady<Gd<AudioStreamPlayer>>,
-    default_click_sound_volume : f32,
 
-
-    #[var(get, set = set_options)]
-    options : Option<Gd<Options>>,
+    run : Option<Gd<Run>>,
 
 
     base : Base<Control>
@@ -130,26 +124,21 @@ impl IControl for OptionsMenu {
             }
         }
 
-        let options_opt = (|| {
-            let run = node_utility::try_find_parent_of_type::<Run>(gd.upcast())?;
-            let options = run.bind().get_options();
-            options
-        })();
-        self.options = options_opt;
+        self.run = node_utility::try_find_parent_of_type(gd.upcast());
 
-        if let Some(options) = self.options.clone() {
-            options
-                .signals()
-                .option_changed()
-                .builder()
-                .flags(ConnectFlags::DEFERRED)
-                .connect_other_mut(
-                    self,
-                    Self::on_options_changed
-                );
+        if let Some(run) = self.run.clone() {
+            if let Some(options) = run.bind().get_options() {
+                options
+                    .signals()
+                    .option_changed()
+                    .builder()
+                    .flags(ConnectFlags::DEFERRED)
+                    .connect_other_mut(
+                        self,
+                        Self::on_options_changed
+                    );
+            }
         }
-
-        self.default_click_sound_volume = self.click_sound_audio_stream_player.get_volume_linear();
 
         // Refresh
         self.refresh();        
@@ -164,6 +153,13 @@ impl IControl for OptionsMenu {
                 .pressed()
                 .emit();
         }
+    }
+}
+
+
+impl IHasRun for OptionsMenu {
+    fn get_run(&self) -> Option<Gd<Run>> {
+        self.run.clone()
     }
 }
 
@@ -191,27 +187,11 @@ impl OptionsMenu {
     pub fn request(request : OptionsMenuRequest);
 
 
-    #[func]
-    pub fn set_options(&mut self, options : Option<Gd<Options>>) {
-        // Set
-        self.options = options;
-
-        if !self.base().is_node_ready() {
-            return;
-        }
-
-
-        // Sync
-
-        for possible_change in OptionChange::iter() {
-            self.on_options_changed(possible_change);
-        }
-    }
-
 
     #[func]
     fn on_low_performance_mode_toggled_locally(&mut self, toggled : bool) {
-        let Some(mut options) = self.options.clone() else {
+        let options_opt = self.get_options();
+        let Some(mut options) = options_opt else {
             return;
         };
 
@@ -221,7 +201,7 @@ impl OptionsMenu {
 
     #[func]
     fn on_music_volume_changed_locally(&mut self, value : f64) {
-        let Some(mut options) = self.options.clone() else {
+        let Some(mut options) = self.get_options() else {
             return;
         };
 
@@ -231,7 +211,7 @@ impl OptionsMenu {
 
     #[func]
     fn on_sfx_volume_changed_locally(&mut self, value : f64) {
-        let Some(mut options) = self.options.clone() else {
+        let Some(mut options) = self.get_options() else {
             return;
         };
 
@@ -250,7 +230,7 @@ impl OptionsMenu {
 
     #[func]
     fn on_low_performance_mode_changed(&mut self) {
-        let Some(options) = self.options.clone() else {
+        let Some(options) = self.get_options() else {
             return;
         };
 
@@ -261,7 +241,7 @@ impl OptionsMenu {
 
     #[func]
     fn on_volume_changed(&mut self) {
-        let Some(options) = self.options.clone() else {
+        let Some(options) = self.get_options() else {
             return;
         };
 
@@ -280,9 +260,6 @@ impl OptionsMenu {
             label.set_text(&percentage_string);
             slider.set_value(f64::from(value));
         }
-
-        let click_volume = self.default_click_sound_volume * sfx_factor;
-        self.click_sound_audio_stream_player.set_volume_linear(click_volume);
     }
 
 
@@ -297,15 +274,16 @@ impl OptionsMenu {
 
 
     fn refresh(&mut self) {
-        let options = std::mem::take(&mut self.options);
-        self.set_options(options);
+        for possible_change in OptionChange::iter() {
+            self.on_options_changed(possible_change);
+        }
 
         self.update_ui();
     }
 
 
     fn update_ui(&mut self) {
-        let has_options = self.options.is_some();
+        let has_options = self.get_options().is_some();
 
         let tooltip = if has_options {
             ""
@@ -320,7 +298,8 @@ impl OptionsMenu {
 
 
     fn make_click_sound(&mut self) {
-        self.click_sound_audio_stream_player.play();
+        let mut sfx = self.get_sfx_mananger();
+        sfx.play(SFXEntry::Click);
     }
 
 
