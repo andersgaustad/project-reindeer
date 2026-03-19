@@ -1,5 +1,5 @@
 [p][b]Credits and Acknowledgements[/b][/p]
-This project would not have been possible wothout the use of assets and creations from other creators.
+This project would not have been possible without the contributions from other creators.
 See the bundled Markdown file for a detailed list of assets, authors, and licenses.
 
 

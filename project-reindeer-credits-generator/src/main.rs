@@ -154,7 +154,7 @@ fn write_bbcode_credits(out_credits_file : &Path, map : &BTreeMap<String, Vec<As
     let mut buffer = BufWriter::new(file);
 
     writeln!(buffer, "[p][b]Credits and Acknowledgements[/b][/p]")?;
-    writeln!(buffer, "This project would not have been possible wothout the use of assets and creations from other creators.")?;
+    writeln!(buffer, "This project would not have been possible without the contributions from other creators.")?;
     writeln!(buffer, "See the bundled Markdown file for a detailed list of assets, authors, and licenses.")?;
     writeln!(buffer, "\n")?;
 

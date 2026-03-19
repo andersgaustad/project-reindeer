@@ -1,6 +1,6 @@
-use godot::{classes::{Button, Control, FileAccess, IControl, InputEvent, Os, RichTextLabel, TextureButton, file_access::ModeFlags}, prelude::*};
+use godot::{classes::{Button, Control, FileAccess, IControl, InputEvent, Os, RichTextLabel, TabContainer, TextureButton, file_access::ModeFlags}, prelude::*};
 
-use crate::{core::ui::{i_sub_menu_state::IState, main_menu::about_menu_request::AboutMenuRequest}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, main_menu::about_menu_request::AboutMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -12,6 +12,10 @@ pub struct AboutMenu {
 
 
     // Non-exported
+
+    #[var]
+    #[init(node = "%TabContainer")]
+    tab_container : OnReady<Gd<TabContainer>>,
 
     #[var]
     #[init(node = "%AboutText")]
@@ -38,6 +42,9 @@ pub struct AboutMenu {
     back_button : OnReady<Gd<Button>>,
 
 
+    run : Option<Gd<Run>>,
+
+
     base : Base<Control>,
 }
 
@@ -45,6 +52,10 @@ pub struct AboutMenu {
 #[godot_api]
 impl IControl for AboutMenu {
     fn ready(&mut self) {
+        let gd = self.to_gd();
+
+        self.run = node_utility::try_find_parent_of_type(gd.upcast());
+
         // about_text_field
         self
             .about_text_field
@@ -64,6 +75,16 @@ impl IControl for AboutMenu {
                 self,
                 Self::on_credit_text_meta_clicked
             );
+
+        self
+            .tab_container
+            .signals()
+            .tab_changed()
+            .connect_other(
+                self,
+                Self::on_tab_changed
+            );
+            
         
         // back_button
         self
@@ -91,6 +112,14 @@ impl IControl for AboutMenu {
                 }
             );
         }
+    }
+}
+
+
+#[godot_dyn]
+impl IHasRun for AboutMenu {
+    fn get_run(&self) -> Option<Gd<Run>> {
+        self.run.clone()
     }
 }
 
@@ -149,7 +178,14 @@ impl AboutMenu {
 
 
     #[func]
+    fn on_tab_changed(&mut self, _tab : i64) {
+        self.make_click_sound();
+    }
+
+
+    #[func]
     fn on_back_pressed(&mut self) {
+        self.make_click_sound();
         self
             .signals()
             .request()
@@ -168,5 +204,11 @@ impl AboutMenu {
     fn refresh(&mut self) {
         let credits_text = std::mem::take(&mut self.credits_text_file);
         self.set_credits_text_file(credits_text);
+    }
+
+
+    fn make_click_sound(&mut self) {
+        let mut sfx = self.get_sfx_mananger();
+        sfx.play(SFXEntry::Click);
     }
 }
