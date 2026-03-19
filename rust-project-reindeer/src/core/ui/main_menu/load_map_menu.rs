@@ -1,7 +1,6 @@
 use godot::{classes::{AudioStreamPlayer, Button, ColorPickerButton, Control, HSlider, IControl, InputEvent, LineEdit, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
-use strum::IntoEnumIterator;
 
-use crate::{core::{levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, options::{option_change::OptionChange, options::Options}, run::Run, ui::{i_sub_menu_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
+use crate::{core::{levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, options::options::Options, run::Run, ui::{i_sub_menu_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -274,6 +273,8 @@ impl IState for LoadMapMenu {
     fn do_enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
 
+        self.sync_with_options();
+
         self.maze_text_edit.grab_focus();
     }
     
@@ -375,9 +376,7 @@ impl LoadMapMenu {
         // Set
         self.options = options_opt;
 
-        for potential_change in OptionChange::iter() {
-            self.on_option_change(potential_change);
-        }
+        self.sync_with_options();
     }
 
 
@@ -438,29 +437,6 @@ impl LoadMapMenu {
         self.run_deferred(move |me| {
             me.set_turn_cost(as_u32);
         });
-    }
-
-
-    #[func]
-    fn on_option_change(&mut self, change : OptionChange) {
-        let Some(options) = self.options.clone() else {
-            return;
-        };
-
-        match change {
-            OptionChange::LowPerformanceMode => {
-                // Do nothing
-            },
-            OptionChange::VolumeChange => {
-                let sfx_factor = options.bind().get_sfx_volume();
-
-                let click_volume = self.default_click_sound_volume * sfx_factor;
-                self.click_sound_audio_stream_player.set_volume_linear(click_volume);
-
-                let error_volume = self.default_error_sound_volume * sfx_factor;
-                self.error_audio_stream_player.set_volume_linear(error_volume);
-            },
-        }
     }
 
 
@@ -551,6 +527,20 @@ impl LoadMapMenu {
                 }
             },
         }
+    }
+
+
+    fn sync_with_options(&mut self) {
+        let Some(options) = self.options.clone() else {
+            return;
+        };
+        let sfx_factor = options.bind().get_sfx_volume();
+
+        let click_volume = self.default_click_sound_volume * sfx_factor;
+        self.click_sound_audio_stream_player.set_volume_linear(click_volume);
+
+        let error_volume = self.default_error_sound_volume * sfx_factor;
+        self.error_audio_stream_player.set_volume_linear(error_volume);
     }
 
 

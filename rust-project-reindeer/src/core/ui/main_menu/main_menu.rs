@@ -1,7 +1,6 @@
-use godot::{classes::{AudioStreamPlayer, Button, Control, IControl, object::ConnectFlags}, prelude::*};
-use strum::IntoEnumIterator;
+use godot::{classes::{AudioStreamPlayer, Button, Control, IControl}, prelude::*};
 
-use crate::core::{options::{option_change::OptionChange, options::Options}, run::Run, ui::{i_sub_menu_state::IState, main_menu::main_menu_state::MainMenuState}, utility::node_utility};
+use crate::core::{options::options::Options, run::Run, ui::{i_sub_menu_state::IState, main_menu::main_menu_state::MainMenuState}, utility::node_utility};
 
 
 #[derive(GodotClass)]
@@ -113,6 +112,8 @@ impl IControl for MainMenu {
 impl IState for MainMenu {
     fn do_enter(&mut self) {
         self.start_button.grab_focus();
+
+        self.sync_with_options();
     }
 
 
@@ -132,22 +133,7 @@ impl MainMenu {
     pub fn set_options(&mut self, options : Option<Gd<Options>>) {
         // Set
         self.options = options;
-
-        if let Some(some_options) = self.options.clone() {
-            some_options
-                .signals()
-                .option_changed()
-                .builder()
-                .flags(ConnectFlags::DEFERRED)
-                .connect_other_mut(
-                    self,
-                    Self::on_option_changed
-                );
-        }
-
-        for potential_change in OptionChange::iter() {
-            self.on_option_changed(potential_change);
-        }
+        self.sync_with_options();
     }
 
 
@@ -181,28 +167,6 @@ impl MainMenu {
     }
 
 
-    #[func]
-    fn on_option_changed(&mut self, change : OptionChange) {
-        let Some(options) = self.options.clone() else {
-            return;
-        };
-        let bound_options = options.bind();
-
-        match change {
-            OptionChange::LowPerformanceMode => {
-                // Do nothing
-            },
-            OptionChange::VolumeChange => {
-                let sfx_volume_factor = bound_options.get_sfx_volume();
-                drop(bound_options);
-
-                let volume = sfx_volume_factor * self.default_click_sound_volume;
-                self.click_sound_audio_stream_player.set_volume_linear(volume);
-            },
-        }
-    }
-
-
     fn emit_request_for(&mut self, state : MainMenuState) {
         self
             .signals()
@@ -213,5 +177,17 @@ impl MainMenu {
 
     fn make_click_sound(&mut self) {
         self.click_sound_audio_stream_player.play();
+    }
+
+
+    fn sync_with_options(&mut self) {
+        let Some(options) = self.options.clone() else {
+            return;
+        };
+
+        let sfx_volume_factor = options.bind().get_sfx_volume();
+
+        let volume = sfx_volume_factor * self.default_click_sound_volume;
+        self.click_sound_audio_stream_player.set_volume_linear(volume);
     }
 }
