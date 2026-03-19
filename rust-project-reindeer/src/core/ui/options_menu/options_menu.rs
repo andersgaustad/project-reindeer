@@ -1,4 +1,4 @@
-use godot::{classes::{Button, CheckButton, Control, HSlider, IControl, InputEvent, Label, object::ConnectFlags}, prelude::*};
+use godot::{classes::{AudioStreamPlayer, Button, CheckButton, Control, HSlider, IControl, InputEvent, Label, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
 use crate::{core::{options::{option_change::OptionChange, options::Options}, run::Run, ui::{i_sub_menu_state::IState, options_menu::options_menu_request::OptionsMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
@@ -7,11 +7,6 @@ use crate::{core::{options::{option_change::OptionChange, options::Options}, run
 #[derive(GodotClass)]
 #[class(init, base=Control)]
 pub struct OptionsMenu {
-    #[export]
-    #[var(get, set = set_options)]
-    options : Option<Gd<Options>>,
- 
-
     // Non-exported:
 
     // Options
@@ -36,12 +31,19 @@ pub struct OptionsMenu {
     #[init(node = "%SFXVolumePercentageLabel")]
     sfx_volume_percentage_label : OnReady<Gd<Label>>,
 
-
-    // Back
-
     #[var]
     #[init(node = "%BackButton")]
     back_button : OnReady<Gd<Button>>,
+
+    #[var]
+    #[init(node = "%ClickSoundAudioStreamPlayer")]
+    click_sound_audio_stream_player : OnReady<Gd<AudioStreamPlayer>>,
+    default_click_sound_volume : f32,
+
+
+    #[var(get, set = set_options)]
+    options : Option<Gd<Options>>,
+
 
     base : Base<Control>
 }
@@ -53,25 +55,6 @@ impl IControl for OptionsMenu {
         let gd = self.to_gd();
         
         // Signals
-        
-        // Globals
-        let run_opt = node_utility::try_find_parent_of_type::<Run>(gd.upcast());
-        if let Some(run) = run_opt {
-            let options_opt = run.bind().get_options();
-            if let Some(options) = options_opt {
-                options
-                    .signals()
-                    .option_changed()
-                    .builder()
-                    .flags(ConnectFlags::DEFERRED)
-                    .connect_other_mut(
-                        self,
-                        Self::on_options_changed
-                    );
-                
-                self.set_options(Some(options));
-            }
-        }
 
         // low_performance_toggle_button 
         self
@@ -146,6 +129,27 @@ impl IControl for OptionsMenu {
                 control.set_focus_neighbor(Side::BOTTOM, &south_neighbor.get_path());
             }
         }
+
+        let options_opt = (|| {
+            let run = node_utility::try_find_parent_of_type::<Run>(gd.upcast())?;
+            let options = run.bind().get_options();
+            options
+        })();
+        self.options = options_opt;
+
+        if let Some(options) = self.options.clone() {
+            options
+                .signals()
+                .option_changed()
+                .builder()
+                .flags(ConnectFlags::DEFERRED)
+                .connect_other_mut(
+                    self,
+                    Self::on_options_changed
+                );
+        }
+
+        self.default_click_sound_volume = self.click_sound_audio_stream_player.get_volume_linear();
 
         // Refresh
         self.refresh();        
@@ -262,9 +266,10 @@ impl OptionsMenu {
         };
 
         let bound_options = options.bind();
+        let sfx_factor = bound_options.get_sfx_volume();
         let mut values_and_sliders_and_labels = [
             (bound_options.get_music_volume(), self.music_volume_slider.clone(), self.music_volume_percentage_label.clone()),
-            (bound_options.get_sfx_volume(), self.sfx_volume_slider.clone(), self.sfx_volume_percentage_label.clone()),
+            (sfx_factor, self.sfx_volume_slider.clone(), self.sfx_volume_percentage_label.clone()),
         ];
         drop(bound_options);
 
@@ -275,11 +280,15 @@ impl OptionsMenu {
             label.set_text(&percentage_string);
             slider.set_value(f64::from(value));
         }
+
+        let click_volume = self.default_click_sound_volume * sfx_factor;
+        self.click_sound_audio_stream_player.set_volume_linear(click_volume);
     }
 
 
     #[func]
     fn on_back_pressed(&mut self) {
+        self.make_click_sound();
         self
             .signals()
             .request()
@@ -307,6 +316,11 @@ impl OptionsMenu {
         let low_performance_toggle_button = &mut self.low_performance_toggle_button;
         low_performance_toggle_button.set_disabled(!has_options);
         low_performance_toggle_button.set_tooltip_text(tooltip);
+    }
+
+
+    fn make_click_sound(&mut self) {
+        self.click_sound_audio_stream_player.play();
     }
 
 
