@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://b4f4n45irwc7"]
+
+[node name="SFXManager" type="SFXManager"]
