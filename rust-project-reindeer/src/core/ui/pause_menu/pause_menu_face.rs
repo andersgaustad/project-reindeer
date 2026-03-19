@@ -1,7 +1,7 @@
-use godot::{classes::{Button, Control, IControl, InputEvent, Texture2D, object::ConnectFlags}, prelude::*};
+use godot::{classes::{Button, Control, IControl, InputEvent, Texture2D}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{levels::main_level::pathfinding_state::PathfindingState, ui::{buttons::button_state_info::ButtonStateInfo, i_sub_menu_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_inbox_state::LetterMenuInboxState}, pause_menu::{pause_menu_button_type::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, levels::main_level::pathfinding_state::PathfindingState, run::{i_has_run::IHasRun, run::Run}, ui::{buttons::button_state_info::ButtonStateInfo, i_sub_menu_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_inbox_state::LetterMenuInboxState}, pause_menu::{pause_menu_button_type::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -47,6 +47,9 @@ pub struct PauseMenuFace {
     letter_menu : Option<Gd<LetterMenu>>,
 
 
+    run : Option<Gd<Run>>,
+
+
     base : Base<Control>,
 }
 
@@ -54,26 +57,26 @@ pub struct PauseMenuFace {
 #[godot_api]
 impl IControl for PauseMenuFace {
     fn ready(&mut self) {
+        let gd = self.to_gd();
+
+        self.run = node_utility::try_find_parent_of_type(gd.upcast());
+
         // Signals
 
-        let buttons_and_pressed_callbacks = PauseMenuButtonType::iter()
-            .map(|ty| {
-                self.get_button_and_pressed_callback_from_type(ty)
-            });
-        
-        for (button, pressed_callback) in buttons_and_pressed_callbacks {
+        for button_type in PauseMenuButtonType::iter() {
+            let button = self.get_button_and_pressed_callback_from_type(button_type);
             button
                 .signals()
                 .pressed()
-                .builder()
-                .flags(ConnectFlags::DEFERRED)
-                .connect_other_mut(
+                .connect_other(
                     self,
-                    pressed_callback
+                    move |me|{
+                        me.on_button_pressed(button_type);
+                    }
                 );
         }
 
-        self.refresh_mail_button();
+        self.update_mail_button();
     }
 
 
@@ -94,6 +97,14 @@ impl IControl for PauseMenuFace {
 
 
 #[godot_dyn]
+impl IHasRun for PauseMenuFace {
+    fn get_run(&self) -> Option<Gd<Run>> {
+        self.run.clone()
+    }
+}
+
+
+#[godot_dyn]
 impl IState for PauseMenuFace {
     fn do_enter(&mut self) {
         self.resume_button.grab_focus();
@@ -105,7 +116,7 @@ impl IState for PauseMenuFace {
             }
         }
 
-        self.refresh_mail_button();
+        self.update_mail_button();
     }
 }
 
@@ -121,70 +132,64 @@ impl PauseMenuFace {
         // Set
         self.letter_menu = letter_menu_option;
 
-        self.refresh_mail_button();
+        self.update_mail_button();
     }
 
 
     #[func]
-    fn on_start_pressed(&mut self) {
-        self
-            .signals()
-            .request()
-            .emit(PauseMenuFaceRequest::Start);
-    }
+    fn on_button_pressed(&mut self, button_type : PauseMenuButtonType) {
+        self.make_click_sound();
 
+        match button_type {
+            PauseMenuButtonType::Start => {
+                self
+                    .signals()
+                    .request()
+                    .emit(PauseMenuFaceRequest::Start);
 
-    #[func]
-    fn on_resume_pressed(&mut self) {
-        self
-            .signals()
-            .request()
-            .emit(PauseMenuFaceRequest::Resume);
-    }
+            },
+            PauseMenuButtonType::Resume => {
+                self
+                    .signals()
+                    .request()
+                    .emit(PauseMenuFaceRequest::Resume);
 
+            },
+            PauseMenuButtonType::Mail => {
+                self
+                    .signals()
+                    .request()
+                    .emit(PauseMenuFaceRequest::ToMail);
 
-    #[func]
-    fn on_mail_pressed(&mut self) {
-        self
-            .signals()
-            .request()
-            .emit(PauseMenuFaceRequest::ToMail);
-    }
+            },
+            PauseMenuButtonType::Options => {
+                self
+                    .signals()
+                    .request()
+                    .emit(PauseMenuFaceRequest::ToOptions);
 
+            },
+            PauseMenuButtonType::Controls => {
+                self
+                    .signals()
+                    .request()
+                    .emit(PauseMenuFaceRequest::ToControls);
+            },
+            PauseMenuButtonType::MainMenu => {
+                self
+                    .signals()
+                    .request()
+                    .emit(PauseMenuFaceRequest::ToMainMenu);
 
-    #[func]
-    fn on_options_pressed(&mut self) {
-        self
-            .signals()
-            .request()
-            .emit(PauseMenuFaceRequest::ToOptions);
-    }
+            },
+            PauseMenuButtonType::Exit => {
+                let Some(mut tree) = self.base().get_tree() else {
+                    return;
+                };
 
-
-    #[func]
-    fn on_controls_pressed(&mut self) {
-        self
-            .signals()
-            .request()
-            .emit(PauseMenuFaceRequest::ToControls);
-    }
-
-    #[func]
-    fn on_main_menu_pressed(&mut self) {
-        self
-            .signals()
-            .request()
-            .emit(PauseMenuFaceRequest::ToMainMenu);
-    }
-
-
-    #[func]
-    fn on_exit_pressed(&mut self) {
-        let Some(mut tree) = self.base().get_tree() else {
-            return;
-        };
-
-        tree.quit();
+                tree.quit();
+            },
+        }
     }
 
 
@@ -238,20 +243,20 @@ impl PauseMenuFace {
     }
 
 
-    fn get_button_and_pressed_callback_from_type(&self, ty : PauseMenuButtonType) -> (Gd<Button>, Box<dyn FnMut(&mut Self) -> ()>) {
+    fn get_button_and_pressed_callback_from_type(&self, ty : PauseMenuButtonType) -> Gd<Button> {
         match ty {
-            PauseMenuButtonType::Start      => (self.start_button.clone(),      Box::new(Self::on_start_pressed)),
-            PauseMenuButtonType::Resume     => (self.resume_button.clone(),     Box::new(Self::on_resume_pressed)),
-            PauseMenuButtonType::Mail       => (self.mail_button.clone(),       Box::new(Self::on_mail_pressed)),
-            PauseMenuButtonType::Options    => (self.options_button.clone(),    Box::new(Self::on_options_pressed)),
-            PauseMenuButtonType::Controls   => (self.controls_button.clone(),   Box::new(Self::on_controls_pressed)),
-            PauseMenuButtonType::MainMenu   => (self.main_menu_button.clone(),  Box::new(Self::on_main_menu_pressed)),
-            PauseMenuButtonType::Exit       => (self.exit_button.clone(),       Box::new(Self::on_exit_pressed)),
+            PauseMenuButtonType::Start      => self.start_button.clone(),
+            PauseMenuButtonType::Resume     => self.resume_button.clone(),
+            PauseMenuButtonType::Mail       => self.mail_button.clone(),
+            PauseMenuButtonType::Options    => self.options_button.clone(),
+            PauseMenuButtonType::Controls   => self.controls_button.clone(),
+            PauseMenuButtonType::MainMenu   => self.main_menu_button.clone(),
+            PauseMenuButtonType::Exit       => self.exit_button.clone(),
         }
     }
 
 
-    fn refresh_mail_button(&mut self) {
+    fn update_mail_button(&mut self) {
         let Some(letter_menu) = self.letter_menu.clone() else {
             return;
         };
@@ -272,5 +277,11 @@ impl PauseMenuFace {
                 mail_button.set_button_icon(None::<Gd<Texture2D>>.as_ref());
             },
         }
+    }
+
+
+    fn make_click_sound(&mut self) {
+        let mut sfx = self.get_sfx_mananger();
+        sfx.play(SFXEntry::Click);
     }
 }
