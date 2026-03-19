@@ -28,5 +28,6 @@ See the bundled Markdown file for a detailed list of assets, authors, and licens
 [b]Sfx:[/b]
 
 [i]Doorbell[/i] by frosty ham ([url=https://opengameart.org/content/doorbell]External link[/url])
+[i]Interface Sounds[/i] by Kenney ([url=https://kenney.nl/assets/interface-sounds]External link[/url])
 
 

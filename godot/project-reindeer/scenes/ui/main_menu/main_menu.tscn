@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://enihlfva4ccy"]
+[gd_scene load_steps=4 format=3 uid="uid://enihlfva4ccy"]
 
 [ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme.tres" id="1_1ch07"]
 [ext_resource type="Texture2D" uid="uid://c5h4yk6tahuhq" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/information.png" id="2_e8t4i"]
+[ext_resource type="AudioStream" uid="uid://bwhgc7m20i86p" path="res://assets/dev_assets/source/kenney_interface-sounds/Audio/click_002.ogg" id="3_qt1dd"]
 
 [node name="MainMenu" type="MainMenu"]
 anchors_preset = 15
@@ -69,3 +70,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 10
 icon = ExtResource("2_e8t4i")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("3_qt1dd")
