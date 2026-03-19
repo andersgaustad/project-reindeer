@@ -71,6 +71,6 @@ layout_mode = 2
 size_flags_horizontal = 10
 icon = ExtResource("2_e8t4i")
 
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+[node name="ClickSoundAudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 unique_name_in_owner = true
 stream = ExtResource("3_qt1dd")

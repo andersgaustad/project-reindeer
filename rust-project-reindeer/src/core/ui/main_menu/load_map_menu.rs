@@ -1,6 +1,7 @@
-use godot::{classes::{Button, ColorPickerButton, Control, HSlider, IControl, InputEvent, LineEdit, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
+use godot::{classes::{AudioStreamPlayer, Button, ColorPickerButton, Control, HSlider, IControl, InputEvent, LineEdit, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
+use strum::IntoEnumIterator;
 
-use crate::{core::{levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, ui::{i_sub_menu_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}}, input_map::UI_CANCEL};
+use crate::{core::{levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, options::{option_change::OptionChange, options::Options}, run::Run, ui::{i_sub_menu_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -105,6 +106,21 @@ pub struct LoadMapMenu {
     #[var(get, set = set_turn_cost)]
     turn_cost : u32,
     default_turn_cost : u32,
+
+
+    #[var]
+    #[init(node = "%ClickSoundAudioStreamPlayer")]
+    click_sound_audio_stream_player : OnReady<Gd<AudioStreamPlayer>>,
+    default_click_sound_volume : f32,
+
+    #[var]
+    #[init(node = "%ErrorAudioStreamPlayer")]
+    error_audio_stream_player : OnReady<Gd<AudioStreamPlayer>>,
+    default_error_sound_volume : f32,
+
+
+    #[var(get, set = set_options)]
+    options : Option<Gd<Options>>,
     
 
     base : Base<Control>,
@@ -114,6 +130,8 @@ pub struct LoadMapMenu {
 #[godot_api]
 impl IControl for LoadMapMenu {
     fn ready(&mut self) {
+        let gd = self.to_gd();
+
         // Signals
 
         // On text change:
@@ -133,7 +151,7 @@ impl IControl for LoadMapMenu {
             .pressed()
             .connect_other(
                 self,
-                Self::try_load_text_or_default
+                Self::on_load_pressed
             );
 
         // On cancel
@@ -219,6 +237,15 @@ impl IControl for LoadMapMenu {
         let set_turn_cost = self.turn_cost_slider.get_value() as u32;
         self.turn_cost = set_turn_cost;
         self.default_turn_cost = set_turn_cost;
+
+        self.default_click_sound_volume = self.click_sound_audio_stream_player.get_volume_linear();
+        self.default_error_sound_volume = self.error_audio_stream_player.get_volume_linear();
+
+        self.options = (|| {
+            let run = node_utility::try_find_parent_of_type::<Run>(gd.upcast())?;
+            let options = run.bind().get_options();
+            options
+        })();
 
         self.refresh();
     }
@@ -344,6 +371,17 @@ impl LoadMapMenu {
 
 
     #[func]
+    pub fn set_options(&mut self, options_opt : Option<Gd<Options>>) {
+        // Set
+        self.options = options_opt;
+
+        for potential_change in OptionChange::iter() {
+            self.on_option_change(potential_change);
+        }
+    }
+
+
+    #[func]
     fn on_maze_text_changed(&mut self) {
         let empty_text_field = self.text_is_empty();
 
@@ -359,7 +397,15 @@ impl LoadMapMenu {
 
 
     #[func]
+    fn on_load_pressed(&mut self) {
+        self.click_sound_audio_stream_player.play();
+        self.try_load_text_or_default();
+    }
+
+
+    #[func]
     fn on_cancel_pressed(&mut self) {
+        self.click_sound_audio_stream_player.play();
         self
             .signals()
             .request()
@@ -369,6 +415,7 @@ impl LoadMapMenu {
 
     #[func]
     fn on_show_or_hide_advanced_options_pressed(&mut self) {
+        self.click_sound_audio_stream_player.play();
         let showing_advanced_options = self.show_advanced_options;
         self.set_show_advanced_options(!showing_advanced_options);
     }
@@ -394,12 +441,37 @@ impl LoadMapMenu {
     }
 
 
+    #[func]
+    fn on_option_change(&mut self, change : OptionChange) {
+        let Some(options) = self.options.clone() else {
+            return;
+        };
+
+        match change {
+            OptionChange::LowPerformanceMode => {
+                // Do nothing
+            },
+            OptionChange::VolumeChange => {
+                let sfx_factor = options.bind().get_sfx_volume();
+
+                let click_volume = self.default_click_sound_volume * sfx_factor;
+                self.click_sound_audio_stream_player.set_volume_linear(click_volume);
+
+                let error_volume = self.default_error_sound_volume * sfx_factor;
+                self.error_audio_stream_player.set_volume_linear(error_volume);
+            },
+        }
+    }
+
+
     fn refresh(&mut self) {
         let show_advanced_options = self.show_advanced_options;
         self.set_show_advanced_options(show_advanced_options);
 
-        self.on_maze_text_changed();
+        let options = std::mem::take(&mut self.options);
+        self.set_options(options);
 
+        self.on_maze_text_changed();
     }
 
 
@@ -468,6 +540,8 @@ impl LoadMapMenu {
                         &error
                     )
                 );
+
+                self.error_audio_stream_player.play();
 
                 if let Some((origin_line, origin_column)) = line_and_column_index_opt {
                     let caret_line = origin_line;

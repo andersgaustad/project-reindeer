@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://b34eprg0tr18k"]
+[gd_scene load_steps=7 format=3 uid="uid://b34eprg0tr18k"]
 
 [ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme.tres" id="1_0sa51"]
 [ext_resource type="Theme" uid="uid://c8od8x740s487" path="res://themes/monospace_theme.tres" id="1_5qoqg"]
 [ext_resource type="Texture2D" uid="uid://he17gtp7d3fn" path="res://assets/dev_assets/derived/open_advanced_settings.png" id="1_v4wla"]
 [ext_resource type="Texture2D" uid="uid://c8savga72akqe" path="res://assets/dev_assets/derived/close_advanced_settings.png" id="2_r5as2"]
+[ext_resource type="AudioStream" uid="uid://bwhgc7m20i86p" path="res://assets/dev_assets/source/kenney_interface-sounds/Audio/click_002.ogg" id="5_d7vfq"]
+[ext_resource type="AudioStream" uid="uid://b8m7i160r7nw5" path="res://assets/dev_assets/source/kenney_interface-sounds/Audio/error_008.ogg" id="6_lvjxc"]
 
 [node name="LoadMapMenu" type="LoadMapMenu"]
 open_advanced_options_button_texture = ExtResource("1_v4wla")
@@ -260,3 +262,11 @@ unique_name_in_owner = true
 layout_mode = 2
 color = Color(0.105882354, 0.53333336, 0.7137255, 1)
 edit_alpha = false
+
+[node name="ClickSoundAudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("5_d7vfq")
+
+[node name="ErrorAudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("6_lvjxc")

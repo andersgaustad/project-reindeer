@@ -28,9 +28,9 @@ pub struct MainMenu {
     about_button : OnReady<Gd<Button>>,
 
     #[var]
-    #[init(node = "%AudioStreamPlayer")]
-    audio_stream_player : OnReady<Gd<AudioStreamPlayer>>,
-    default_audio_volume : f32,
+    #[init(node = "%ClickSoundAudioStreamPlayer")]
+    click_sound_audio_stream_player : OnReady<Gd<AudioStreamPlayer>>,
+    default_click_sound_volume : f32,
 
 
     #[var(get, set = set_options)]
@@ -96,7 +96,7 @@ impl IControl for MainMenu {
                 Self::on_exit_pressed
             );
         
-        self.default_audio_volume = self.audio_stream_player.get_volume_linear();
+        self.default_click_sound_volume = self.click_sound_audio_stream_player.get_volume_linear();
 
         let options_opt = (|| {
             let run = node_utility::try_find_parent_of_type::<Run>(gd.upcast())?;
@@ -196,8 +196,8 @@ impl MainMenu {
                 let sfx_volume_factor = bound_options.get_sfx_volume();
                 drop(bound_options);
 
-                let volume = sfx_volume_factor * self.default_audio_volume;
-                self.audio_stream_player.set_volume_linear(volume);
+                let volume = sfx_volume_factor * self.default_click_sound_volume;
+                self.click_sound_audio_stream_player.set_volume_linear(volume);
             },
         }
     }
@@ -212,6 +212,6 @@ impl MainMenu {
 
 
     fn make_click_sound(&mut self) {
-        self.audio_stream_player.play();
+        self.click_sound_audio_stream_player.play();
     }
 }
