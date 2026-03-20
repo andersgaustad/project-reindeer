@@ -376,8 +376,6 @@ impl MainLevel {
         // Set
         self.level_run_state = new_state;
 
-        godot_print!(":?- State {:?} -> {:?}", &previous_state, &self.level_run_state);
-
         let paused = new_state == LevelRunState::Paused;
 
         let mut pause_menu = self.pause_menu.clone().into_dyn::<dyn IState>();
