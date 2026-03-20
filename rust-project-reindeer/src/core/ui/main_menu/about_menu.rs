@@ -1,6 +1,6 @@
-use godot::{classes::{Button, Control, FileAccess, IControl, InputEvent, Os, RichTextLabel, TabContainer, TextureButton, file_access::ModeFlags}, prelude::*};
+use godot::{classes::{Button, Control, FileAccess, IControl, Input, InputEvent, Os, RichTextLabel, ScrollContainer, TabContainer, TextureButton, VScrollBar, file_access::ModeFlags, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, main_menu::about_menu_request::AboutMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, main_menu::about_menu_request::AboutMenuRequest}, utility::node_utility}, input_map::{UI_CANCEL, UI_DOWN, UI_UP}};
 
 
 #[derive(GodotClass)]
@@ -9,6 +9,11 @@ pub struct AboutMenu {
     #[export(file = "*.txt")]
     #[var(get, set = set_credits_text_file)]
     credits_text_file : GString,
+
+    #[export]
+    #[var]
+    #[init(val = 1500.0)]
+    pixels_scrolled_per_second : f64,
 
 
     // Non-exported
@@ -20,6 +25,10 @@ pub struct AboutMenu {
     #[var]
     #[init(node = "%AboutText")]
     about_text_field : OnReady<Gd<RichTextLabel>>,
+
+    #[var]
+    #[init(node = "%ScrollContainer")]
+    scroll_container : OnReady<Gd<ScrollContainer>>,
 
     #[var]
     #[init(node = "%GodotIcon")]
@@ -40,6 +49,10 @@ pub struct AboutMenu {
     #[var]
     #[init(node = "%BackButton")]
     back_button : OnReady<Gd<Button>>,
+
+    #[var]
+    #[init(node = "%Scroller")]
+    scroller : OnReady<Gd<VScrollBar>>,
 
 
     run : Option<Gd<Run>>,
@@ -65,6 +78,27 @@ impl IControl for AboutMenu {
                 self,
                 Self::on_about_text_meta_clicked
             );
+        
+        let scroll_container_internal_scroller_opt = self.scroll_container.get_v_scroll_bar();
+        if let Some(scroll_container_internal_scroller) = scroll_container_internal_scroller_opt {
+            scroll_container_internal_scroller
+                .signals()
+                .value_changed()
+                .builder()
+                .flags(ConnectFlags::DEFERRED)
+                .connect_other_mut(
+                    self,
+                    Self::on_scroll_container_scroll_value_changed
+                );
+            
+            scroll_container_internal_scroller
+                .signals()
+                .changed()
+                .connect_other(
+                    self,
+                    Self::refresh_scroller_dimensions
+                );
+        }
 
         // credit_text_field
         self
@@ -95,16 +129,46 @@ impl IControl for AboutMenu {
                 self,
                 Self::on_back_pressed
             );
+        
+        // scroller
+        self
+            .scroller
+            .signals()
+            .value_changed()
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(
+                self,
+                Self::on_scroller_value_changed
+            );
+        
+        self
+            .scroller
+            .signals()
+            .gui_input()
+            .connect_other(
+                self,
+                Self::on_scroller_gui_input
+            );
 
         self.refresh();        
     }
 
 
-    fn unhandled_input(&mut self, event : Gd<InputEvent>) {
-        if !self.base().is_visible_in_tree() {
-            return;
+    fn process(&mut self, delta : f64) {
+        if self.scroller.has_focus() {
+            let input = Input::singleton();
+            let frame_scroll = input.get_axis(UI_UP, UI_DOWN);
+            if !frame_scroll.is_zero_approx() {
+                let scroll_delta = f64::from(frame_scroll) * self.pixels_scrolled_per_second * delta;
+                let new_scroll = self.scroller.get_value() + scroll_delta;
+                self.scroller.set_value(new_scroll);
+            }
         }
+    }
 
+
+    fn unhandled_input(&mut self, event : Gd<InputEvent>) {
         if event.is_action_pressed(UI_CANCEL) {
             self.
                 run_deferred(|me| {
@@ -127,6 +191,9 @@ impl IHasRun for AboutMenu {
 #[godot_dyn]
 impl IState for AboutMenu {
     fn do_enter(&mut self) {
+        self.base_mut().set_process(true);
+        self.base_mut().set_process_unhandled_input(true);
+
         self.back_button.grab_focus();
 
         self.refresh();
@@ -134,7 +201,8 @@ impl IState for AboutMenu {
     
 
     fn do_exit(&mut self) {
-
+        self.base_mut().set_process(false);
+        self.base_mut().set_process_unhandled_input(false);
     }
 }
 
@@ -172,6 +240,12 @@ impl AboutMenu {
 
 
     #[func]
+    fn on_scroll_container_scroll_value_changed(&mut self, value : f64) {
+        self.scroller.set_value_no_signal(value);
+    }
+
+
+    #[func]
     fn on_credit_text_meta_clicked(&mut self, variant : Variant) {
         self.handle_text_clicked(variant);
     }
@@ -193,6 +267,24 @@ impl AboutMenu {
     }
 
 
+    #[func]
+    fn on_scroller_value_changed(&mut self, value : f64) {
+        let round = value.round() as i32;
+        self.scroll_container.set_v_scroll(round);
+    }
+
+    
+    #[func]
+    fn on_scroller_gui_input(&mut self, event : Gd<InputEvent>) {
+        if event.is_action(UI_UP) || event.is_action(UI_DOWN) {
+            let viewport_opt = self.base().get_viewport();
+            if let Some(mut viewport) = viewport_opt {
+                viewport.set_input_as_handled();
+            }
+        }
+    }
+
+
     fn handle_text_clicked(&mut self, variant : Variant) {
         let string = variant.stringify();
 
@@ -204,6 +296,26 @@ impl AboutMenu {
     fn refresh(&mut self) {
         let credits_text = std::mem::take(&mut self.credits_text_file);
         self.set_credits_text_file(credits_text);
+
+        self.refresh_scroller_dimensions();
+    }
+
+
+    fn refresh_scroller_dimensions(&mut self) {
+        let scroll_bar_opt = self.scroll_container.get_v_scroll_bar();
+
+        let Some(scroll_bar) = scroll_bar_opt else {
+            return;
+        };
+
+        let scroll_container_max = scroll_bar.get_max();
+        let scroll_container_page = scroll_bar.get_page();
+
+        let scroller_page = self.scroller.get_page();
+
+        let adjusted_max = scroll_container_max + scroller_page - scroll_container_page;
+
+        self.scroller.set_max(adjusted_max);
     }
 
 

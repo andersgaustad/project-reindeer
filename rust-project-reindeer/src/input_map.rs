@@ -16,6 +16,9 @@ pub const CAMERA_RIGHT : &str = "camera_right";
 pub const CAMERA_UP : &str = "camera_up";
 pub const CAMERA_DOWN : &str = "camera_down";
 
+pub const UI_UP : &str = "ui_up";
+pub const UI_DOWN : &str = "ui_down";
+
 pub const UI_CANCEL : &str = "ui_cancel";
 
 pub const DEBUG : &str = "debug";

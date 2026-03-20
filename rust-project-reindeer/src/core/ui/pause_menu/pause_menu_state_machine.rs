@@ -100,7 +100,6 @@ impl IControl for PauseMenuStateMachine {
 impl IState for PauseMenuStateMachine {
     fn do_enter(&mut self) {
         self.is_active = true;
-        self.refresh();
         self.base_mut().show();
     }
 

@@ -185,6 +185,7 @@ impl MainMenuStateMachine {
         let all_submenus = self.get_all_submenu_controls();
 
         for mut submenu in all_submenus {
+            submenu.dyn_bind_mut().do_exit();
             submenu.hide();
         }
 
