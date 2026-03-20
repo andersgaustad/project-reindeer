@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://c8818rbt67phg"]
+
+[ext_resource type="Shader" uid="uid://028dmupwvo5y" path="res://shading/pulse_shader.gdshader" id="1_y0bsu"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_y0bsu")
+shader_parameter/pulses_per_second = 0.50000002212006
+shader_parameter/pulse_strength = 4.0
+shader_parameter/min_alpha = 0.2
+shader_parameter/pulse_color = Color(0, 1, 0, 1)

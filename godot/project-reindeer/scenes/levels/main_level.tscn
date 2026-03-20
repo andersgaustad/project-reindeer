@@ -1,7 +1,8 @@
-[gd_scene load_steps=51 format=3 uid="uid://bhaqw7kkuvp2d"]
+[gd_scene load_steps=52 format=3 uid="uid://bhaqw7kkuvp2d"]
 
 [ext_resource type="PackedScene" uid="uid://dffs3axw6pbr3" path="res://scenes/reindeers/reindeer.tscn" id="1_geiq8"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_lx3qq"]
+[ext_resource type="Material" uid="uid://c8818rbt67phg" path="res://shading/green_pulse_shader_material.tres" id="1_vch1a"]
 [ext_resource type="PackedScene" uid="uid://de6802kitph1x" path="res://scenes/reindeers/ghost_reindeer.tscn" id="2_8lk3y"]
 [ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="2_hn3as"]
 [ext_resource type="PackedScene" uid="uid://c0hahcleepgei" path="res://scenes/present.tscn" id="2_tkkka"]
@@ -113,6 +114,7 @@ color_a = Color(0.20375052, 0.23448583, 0.5637999, 1)
 color_b = Color(0.10487316, 0.53346217, 0.7151235, 1)
 maze_top_left_corner = NodePath("Level/MazeTopLeft")
 maze_solver_info = SubResource("MazeSolverInfo_geiq8")
+arrow_shader_material = ExtResource("1_vch1a")
 prop_root = NodePath("Level/Spawners/PropSpawners/Single")
 forecourt_depth = 15.0
 maze_to_forecourt_padding = 0.25
@@ -318,7 +320,6 @@ horizontal_alignment = 2
 
 [node name="PauseMenuStateMachine" parent="." instance=ExtResource("29_lf3sc")]
 unique_name_in_owner = true
-process_mode = 3
 visible = false
 
 [node name="BackgroundMusicPlayer" type="AudioStreamPlayer" parent="."]

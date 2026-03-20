@@ -3,7 +3,7 @@
 [ext_resource type="ArrayMesh" uid="uid://h0k03pijah11" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/OBJ format/rocks-small.obj" id="1_48ne7"]
 [ext_resource type="PackedScene" uid="uid://witthts5yiqt" path="res://scenes/player.tscn" id="1_jbqir"]
 [ext_resource type="PackedScene" uid="uid://c0hahcleepgei" path="res://scenes/present.tscn" id="3_fr1um"]
-[ext_resource type="ArrayMesh" uid="uid://ncp03n34vna4" path="res://assets/dev_assets/derived/Sketchfab_Scene_Arrow_Material_001_0.res" id="4_v45ci"]
+[ext_resource type="ArrayMesh" uid="uid://cknlhui1534t3" path="res://assets/dev_assets/derived/Sketchfab_Scene_Arrow_Material_001_0.res" id="4_v45ci"]
 [ext_resource type="Material" uid="uid://bf3qfq8dsqcbq" path="res://shading/instance_custom_transparency_material.gdshader.tres" id="5_48ne7"]
 [ext_resource type="ArrayMesh" uid="uid://djwc13x7nvavv" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/OBJ format/tree.obj" id="6_6xh4u"]
 [ext_resource type="PackedScene" uid="uid://kpn4fhy8kxca" path="res://scenes/props/cabin.tscn" id="7_cyt5c"]
@@ -140,5 +140,5 @@ skeleton = NodePath("../../EnchancedMultiMeshInstance3D2")
 transform = Transform3D(0.6923825, 0, 0.7215307, 0, 1, 0, -0.7215307, 0, 0.6923825, -11.982262, 0.99503815, 4.0652514)
 
 [node name="SketchfabSceneArrowMaterial0010" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -0.07962484, 0.9968249, 0, -0.9968249, -0.07962484, -0.1075117, 14.933218, -0.03241998)
+transform = Transform3D(1, 0, 0, 0, -0.07962484, 0.9968249, 0, -0.9968249, -0.07962484, -0.1075117, 15.366217, -0.03241998)
 mesh = ExtResource("4_v45ci")

@@ -1,4 +1,4 @@
-use godot::{classes::{AudioStreamPlayer, BoxMesh, BoxShape3D, CollisionShape3D, Input, InputEvent, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextLabel, StandardMaterial3D, Timer, Tween, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use godot::{classes::{AudioStreamPlayer, BoxMesh, BoxShape3D, CollisionShape3D, Input, InputEvent, Material, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextLabel, ShaderMaterial, StandardMaterial3D, Timer, Tween, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
 use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::{option_change::OptionChange, options::Options}, player::Player, props::cabin::Cabin, run::run::Run, ui::{i_sub_menu_state::IState, pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}}, utility::{bounding_box_utility, node_utility}}, input_map::UI_CANCEL};
@@ -32,8 +32,12 @@ pub struct MainLevel {
 
     #[export]
     #[var]
-    #[init(val = Color::GREEN)]
-    arrow_color : Color,
+    arrow_shader_material : OnEditor<Gd<ShaderMaterial>>,
+
+    #[export]
+    #[var]
+    #[init(val = 1.0)]
+    arrow_pulse_frequency_factor : f32,
 
     #[export]
     #[var]
@@ -324,7 +328,6 @@ impl INode3D for MainLevel {
             }
             self.set_level_run_state(LevelRunState::Paused);
             
-
             return;
         }
     }
@@ -372,6 +375,8 @@ impl MainLevel {
 
         // Set
         self.level_run_state = new_state;
+
+        godot_print!(":?- State {:?} -> {:?}", &previous_state, &self.level_run_state);
 
         let paused = new_state == LevelRunState::Paused;
 
@@ -1392,13 +1397,19 @@ impl MainLevel {
 
             let n_arrows = first_path.len().checked_sub(1).unwrap_or(0);
 
+            let arrow_pulse_frequency = self.arrow_pulse_frequency_factor / (n_arrows as f32);
+
+
             // Configure arrow spawner
+
+            self.arrow_spawner.set_material_overlay(Some(&self.arrow_shader_material.clone().upcast::<Material>()));
 
             let Some(mut arrow_multimesh) = self.arrow_spawner.get_multimesh() else {
                 godot_error!("Could not find Arrow Spawner MultiMesh!");
                 return;
             };
 
+            arrow_multimesh.set_use_custom_data(true);
             arrow_multimesh.set_instance_count(0);
 
             arrow_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
@@ -1464,8 +1475,11 @@ impl MainLevel {
 
                 let i_i32 = i32::try_from(i).unwrap();
 
+                let mut custom_data = Color::BLACK;
+                custom_data.r = ((n_arrows - i) as f32) * arrow_pulse_frequency;
+
                 arrow_multimesh.set_instance_transform(i_i32, transform);
-                arrow_multimesh.set_instance_color(i_i32, self.arrow_color);
+                arrow_multimesh.set_instance_custom_data(i_i32, custom_data);
             }
 
             godot_print!("Found path!");

@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://dvuexqktlpgph" path="res://scenes/ui/controls_menu/controls_menu.tscn" id="3_s11xs"]
 
 [node name="PauseMenuStateMachine" type="PauseMenuStateMachine"]
+process_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

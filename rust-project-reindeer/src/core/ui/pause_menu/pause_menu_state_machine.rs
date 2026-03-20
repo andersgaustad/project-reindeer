@@ -100,6 +100,11 @@ impl IControl for PauseMenuStateMachine {
 impl IState for PauseMenuStateMachine {
     fn do_enter(&mut self) {
         self.is_active = true;
+
+        // Retrigger enter state
+        let current_state = self.state.clone();
+        self.set_state(current_state);
+
         self.base_mut().show();
     }
 
