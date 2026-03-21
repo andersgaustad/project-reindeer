@@ -1,17 +1,17 @@
-[gd_scene load_steps=6 format=3 uid="uid://x0d1jeiwcryx"]
+[gd_scene load_steps=10 format=3 uid="uid://x0d1jeiwcryx"]
 
-[ext_resource type="Theme" uid="uid://c5wsnmp4ar00r" path="res://themes/pause_menu_theme.tres" id="1_5s0hc"]
 [ext_resource type="Texture2D" uid="uid://bpyogkl8fj7bm" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/1x/exclamation.png" id="1_rbnsh"]
+[ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme/main_menu_theme.tres" id="2_rbnsh"]
+[ext_resource type="StyleBox" uid="uid://dbpbwcs1ub4fh" path="res://themes/main_menu_theme/green/green_main_menu_normal_button_stylebox.tres" id="3_shcq0"]
+[ext_resource type="StyleBox" uid="uid://ch2dm6narcmsr" path="res://themes/main_menu_theme/green/green_main_menu_hover_button_stylebox.tres" id="4_8mx0f"]
+[ext_resource type="StyleBox" uid="uid://bkyojjus07pue" path="res://themes/main_menu_theme/green/green_main_menu_focus_button_stylebox.tres" id="5_ugqbi"]
+[ext_resource type="StyleBox" uid="uid://1i1knrvs3iia" path="res://themes/main_menu_theme/red/red_main_menu_normal_button_stylebox.tres" id="6_h2y1u"]
+[ext_resource type="StyleBox" uid="uid://ct78g7y688cjj" path="res://themes/main_menu_theme/red/red_main_menu_hover_button_stylebox.tres" id="7_ba5iv"]
+[ext_resource type="StyleBox" uid="uid://coqo67xbv5fvc" path="res://themes/main_menu_theme/red/red_main_menu_focus_button_stylebox.tres" id="8_cu8y1"]
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_tup5k"]
 color = Color(1, 1, 1, 1)
 thickness = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6jy2e"]
-bg_color = Color(0.35686275, 0.41960785, 0.98039216, 0.5019608)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vtvlb"]
-bg_color = Color(0.8776705, 0.18441218, 0.32231104, 0.5019608)
 
 [node name="PauseMenu" type="PauseMenuFace"]
 new_mail_icon = ExtResource("1_rbnsh")
@@ -20,7 +20,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("1_5s0hc")
+theme = ExtResource("2_rbnsh")
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -72,13 +72,12 @@ layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="PanelContainer" type="PanelContainer" parent="CenterContainer/Panel/MainMargins/VBoxContainer/ButtonMargin/Buttons"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_6jy2e")
-
-[node name="StartButton" type="Button" parent="CenterContainer/Panel/MainMargins/VBoxContainer/ButtonMargin/Buttons/PanelContainer"]
+[node name="StartButton" type="Button" parent="CenterContainer/Panel/MainMargins/VBoxContainer/ButtonMargin/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/normal = ExtResource("3_shcq0")
+theme_override_styles/hover = ExtResource("4_8mx0f")
+theme_override_styles/focus = ExtResource("5_ugqbi")
 text = "Start"
 
 [node name="ResumeButton" type="Button" parent="CenterContainer/Panel/MainMargins/VBoxContainer/ButtonMargin/Buttons"]
@@ -107,11 +106,10 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Main Menu"
 
-[node name="PanelContainer2" type="PanelContainer" parent="CenterContainer/Panel/MainMargins/VBoxContainer/ButtonMargin/Buttons"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_vtvlb")
-
-[node name="ExitButton" type="Button" parent="CenterContainer/Panel/MainMargins/VBoxContainer/ButtonMargin/Buttons/PanelContainer2"]
+[node name="ExitButton" type="Button" parent="CenterContainer/Panel/MainMargins/VBoxContainer/ButtonMargin/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/normal = ExtResource("6_h2y1u")
+theme_override_styles/hover = ExtResource("7_ba5iv")
+theme_override_styles/focus = ExtResource("8_cu8y1")
 text = "Exit"

@@ -1,8 +1,8 @@
 [gd_resource type="Theme" load_steps=19 format=3 uid="uid://d2tsxc2550myd"]
 
-[ext_resource type="StyleBox" uid="uid://d10hl3fsy8ru8" path="res://themes/main_menu_theme/default_main_menu_focus_button_stylebox.tres" id="1_timdx"]
-[ext_resource type="StyleBox" uid="uid://bgo3ocrsid0fa" path="res://themes/main_menu_theme/default_main_menu_hover_button_stylebox.tres" id="2_17g4u"]
-[ext_resource type="StyleBox" uid="uid://da4d0h75m8ure" path="res://themes/main_menu_theme/default_main_menu_normal_button_stylebox.tres" id="3_1fgyi"]
+[ext_resource type="StyleBox" uid="uid://d10hl3fsy8ru8" path="res://themes/main_menu_theme/blue/default_main_menu_focus_button_stylebox.tres" id="1_timdx"]
+[ext_resource type="StyleBox" uid="uid://bgo3ocrsid0fa" path="res://themes/main_menu_theme/blue/default_main_menu_hover_button_stylebox.tres" id="2_17g4u"]
+[ext_resource type="StyleBox" uid="uid://da4d0h75m8ure" path="res://themes/main_menu_theme/blue/default_main_menu_normal_button_stylebox.tres" id="3_1fgyi"]
 [ext_resource type="Texture2D" uid="uid://csp5t1flbjnwi" path="res://reexports/ui/toggle_button_large/checked_large.tres" id="4_avacs"]
 [ext_resource type="FontFile" uid="uid://1tkjah7jyprn" path="res://assets/dev_assets/source/LittleGuy/LittleGuy.ttf" id="4_qndo3"]
 [ext_resource type="Texture2D" uid="uid://4kwi824atkj3" path="res://reexports/ui/toggle_button_large/checked_disabled_large.tres" id="5_h8ou0"]

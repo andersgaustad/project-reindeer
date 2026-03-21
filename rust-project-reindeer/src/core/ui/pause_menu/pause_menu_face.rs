@@ -81,16 +81,8 @@ impl IControl for PauseMenuFace {
 
 
     fn unhandled_input(&mut self, event : Gd<InputEvent>) {
-        if !self.base().is_visible_in_tree() {
-            return;
-        }
-
         if event.is_action_pressed(UI_CANCEL) {
-            self
-                .resume_button
-                .signals()
-                .pressed()
-                .emit();
+            self.on_button_pressed(PauseMenuButtonType::Resume);
         }
     }
 }
@@ -107,6 +99,8 @@ impl IHasRun for PauseMenuFace {
 #[godot_dyn]
 impl IState for PauseMenuFace {
     fn do_enter(&mut self) {
+        self.base_mut().set_process_unhandled_input(true);
+
         self.resume_button.grab_focus();
 
         #[cfg(debug_assertions)]
@@ -117,6 +111,11 @@ impl IState for PauseMenuFace {
         }
 
         self.update_mail_button();
+    }
+
+    
+    fn do_exit(&mut self) {
+        self.base_mut().set_process_unhandled_input(false);
     }
 }
 
