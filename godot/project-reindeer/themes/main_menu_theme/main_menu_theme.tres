@@ -1,0 +1,46 @@
+[gd_resource type="Theme" load_steps=19 format=3 uid="uid://d2tsxc2550myd"]
+
+[ext_resource type="StyleBox" uid="uid://d10hl3fsy8ru8" path="res://themes/main_menu_theme/default_main_menu_focus_button_stylebox.tres" id="1_timdx"]
+[ext_resource type="StyleBox" uid="uid://bgo3ocrsid0fa" path="res://themes/main_menu_theme/default_main_menu_hover_button_stylebox.tres" id="2_17g4u"]
+[ext_resource type="StyleBox" uid="uid://da4d0h75m8ure" path="res://themes/main_menu_theme/default_main_menu_normal_button_stylebox.tres" id="3_1fgyi"]
+[ext_resource type="Texture2D" uid="uid://csp5t1flbjnwi" path="res://reexports/ui/toggle_button_large/checked_large.tres" id="4_avacs"]
+[ext_resource type="FontFile" uid="uid://1tkjah7jyprn" path="res://assets/dev_assets/source/LittleGuy/LittleGuy.ttf" id="4_qndo3"]
+[ext_resource type="Texture2D" uid="uid://4kwi824atkj3" path="res://reexports/ui/toggle_button_large/checked_disabled_large.tres" id="5_h8ou0"]
+[ext_resource type="Texture2D" uid="uid://dbuejtb1xp2ag" path="res://reexports/ui/toggle_button_large/checked_disabled_mirrored_large.tres" id="6_4m8fb"]
+[ext_resource type="Texture2D" uid="uid://cvfu77dfaklcy" path="res://reexports/ui/toggle_button_large/checked_mirrored_large.tres" id="7_1pbtr"]
+[ext_resource type="Texture2D" uid="uid://bfbthuwtjpet7" path="res://reexports/ui/toggle_button_large/unchecked_large.tres" id="8_4sw8h"]
+[ext_resource type="Texture2D" uid="uid://dojj73dibac3" path="res://reexports/ui/toggle_button_large/unchecked_disabled_large.tres" id="9_jraq6"]
+[ext_resource type="Texture2D" uid="uid://dcbs3v2blnw8g" path="res://reexports/ui/toggle_button_large/unchecked_disabled_mirrored_large.tres" id="10_hyfk1"]
+[ext_resource type="Texture2D" uid="uid://dr56h7e6pxxsn" path="res://reexports/ui/toggle_button_large/unchecked_mirrored_large.tres" id="11_86787"]
+[ext_resource type="Texture2D" uid="uid://dn7deatt2jq6m" path="res://reexports/ui/hslider_large/grabber_large.tres" id="12_38ic1"]
+[ext_resource type="Texture2D" uid="uid://dkg7c2mnkqpj8" path="res://reexports/ui/hslider_large/grabber_disabled_large.tres" id="13_lg0nc"]
+[ext_resource type="Texture2D" uid="uid://43ngl3bwovs3" path="res://reexports/ui/hslider_large/grabber_highlight_large.tres" id="14_ra3hv"]
+[ext_resource type="Texture2D" uid="uid://bhrjbucuwnr00" path="res://reexports/ui/hslider_large/tick_large.tres" id="15_ilryi"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ygr4k"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_w7q0n"]
+
+[resource]
+default_font = ExtResource("4_qndo3")
+default_font_size = 64
+Button/constants/align_to_largest_stylebox = 1
+Button/styles/focus = ExtResource("1_timdx")
+Button/styles/hover = ExtResource("2_17g4u")
+Button/styles/normal = ExtResource("3_1fgyi")
+Button/styles/pressed = null
+CheckButton/icons/checked = ExtResource("4_avacs")
+CheckButton/icons/checked_disabled = ExtResource("5_h8ou0")
+CheckButton/icons/checked_disabled_mirrored = ExtResource("6_4m8fb")
+CheckButton/icons/checked_mirrored = ExtResource("7_1pbtr")
+CheckButton/icons/unchecked = ExtResource("8_4sw8h")
+CheckButton/icons/unchecked_disabled = ExtResource("9_jraq6")
+CheckButton/icons/unchecked_disabled_mirrored = ExtResource("10_hyfk1")
+CheckButton/icons/unchecked_mirrored = ExtResource("11_86787")
+CheckButton/styles/focus = SubResource("StyleBoxEmpty_ygr4k")
+CheckButton/styles/normal = SubResource("StyleBoxEmpty_w7q0n")
+HSlider/icons/grabber = ExtResource("12_38ic1")
+HSlider/icons/grabber_disabled = ExtResource("13_lg0nc")
+HSlider/icons/grabber_highlight = ExtResource("14_ra3hv")
+HSlider/icons/tick = ExtResource("15_ilryi")
+VBoxContainer/constants/separation = 15

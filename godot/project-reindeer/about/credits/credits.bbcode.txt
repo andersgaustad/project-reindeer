@@ -9,6 +9,7 @@ See the bundled Markdown file for a detailed list of assets, authors, and licens
 [i]Game Icons[/i] by Kenney ([url=https://kenney.nl/assets/game-icons]External link[/url])
 [i]Godot Logo[/i] by Andrea Calabró ([url=https://godotengine.org/]External link[/url])
 [i]Holiday Kit[/i] by Kenney ([url=https://kenney.nl/assets/holiday-kit]External link[/url])
+[i]Old Parchment Paper[/i] by cron ([url=https://opengameart.org/content/old-parchment-paper]External link[/url])
 [i]Rust programming language logo[/i] ([url=https://rust-lang.org/]External link[/url])
 [i]godot-rust Ferris[/i] ([url=https://godot-rust.github.io/]External link[/url])
 
@@ -17,6 +18,7 @@ See the bundled Markdown file for a detailed list of assets, authors, and licens
 
 [i]Asterisk Mono Font v1.0[/i] by GGBotNet ([url=https://ggbot.itch.io/asterisk-mono-font]External link[/url])
 [i]Erratic Cursive Font - CC0[/i] by GGBotNet ([url=https://ggbot.itch.io/erratic-cursive-font]External link[/url])
+[i]LittleGuy [FONT][/i] by MaeBunn ([url=https://maebunn.itch.io/little-guy-font]External link[/url])
 
 
 [b]Music:[/b]

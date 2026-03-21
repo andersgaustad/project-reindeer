@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://enihlfva4ccy"]
 
-[ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme.tres" id="1_1ch07"]
+[ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme/main_menu_theme.tres" id="1_1ch07"]
 [ext_resource type="Texture2D" uid="uid://c5h4yk6tahuhq" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/information.png" id="2_e8t4i"]
 
 [node name="MainMenu" type="MainMenu"]

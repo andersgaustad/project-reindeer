@@ -24,6 +24,10 @@ window/size/window_height_override=648
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[editor]
+
+movie_writer/movie_file="/home/anders/code/projects/project-reindeer/godot/project-reindeer/video_out/movie.avi"
+
 [input]
 
 ui_accept={

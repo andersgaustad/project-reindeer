@@ -26,6 +26,11 @@ Huge thanks to all the creators!
 - Source: **[link](https://kenney.nl/assets/holiday-kit)**
 - License: **[CC0](https://creativecommons.org/publicdomain/zero/1.0/)**
 
+**Old Parchment Paper**
+- Author: **cron**
+- Source: **[link](https://opengameart.org/content/old-parchment-paper)**
+- License: **[CC0](https://creativecommons.org/publicdomain/zero/1.0/)**
+
 **Rust programming language logo**
 - Author: *(not attributed)*
 - Source: **[link](https://rust-lang.org/)**
@@ -49,6 +54,11 @@ Huge thanks to all the creators!
 - Author: **GGBotNet**
 - Source: **[link](https://ggbot.itch.io/erratic-cursive-font)**
 - License: **[CC0](https://creativecommons.org/publicdomain/zero/1.0/)**
+
+**LittleGuy [FONT]**
+- Author: **MaeBunn**
+- Source: **[link](https://maebunn.itch.io/little-guy-font)**
+- License: **[]()**
 
 
 ## Music
