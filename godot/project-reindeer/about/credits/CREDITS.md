@@ -5,6 +5,12 @@ Huge thanks to all the creators!
 
 ## Art
 
+**Cartoon Cloud**
+- Author: **RunemarkStudio**
+- Source: **[link](https://sketchfab.com/3d-models/cartoon-cloud-f31be54812a348df86d94171098dae19)**
+- License: **[CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/)**
+- "Cartoon Cloud" (https://skfb.ly/6AuOS) by RunemarkStudio is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
 **Direction Arrow**
 - Author: **Alihan**
 - Source: **[link](https://sketchfab.com/3d-models/direction-arrow-6ef46718c7b242e39fcad7f27ee858a5)**

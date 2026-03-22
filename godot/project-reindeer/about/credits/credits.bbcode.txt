@@ -5,6 +5,7 @@ See the bundled Markdown file for a detailed list of assets, authors, and licens
 
 [b]Art:[/b]
 
+[i]Cartoon Cloud[/i] by RunemarkStudio ([url=https://sketchfab.com/3d-models/cartoon-cloud-f31be54812a348df86d94171098dae19]External link[/url])
 [i]Direction Arrow[/i] by Alihan ([url=https://sketchfab.com/3d-models/direction-arrow-6ef46718c7b242e39fcad7f27ee858a5]External link[/url])
 [i]Game Icons[/i] by Kenney ([url=https://kenney.nl/assets/game-icons]External link[/url])
 [i]Godot Logo[/i] by Andrea Calabró ([url=https://godotengine.org/]External link[/url])

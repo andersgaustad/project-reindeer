@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://buhhonnkkvo8t"]
+[gd_scene load_steps=9 format=3 uid="uid://buhhonnkkvo8t"]
 
 [ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme/main_menu_theme.tres" id="1_sl1te"]
 [ext_resource type="PackedScene" uid="uid://enihlfva4ccy" path="res://scenes/ui/main_menu/main_menu.tscn" id="2_1g8jr"]
@@ -7,8 +7,10 @@
 [ext_resource type="PackedScene" uid="uid://clc6ct8pkrsgj" path="res://scenes/ui/main_menu/about_menu.tscn" id="5_nlu2l"]
 [ext_resource type="PackedScene" uid="uid://dvuexqktlpgph" path="res://scenes/ui/controls_menu/controls_menu.tscn" id="5_t84rx"]
 [ext_resource type="AudioStream" uid="uid://dnhqiq746bqd0" path="res://music_playlists/main_menu_playlist.tres" id="7_kbe1i"]
+[ext_resource type="PackedScene" uid="uid://5ktul3yljk32" path="res://scenes/levels/background_level.tscn" id="8_33u73"]
 
 [node name="MainMenuStateMachine" type="MainMenuStateMachine"]
+menu_background_level_packed_scene = ExtResource("8_33u73")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

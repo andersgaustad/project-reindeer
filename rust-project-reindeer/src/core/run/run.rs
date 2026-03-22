@@ -106,7 +106,7 @@ impl Run {
 
                 // Reset to title
                 let main_menu_state_machine = &mut self.main_menu_state_machine;
-                main_menu_state_machine.clone().into_dyn().dyn_bind_mut().do_enter();
+                main_menu_state_machine.clone().into_dyn::<dyn IState>().dyn_bind_mut().do_enter();
                 main_menu_state_machine.bind_mut().set_state(MainMenuState::Title);
             },
         }

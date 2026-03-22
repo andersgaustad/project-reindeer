@@ -7,6 +7,14 @@ use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLeve
 #[derive(GodotClass)]
 #[class(init, base=Control)]
 pub struct MainMenuStateMachine {
+    // Exported
+
+    #[export]
+    #[var]
+    menu_background_level_packed_scene : OnEditor<Gd<PackedScene>>,
+
+
+    // Non-exported
     #[var]
     #[init(node = "%TitleMenu")]
     title_menu : OnReady<Gd<MainMenu>>,
@@ -37,6 +45,10 @@ pub struct MainMenuStateMachine {
     #[var(get, set = set_state)]
     #[init(val = MainMenuState::Title)]
     state : MainMenuState,
+
+
+    #[var(get, set = set_menu_background_level)]
+    menu_background_level : Option<Gd<Node>>,
 
 
     run : Option<Gd<Run>>,
@@ -138,16 +150,20 @@ impl IControl for MainMenuStateMachine {
 }
 
 
+#[godot_dyn]
 impl IHasRun for MainMenuStateMachine {
     fn get_run(&self) -> Option<Gd<Run>> {
         self.run.clone()
     }
 }
 
+
 #[godot_dyn]
 impl IState for MainMenuStateMachine {
     fn do_enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
+
+        self.toggle_background_level(true);
 
         self.background_music_player.play();
         self.base_mut().show();
@@ -156,6 +172,8 @@ impl IState for MainMenuStateMachine {
 
     fn do_exit(&mut self) {
         self.base_mut().set_process_unhandled_input(false);
+
+        self.toggle_background_level(false);
 
         self.background_music_player.stop();
 
@@ -192,6 +210,23 @@ impl MainMenuStateMachine {
         let mut active_submenu = self.get_submenu_control(state);
         active_submenu.dyn_bind_mut().do_enter();
         active_submenu.show();
+    }
+
+
+    #[func]
+    pub fn set_menu_background_level(&mut self, background_level : Option<Gd<Node>>) {
+        let old_background_level_opt = std::mem::replace(&mut self.menu_background_level, background_level);
+        if let Some(mut old_background_level) = old_background_level_opt {
+            old_background_level.queue_free();
+        }
+
+        if !self.base().is_node_ready() {
+            return;
+        }
+
+        if let Some(new_background_level_opt) = self.menu_background_level.clone() {
+            self.base_mut().add_child(&new_background_level_opt);
+        }
     }
 
 
@@ -284,6 +319,23 @@ impl MainMenuStateMachine {
             self.on_options_changed(possible_option_change);
         }
     }
+
+
+    fn toggle_background_level(&mut self, active : bool) {
+        let mut background_level = None;
+        if active {
+            background_level = self.menu_background_level_packed_scene.try_instantiate_as();
+
+            #[cfg(debug_assertions)]
+            {
+                if background_level.is_none() {
+                    godot_error!("Failed spawning background level!");
+                }
+            }
+        }
+        
+        self.set_menu_background_level(background_level);
+    } 
 
 
     fn get_submenu_control(&self, state : MainMenuState) -> DynGd<Control, dyn IState> {
