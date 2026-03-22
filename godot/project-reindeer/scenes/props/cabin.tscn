@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://kpn4fhy8kxca"]
+[gd_scene load_steps=22 format=3 uid="uid://kpn4fhy8kxca"]
 
 [ext_resource type="PackedScene" uid="uid://cdlsasyi87mop" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/cabin-door-rotate.fbx" id="1_53y0y"]
 [ext_resource type="PackedScene" uid="uid://c547g2wvp80lj" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/cabin-window-a.fbx" id="2_s32dj"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://cojr0uh87spf" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/cabin-roof-snow.fbx" id="8_i8pmm"]
 [ext_resource type="PackedScene" uid="uid://cu14idoq51rd5" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/cabin-wall-roof.fbx" id="9_wl3cj"]
 [ext_resource type="PackedScene" uid="uid://c3mns3pkkc3h5" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/cabin-roof-snow-chimney.fbx" id="11_r7rgn"]
+[ext_resource type="ArrayMesh" uid="uid://8newijice65q" path="res://assets/dev_assets/derived/cloud.res" id="12_r7rgn"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_bhqa3"]
 size = Vector3(0.7, 1.295, 0.1)
@@ -22,14 +23,14 @@ size = Vector3(0.7, 1.295, 0.1)
 size = Vector3(0.5, 0.7, 0.7)
 
 [sub_resource type="Curve" id="Curve_bhqa3"]
-_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+_data = [Vector2(0, 0.865893), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
 point_count = 2
 
 [sub_resource type="CurveTexture" id="CurveTexture_r7rgn"]
 curve = SubResource("Curve_bhqa3")
 
 [sub_resource type="Curve" id="Curve_l2m4t"]
-_data = [Vector2(0, 0.50561804), 0.0, 0.0, 0, 0, Vector2(0.72727275, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.84269667), 0.0, 0.0, 0, 0]
+_data = [Vector2(0.007518798, 0.027724147), 0.0, 0.0, 0, 0, Vector2(0.8984962, 1), -0.73687834, -0.73687834, 0, 0, Vector2(1, 0.865893), 0.0, 0.0, 0, 0]
 point_count = 3
 
 [sub_resource type="CurveTexture" id="CurveTexture_na8kq"]
@@ -37,22 +38,19 @@ curve = SubResource("Curve_l2m4t")
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_1hmex"]
 lifetime_randomness = 0.2
-direction = Vector3(0, 1, 0)
+particle_flag_rotate_y = true
+angle_min = 1.0728835e-05
+angle_max = 360.00003
+velocity_pivot = Vector3(0, 1, 0)
+direction = Vector3(0, 3, 0)
 spread = 5.0
 initial_velocity_min = 0.19999999
-initial_velocity_max = 0.39999998
+initial_velocity_max = 0.25
 gravity = Vector3(0, 0, 0)
+scale_min = 0.39999998
+scale_max = 0.5
 scale_curve = SubResource("CurveTexture_na8kq")
 alpha_curve = SubResource("CurveTexture_r7rgn")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_orvf3"]
-transparency = 1
-vertex_color_use_as_albedo = true
-
-[sub_resource type="SphereMesh" id="SphereMesh_5eg87"]
-material = SubResource("StandardMaterial3D_orvf3")
-radius = 0.2
-height = 0.4
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_bhqa3"]
 size = Vector3(3.6076813, 3.5740833, 3.8954468)
@@ -235,10 +233,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.3999999)
 [node name="SmokeEmitter" type="GPUParticles3D" parent="CabinPivot/Roof/East/Segmemt2/cabin-roof-snow-chimney"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.19307137, 1.3130198, 0)
-amount = 16
-lifetime = 10.0
+amount = 3
+lifetime = 15.0
 process_material = SubResource("ParticleProcessMaterial_1hmex")
-draw_pass_1 = SubResource("SphereMesh_5eg87")
+draw_pass_1 = ExtResource("12_r7rgn")
 
 [node name="Segmemt3" type="Node3D" parent="CabinPivot/Roof/East"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.18)

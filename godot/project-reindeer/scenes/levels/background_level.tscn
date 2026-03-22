@@ -1,0 +1,199 @@
+[gd_scene load_steps=24 format=3 uid="uid://5ktul3yljk32"]
+
+[ext_resource type="PackedScene" uid="uid://c0hahcleepgei" path="res://scenes/present.tscn" id="4_0m2sm"]
+[ext_resource type="PackedScene" uid="uid://kpn4fhy8kxca" path="res://scenes/props/cabin.tscn" id="5_ck8vk"]
+[ext_resource type="PackedScene" uid="uid://dnwhe55pf8jgc" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/lantern.fbx" id="11_0i68u"]
+[ext_resource type="PackedScene" uid="uid://dvpemw52sk520" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/bench.fbx" id="12_13wah"]
+[ext_resource type="PackedScene" uid="uid://bexnyslnpmqfq" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/present-a-cube.fbx" id="14_1slpn"]
+[ext_resource type="PackedScene" uid="uid://bvf0hrmewwwio" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/present-a-rectangle.fbx" id="15_1vnjb"]
+[ext_resource type="PackedScene" uid="uid://b8oj1h6bks16w" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/present-b-round.fbx" id="16_7ig0x"]
+[ext_resource type="PackedScene" uid="uid://dgg8edtdb530x" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/GLB format/reindeer.glb" id="16_q6ckx"]
+[ext_resource type="PackedScene" uid="uid://upm0aighr76e" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/GLB format/tree-snow-a.glb" id="17_q6ckx"]
+[ext_resource type="PackedScene" uid="uid://cgd7sgs4vsqjn" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/present-b-rectangle.fbx" id="17_xnsmq"]
+[ext_resource type="PackedScene" uid="uid://dyly861cdm56d" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/present-b-cube.fbx" id="18_lqsml"]
+[ext_resource type="PackedScene" uid="uid://baadgl0jbpvct" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/present-a-round.fbx" id="19_1tngg"]
+[ext_resource type="PackedScene" uid="uid://5y0dpppxjbdi" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/sled-long.fbx" id="20_kjo2b"]
+[ext_resource type="PackedScene" uid="uid://u3ujp04toqw7" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/sled.fbx" id="21_8hhqt"]
+[ext_resource type="PackedScene" uid="uid://wk8lhstoo2l1" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/snowman-hat.fbx" id="22_1w1a4"]
+[ext_resource type="PackedScene" uid="uid://dju0s05r0mt3n" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/snowman.fbx" id="23_eaqjh"]
+[ext_resource type="PackedScene" uid="uid://b1li531q4jhe3" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/FBX format/tree-decorated.fbx" id="24_x1n2s"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wkbr6"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_wkbr6"]
+material = SubResource("StandardMaterial3D_wkbr6")
+size = Vector3(60, 2, 60)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]
+size = Vector3(60, 2, 60)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_mafxj"]
+sky_top_color = Color(0.39396158, 0.69545203, 0.9992464, 1)
+sky_energy_multiplier = 0.8
+ground_bottom_color = Color(0.50532067, 0.59877646, 0.9928549, 1)
+
+[sub_resource type="Sky" id="Sky_ojqrr"]
+sky_material = SubResource("ProceduralSkyMaterial_mafxj")
+
+[sub_resource type="Environment" id="Environment_lx3qq"]
+background_mode = 2
+sky = SubResource("Sky_ojqrr")
+reflected_light_source = 2
+
+[node name="MainLevel" type="Node3D"]
+
+[node name="Level" type="StaticBody3D" parent="."]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Level"]
+unique_name_in_owner = true
+mesh = SubResource("BoxMesh_wkbr6")
+skeleton = NodePath("../..")
+
+[node name="Collision" type="CollisionShape3D" parent="Level"]
+unique_name_in_owner = true
+shape = SubResource("BoxShape3D_wkbr6")
+
+[node name="Present" parent="Level" instance=ExtResource("4_0m2sm")]
+unique_name_in_owner = true
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -1.1499858, 1, 2.1929567)
+
+[node name="Cabin" parent="Level" instance=ExtResource("5_ck8vk")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0078125, 0)
+
+[node name="Objects" type="Node3D" parent="Level"]
+
+[node name="Props" type="Node3D" parent="Level/Objects"]
+
+[node name="Items" type="Node3D" parent="Level/Objects/Props"]
+
+[node name="Lantern" parent="Level/Objects/Props/Items" instance=ExtResource("11_0i68u")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0498582, 0)
+visible = false
+
+[node name="Bench1" parent="Level/Objects/Props/Items" instance=ExtResource("12_13wah")]
+transform = Transform3D(0.08127746, 0, 0.9966915, 0, 1, 0, -0.9966915, 0, 0.08127746, 2.044222, 1.01171, 0)
+
+[node name="Bench2" parent="Level/Objects/Props/Items" instance=ExtResource("12_13wah")]
+transform = Transform3D(0.09188416, 0, -0.9957697, 0, 1, 0, 0.9957697, 0, 0.09188416, -2.1440754, 1.01171, 0.44295633)
+
+[node name="Present1" parent="Level/Objects/Props/Items" instance=ExtResource("14_1slpn")]
+visible = false
+
+[node name="Present2" parent="Level/Objects/Props/Items" instance=ExtResource("15_1vnjb")]
+visible = false
+
+[node name="Present3" parent="Level/Objects/Props/Items" instance=ExtResource("16_7ig0x")]
+visible = false
+
+[node name="Present4" parent="Level/Objects/Props/Items" instance=ExtResource("17_xnsmq")]
+visible = false
+
+[node name="Present5" parent="Level/Objects/Props/Items" instance=ExtResource("18_lqsml")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0578879, 0)
+visible = false
+
+[node name="Present6" parent="Level/Objects/Props/Items" instance=ExtResource("19_1tngg")]
+visible = false
+
+[node name="SledLong" parent="Level/Objects/Props/Items" instance=ExtResource("20_kjo2b")]
+visible = false
+
+[node name="Sled" parent="Level/Objects/Props/Items" instance=ExtResource("21_8hhqt")]
+transform = Transform3D(0.053305596, 0, 0.49715036, 0, 0.5, 0, -0.49715036, 0, 0.053305596, 2.1456063, 1, 1.0201495)
+
+[node name="SnowmanHat" parent="Level/Objects/Props/Items" instance=ExtResource("22_1w1a4")]
+transform = Transform3D(0.41521725, 0, 0.90972227, 0, 1, 0, -0.90972227, 0, 0.41521725, 2.135566, 1, 1.9467821)
+
+[node name="Snowman" parent="Level/Objects/Props/Items" instance=ExtResource("23_eaqjh")]
+visible = false
+
+[node name="Tree" parent="Level/Objects/Props/Items" instance=ExtResource("24_x1n2s")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5070157, 1, 2.0165818)
+
+[node name="Reindeer" parent="Level/Objects/Props/Items" instance=ExtResource("16_q6ckx")]
+transform = Transform3D(0.74945277, 0, -0.6620578, 0, 1, 0, 0.6620578, 0, 0.74945277, 1.086148, 1, 2.3025591)
+
+[node name="Trees" type="Node3D" parent="Level/Objects"]
+
+[node name="tree-snow-a-1" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.427759, 1, 0)
+
+[node name="tree-snow-a-2" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.8509278, 1, -1.5650648)
+
+[node name="tree-snow-a-3" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.6145406, 1, -3.3068662)
+
+[node name="tree-snow-a-4" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.103201, 1, -5.4785595)
+
+[node name="tree-snow-a-5" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.407932, 1, -1.5095901)
+
+[node name="tree-snow-a-6" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.659183, 1, -0.38237965)
+
+[node name="tree-snow-a-7" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.272802, 1, 0.54221797)
+
+[node name="tree-snow-a-8" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.71529037, 0, 0.6988274, 0, 1, 0, -0.6988274, 0, 0.71529037, 7.82953, 1, -1.3086872)
+
+[node name="tree-snow-a-9" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.71529037, 0, 0.6988274, 0, 1, 0, -0.6988274, 0, 0.71529037, 7.1484213, 1, -2.8312685)
+
+[node name="tree-snow-a-10" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.71529037, 0, 0.6988274, 0, 1, 0, -0.6988274, 0, 0.71529037, 3.1157007, 1, -1.7741885)
+
+[node name="tree-snow-a-23" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.71529037, 0, 0.6988274, 0, 1, 0, -0.6988274, 0, 0.71529037, 5.6404653, 1, -3.7912188)
+
+[node name="tree-snow-a-11" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.71529037, 0, 0.6988274, 0, 1, 0, -0.6988274, 0, 0.71529037, 4.233115, 1, -5.454258)
+
+[node name="tree-snow-a-12" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.71529037, 0, 0.6988274, 0, 1, 0, -0.6988274, 0, 0.71529037, 5.358188, 1, -1.0046837)
+
+[node name="tree-snow-a-13" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.71529037, 0, 0.6988274, 0, 1, 0, -0.6988274, 0, 0.71529037, 5.250906, 1, 0.67600787)
+
+[node name="tree-snow-a-14" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.71529037, 0, 0.6988274, 0, 1, 0, -0.6988274, 0, 0.71529037, 6.8887053, 1, 0.36852252)
+
+[node name="tree-snow-a-15" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.20893598, 0, -0.97792935, 0, 1, 0, 0.97792935, 0, 0.20893598, -1.4083983, 0.9999995, -3.066471)
+
+[node name="tree-snow-a-16" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.20893598, 0, -0.97792935, 0, 1, 0, 0.97792935, 0, 0.20893598, 0.24264526, 0.9999995, -2.8293695)
+
+[node name="tree-snow-a-17" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.20893598, 0, -0.97792935, 0, 1, 0, 0.97792935, 0, 0.20893598, 1.3685861, 0.9999995, -5.895912)
+
+[node name="tree-snow-a-18" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.20893598, 0, -0.97792935, 0, 1, 0, 0.97792935, 0, 0.20893598, 4.017058, 0.9999995, -3.893745)
+
+[node name="tree-snow-a-22" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.20893598, 0, -0.97792935, 0, 1, 0, 0.97792935, 0, 0.20893598, 1.7097628, 0.9999995, -3.1693082)
+
+[node name="tree-snow-a-19" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.20893598, 0, -0.97792935, 0, 1, 0, 0.97792935, 0, 0.20893598, -0.34585503, 0.9999995, -5.318348)
+
+[node name="tree-snow-a-20" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.20893598, 0, -0.97792935, 0, 1, 0, 0.97792935, 0, 0.20893598, -1.7096186, 0.9999995, -6.306468)
+
+[node name="tree-snow-a-21" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
+transform = Transform3D(0.20893598, 0, -0.97792935, 0, 1, 0, 0.97792935, 0, 0.20893598, -2.3241448, 0.9999995, -4.7575035)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Level"]
+environment = SubResource("Environment_lx3qq")
+
+[node name="Sun" type="DirectionalLight3D" parent="Level/WorldEnvironment"]
+transform = Transform3D(1, 0, 0, 0, 0.6335565, 0.77369654, 0, -0.77369654, 0.6335565, 0, 0, 0)
+shadow_enabled = true
+shadow_blur = 2.0
+directional_shadow_mode = 0
+sky_mode = 2
+
+[node name="Camera3D" type="Camera3D" parent="Level"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1696446, 2.1734269, 4.138532)
