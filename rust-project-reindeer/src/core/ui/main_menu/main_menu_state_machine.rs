@@ -41,11 +41,9 @@ pub struct MainMenuStateMachine {
     background_music_player : OnReady<Gd<AudioStreamPlayer>>,
     default_background_music_player_volume : f32,
 
-
     #[var(get, set = set_state)]
     #[init(val = MainMenuState::Title)]
     state : MainMenuState,
-
 
     #[var(get, set = set_menu_background_level)]
     menu_background_level : Option<Gd<Node>>,
@@ -225,7 +223,10 @@ impl MainMenuStateMachine {
         }
 
         if let Some(new_background_level_opt) = self.menu_background_level.clone() {
-            self.base_mut().add_child(&new_background_level_opt);
+            let mut gd = self.to_gd();
+            gd.run_deferred_gd(move |mut me| {
+                me.add_child(&new_background_level_opt);
+            });
         }
     }
 
@@ -315,6 +316,9 @@ impl MainMenuStateMachine {
         let current_state = self.state;
         self.set_state(current_state);
 
+        let backgroung_level = std::mem::take(&mut self.menu_background_level);
+        self.set_menu_background_level(backgroung_level);
+
         for possible_option_change in OptionChange::iter() {
             self.on_options_changed(possible_option_change);
         }
@@ -333,7 +337,7 @@ impl MainMenuStateMachine {
                 }
             }
         }
-        
+
         self.set_menu_background_level(background_level);
     } 
 

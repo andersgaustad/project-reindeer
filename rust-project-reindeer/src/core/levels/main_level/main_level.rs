@@ -1,7 +1,7 @@
 use godot::{classes::{AudioStreamPlayer, BoxMesh, BoxShape3D, CollisionShape3D, Input, InputEvent, Material, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextLabel, ShaderMaterial, StandardMaterial3D, Timer, Tween, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::{option_change::OptionChange, options::Options}, player::Player, props::cabin::Cabin, run::run::Run, ui::{i_sub_menu_state::IState, pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}}, utility::{bounding_box_utility, node_utility}}, input_map::UI_CANCEL};
+use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::option_change::OptionChange, player::Player, props::cabin::Cabin, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}}, utility::{bounding_box_utility, node_utility}}, input_map::UI_CANCEL};
 
 
 const N_VISIBLE_TREES_IN_LOW_PERFORMANCE_MODE : i32 = 100;
@@ -226,7 +226,8 @@ pub struct MainLevel {
 
     maze_info : Option<MazeInfo>,
 
-    options : Option<Gd<Options>>,
+    run : Option<Gd<Run>>,
+
 
     base : Base<Node3D>,
 }
@@ -237,23 +238,18 @@ impl INode3D for MainLevel {
     fn ready(&mut self) {
         let gd = self.to_gd();
 
-        // Connect signals
+        // Run
+        self.run = node_utility::try_find_parent_of_type(gd.upcast());
 
-        // Globals
-        let run_opt = node_utility::try_find_parent_of_type::<Run>(gd.upcast());
-        if let Some(run) = run_opt {
-            let options_opt = run.bind().get_options();
-            if let Some(options) = options_opt {
-                options
-                    .signals()
-                    .option_changed()
-                    .connect_other(
-                        self,
-                        Self::on_options_changed
-                    );
-                
-                self.options = Some(options);
-            }
+        let options_opt = self.get_options();
+        if let Some(options) = options_opt {
+            options
+                .signals()
+                .option_changed()
+                .connect_other(
+                    self,
+                    Self::on_options_changed
+                );
         }
 
         
@@ -330,6 +326,13 @@ impl INode3D for MainLevel {
             
             return;
         }
+    }
+}
+
+
+impl IHasRun for MainLevel {
+    fn get_run(&self) -> Option<Gd<Run>> {
+        self.run.clone()
     }
 }
 
@@ -1213,7 +1216,7 @@ impl MainLevel {
 
     #[func]
     fn on_low_performance_mode_change(&mut self) {
-        let Some(options) = self.options.clone() else {
+        let Some(options) = self.get_options() else {
             return;
         };
 
@@ -1246,7 +1249,7 @@ impl MainLevel {
 
     #[func]
     fn on_volume_change(&mut self) {
-        let Some(options) = self.options.clone() else {
+        let Some(options) = self.get_options() else {
             return;
         };
 
@@ -1620,8 +1623,7 @@ impl MainLevel {
 
     fn get_number_of_visible_trees(&self) -> i32 {
         let low_performance_mode = self
-            .options
-            .as_ref()
+            .get_options()
             .map_or(false, |options| {
                 options.bind().get_low_performance_mode()
             });

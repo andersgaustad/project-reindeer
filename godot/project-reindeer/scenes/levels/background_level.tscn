@@ -40,21 +40,18 @@ background_mode = 2
 sky = SubResource("Sky_ojqrr")
 reflected_light_source = 2
 
-[node name="MainLevel" type="Node3D"]
+[node name="BackgroundLevel" type="BackgroundLevel"]
 
 [node name="Level" type="StaticBody3D" parent="."]
 
 [node name="GroundMesh" type="MeshInstance3D" parent="Level"]
-unique_name_in_owner = true
 mesh = SubResource("BoxMesh_wkbr6")
 skeleton = NodePath("../..")
 
 [node name="Collision" type="CollisionShape3D" parent="Level"]
-unique_name_in_owner = true
 shape = SubResource("BoxShape3D_wkbr6")
 
 [node name="Present" parent="Level" instance=ExtResource("4_0m2sm")]
-unique_name_in_owner = true
 transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -1.1499858, 1, 2.1929567)
 
 [node name="Cabin" parent="Level" instance=ExtResource("5_ck8vk")]
@@ -197,3 +194,4 @@ sky_mode = 2
 
 [node name="Camera3D" type="Camera3D" parent="Level"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1696446, 2.1734269, 4.138532)
+current = true

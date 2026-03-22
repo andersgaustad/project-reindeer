@@ -76,8 +76,6 @@ impl Run {
         let main_menu_visible = self.main_level.is_none();
         self.main_menu_state_machine.set_visible(main_menu_visible);
 
-        
-
         match self.main_level.clone() {
             Some(main_level) => {
                 // Connect signals
