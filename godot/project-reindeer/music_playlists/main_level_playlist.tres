@@ -1,6 +1,6 @@
 [gd_resource type="AudioStreamPlaylist" load_steps=2 format=3 uid="uid://8p756i7tic8p"]
 
-[ext_resource type="AudioStream" uid="uid://cle0nhxucddb4" path="res://assets/dev_assets/source/Snowland_Collection/Snowland Loop.wav" id="1_75wwh"]
+[ext_resource type="AudioStream" uid="uid://cle0nhxucddb4" path="res://assets/committed/source/Snowland_Collection/Snowland Loop.wav" id="1_75wwh"]
 
 [resource]
 fade_time = 0.0

@@ -1,0 +1,6 @@
+name = "godot-rust Ferris"
+directory = "godot-rust-ferris"
+license = "CC BY-NC-SA 4.0"
+license_source = "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+source = "https://godot-rust.github.io/"
+ty = "art"

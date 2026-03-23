@@ -8,12 +8,16 @@
 
 config_version=5
 
+[ResCleaner]
+
+data/keep_list=Array[String](["res://rust-project-reindeer.gdextension", "res://assets/committed/source/direction_arrow/asset_info.toml", "res://assets/committed/source/AsteriskMono_Font_1_0/asset_info.toml", "res://assets/committed/source/rust_logo/asset_info.toml", "res://assets/committed/source/cartoon_cloud/asset_info.toml", "res://assets/committed/source/ErraticCursive_Font_1_0/asset_info.toml", "res://assets/committed/source/doorbell_sfx/asset_info.toml", "res://assets/committed/source/kenney_game-icons/asset_info.toml", "res://assets/committed/source/kenney_holiday-kit/asset_info.toml", "res://assets/committed/source/godot-rust-ferris/asset_info.toml", "res://assets/committed/source/wintery_loop_music/asset_info.toml", "res://assets/committed/source/old_parchment_paper/asset_info.toml", "res://assets/committed/source/LittleGuy/asset_info.toml", "res://assets/committed/source/Snowland_Collection/asset_info.toml", "res://assets/committed/source/godot_icon/asset_info.toml", "res://assets/committed/source/kenney_interface-sounds/asset_info.toml", "res://assets/committed/derived/README.md", "res://assets/README.md", "res://scenes/main.tscn", "res://scenes/run.tscn", "res://icon.svg", "res://about/credits/CREDITS.md", "res://about/credits/credits.bbcode.txt", "res://about/licenses/AsteriskMono_Font_1_0/License.txt"])
+
 [application]
 
 config/name="ProjectReindeer"
 run/main_scene="uid://d2xp6l0n7ch86"
 config/features=PackedStringArray("4.5", "GL Compatibility")
-config/icon="res://assets/dev_assets/source/godot_icon/icon.svg"
+config/icon="res://assets/committed/source/godot_icon/icon.svg"
 
 [display]
 
@@ -27,6 +31,10 @@ window/stretch/aspect="expand"
 [editor]
 
 movie_writer/movie_file="/home/anders/code/projects/project-reindeer/godot/project-reindeer/video_out/movie.avi"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godotresourcecleaner/plugin.cfg")
 
 [input]
 

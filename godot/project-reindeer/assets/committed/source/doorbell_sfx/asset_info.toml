@@ -1,0 +1,7 @@
+name = "Doorbell"
+directory = "doorbell_sfx"
+author = "frosty ham"
+license = "CC0"
+license_source = "https://creativecommons.org/publicdomain/zero/1.0/"
+source = "https://opengameart.org/content/doorbell"
+ty = "sfx"

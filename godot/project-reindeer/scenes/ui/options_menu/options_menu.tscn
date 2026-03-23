@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://bg3ubsvdotyio"]
 
 [ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme/main_menu_theme.tres" id="1_r4unu"]
-[ext_resource type="Texture2D" uid="uid://cc4ukyxahj0ky" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/arrowLeft.png" id="2_kyv63"]
+[ext_resource type="Texture2D" uid="uid://cc4ukyxahj0ky" path="res://assets/committed/source/kenney_game-icons/PNG/White/2x/arrowLeft.png" id="2_kyv63"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ebwep"]
 font_size = 64

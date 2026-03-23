@@ -2,8 +2,8 @@
 
 [ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme/main_menu_theme.tres" id="1_0sa51"]
 [ext_resource type="Theme" uid="uid://c8od8x740s487" path="res://themes/monospace_theme.tres" id="1_5qoqg"]
-[ext_resource type="Texture2D" uid="uid://he17gtp7d3fn" path="res://assets/dev_assets/derived/open_advanced_settings.png" id="1_v4wla"]
-[ext_resource type="Texture2D" uid="uid://c8savga72akqe" path="res://assets/dev_assets/derived/close_advanced_settings.png" id="2_r5as2"]
+[ext_resource type="Texture2D" uid="uid://he17gtp7d3fn" path="res://assets/committed/derived/open_advanced_settings.png" id="1_v4wla"]
+[ext_resource type="Texture2D" uid="uid://c8savga72akqe" path="res://assets/committed/derived/close_advanced_settings.png" id="2_r5as2"]
 [ext_resource type="StyleBox" uid="uid://bw6t4ccq2c11p" path="res://themes/main_menu_theme/expand_button_variation/default_simple_border_stylebox.tres" id="5_r5as2"]
 [ext_resource type="StyleBox" uid="uid://kry4ggnng0ut" path="res://themes/main_menu_theme/expand_button_variation/default_gold_border_stylebox.tres" id="6_d7vfq"]
 

@@ -1,0 +1,7 @@
+name = "Interface Sounds"
+directory = "kenney_interface-sounds"
+author = "Kenney"
+license = "CC0"
+license_source = "https://creativecommons.org/publicdomain/zero/1.0/"
+source = "https://kenney.nl/assets/interface-sounds"
+ty = "sfx"

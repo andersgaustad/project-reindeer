@@ -4,7 +4,7 @@
 [ext_resource type="StyleBox" uid="uid://bgo3ocrsid0fa" path="res://themes/main_menu_theme/blue/default_main_menu_hover_button_stylebox.tres" id="2_17g4u"]
 [ext_resource type="StyleBox" uid="uid://da4d0h75m8ure" path="res://themes/main_menu_theme/blue/default_main_menu_normal_button_stylebox.tres" id="3_1fgyi"]
 [ext_resource type="Texture2D" uid="uid://csp5t1flbjnwi" path="res://reexports/ui/toggle_button_large/checked_large.tres" id="4_avacs"]
-[ext_resource type="FontFile" uid="uid://1tkjah7jyprn" path="res://assets/dev_assets/source/LittleGuy/LittleGuy.ttf" id="4_qndo3"]
+[ext_resource type="FontFile" uid="uid://1tkjah7jyprn" path="res://assets/committed/source/LittleGuy/LittleGuy.ttf" id="4_qndo3"]
 [ext_resource type="Texture2D" uid="uid://4kwi824atkj3" path="res://reexports/ui/toggle_button_large/checked_disabled_large.tres" id="5_h8ou0"]
 [ext_resource type="Texture2D" uid="uid://dbuejtb1xp2ag" path="res://reexports/ui/toggle_button_large/checked_disabled_mirrored_large.tres" id="6_4m8fb"]
 [ext_resource type="Texture2D" uid="uid://cvfu77dfaklcy" path="res://reexports/ui/toggle_button_large/checked_mirrored_large.tres" id="7_1pbtr"]

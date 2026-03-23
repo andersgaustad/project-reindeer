@@ -1,9 +1,9 @@
 [gd_scene load_steps=5 format=3 uid="uid://cisvl7ug3che5"]
 
 [ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme/main_menu_theme.tres" id="1_ils1g"]
-[ext_resource type="Texture2D" uid="uid://c1p8xe1vcoitq" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/plus.png" id="1_p185e"]
-[ext_resource type="Texture2D" uid="uid://s50r6ej5qha6" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/mouse.png" id="2_kg4db"]
-[ext_resource type="Texture2D" uid="uid://c3xi7a2u8xe4b" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/gamepad.png" id="3_rqkde"]
+[ext_resource type="Texture2D" uid="uid://c1p8xe1vcoitq" path="res://assets/committed/source/kenney_game-icons/PNG/White/2x/plus.png" id="1_p185e"]
+[ext_resource type="Texture2D" uid="uid://s50r6ej5qha6" path="res://assets/committed/source/kenney_game-icons/PNG/White/2x/mouse.png" id="2_kg4db"]
+[ext_resource type="Texture2D" uid="uid://c3xi7a2u8xe4b" path="res://assets/committed/source/kenney_game-icons/PNG/White/2x/gamepad.png" id="3_rqkde"]
 
 [node name="RebindControlRow" type="RebindControlRow" node_paths=PackedStringArray("action_name_label", "rebind_button_1", "rebind_button_2")]
 unassigned_icon = ExtResource("1_p185e")

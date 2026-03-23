@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c0hahcleepgei"]
 
-[ext_resource type="PackedScene" uid="uid://cw18jmhk50e76" path="res://assets/dev_assets/source/kenney_holiday-kit/Models/GLB format/present-a-round.glb" id="1_n7t4p"]
+[ext_resource type="PackedScene" uid="uid://cw18jmhk50e76" path="res://assets/committed/source/kenney_holiday-kit/Models/GLB format/present-a-round.glb" id="1_n7t4p"]
 
 [node name="Present" type="Node3D"]
 

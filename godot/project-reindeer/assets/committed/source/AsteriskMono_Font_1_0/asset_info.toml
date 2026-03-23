@@ -1,0 +1,8 @@
+name = "Asterisk Mono Font v1.0"
+directory = "AsteriskMono_Font_1_0"
+author = "GGBotNet"
+license = "SIL Open Font License, Version 1.1"
+license_source = "https://openfontlicense.org/"
+source = "https://ggbot.itch.io/asterisk-mono-font"
+ty = "fonts"
+custom_attribution = "License text can be found [here](../licenses/AsteriskMono_Font_1_0/License.txt)."

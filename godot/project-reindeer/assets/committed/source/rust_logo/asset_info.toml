@@ -1,0 +1,6 @@
+name = "Rust programming language logo"
+directory = "rust_logo"
+license = "CC-BY-4.0"
+license_source = "https://creativecommons.org/licenses/by/4.0/"
+source = "https://rust-lang.org/"
+ty = "art"
