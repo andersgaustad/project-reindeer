@@ -1,7 +1,7 @@
 use godot::{classes::{Button, Control, IControl, InputEvent, Texture2D}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, levels::main_level::pathfinding_state::PathfindingState, run::{i_has_run::IHasRun, run::Run}, ui::{buttons::button_state_info::ButtonStateInfo, i_sub_menu_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_inbox_state::LetterMenuInboxState}, pause_menu::{pause_menu_button_type::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}, utility::node_utility}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, levels::main_level::pathfinding_state::PathfindingState, run::{i_has_run::IHasRun, run::Run}, ui::{buttons::button_state_info::ButtonStateInfo, i_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_inbox_state::LetterMenuInboxState}, pause_menu::{pause_menu_button_type::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -98,7 +98,7 @@ impl IHasRun for PauseMenuFace {
 
 #[godot_dyn]
 impl IState for PauseMenuFace {
-    fn do_enter(&mut self) {
+    fn enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
 
         self.resume_button.grab_focus();
@@ -114,7 +114,7 @@ impl IState for PauseMenuFace {
     }
 
     
-    fn do_exit(&mut self) {
+    fn exit(&mut self) {
         self.base_mut().set_process_unhandled_input(false);
     }
 }

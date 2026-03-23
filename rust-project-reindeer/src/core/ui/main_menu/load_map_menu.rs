@@ -1,6 +1,6 @@
 use godot::{classes::{Button, ColorPickerButton, Control, HSlider, IControl, InputEvent, LineEdit, OptionButton, RichTextLabel, SpinBox, TextEdit, Texture2D, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, levels::main_level::main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}, maze::maze::{Maze, NewMazeError}, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, main_menu::load_map_menu_request::LoadMapMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -259,14 +259,14 @@ impl IHasRun for LoadMapMenu {
 
 #[godot_dyn]
 impl IState for LoadMapMenu {
-    fn do_enter(&mut self) {
+    fn enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
 
         self.maze_text_edit.grab_focus();
     }
     
 
-    fn do_exit(&mut self) {
+    fn exit(&mut self) {
         self.base_mut().set_process_unhandled_input(false);
 
         self.maze_text_edit.clear();

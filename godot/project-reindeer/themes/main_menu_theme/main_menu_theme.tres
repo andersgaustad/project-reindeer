@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=19 format=3 uid="uid://d2tsxc2550myd"]
+[gd_resource type="Theme" load_steps=20 format=3 uid="uid://d2tsxc2550myd"]
 
 [ext_resource type="StyleBox" uid="uid://d10hl3fsy8ru8" path="res://themes/main_menu_theme/blue/default_main_menu_focus_button_stylebox.tres" id="1_timdx"]
 [ext_resource type="StyleBox" uid="uid://bgo3ocrsid0fa" path="res://themes/main_menu_theme/blue/default_main_menu_hover_button_stylebox.tres" id="2_17g4u"]
@@ -19,6 +19,8 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ygr4k"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_avacs"]
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_w7q0n"]
 
 [resource]
@@ -38,6 +40,7 @@ CheckButton/icons/unchecked_disabled = ExtResource("9_jraq6")
 CheckButton/icons/unchecked_disabled_mirrored = ExtResource("10_hyfk1")
 CheckButton/icons/unchecked_mirrored = ExtResource("11_86787")
 CheckButton/styles/focus = SubResource("StyleBoxEmpty_ygr4k")
+CheckButton/styles/hover = SubResource("StyleBoxEmpty_avacs")
 CheckButton/styles/normal = SubResource("StyleBoxEmpty_w7q0n")
 HSlider/icons/grabber = ExtResource("12_38ic1")
 HSlider/icons/grabber_disabled = ExtResource("13_lg0nc")

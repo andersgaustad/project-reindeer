@@ -1,7 +1,7 @@
 use godot::{classes::{Control, IControl, object::ConnectFlags}, prelude::*};
 use strum::{EnumCount, VariantArray};
 
-use crate::core::ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_sub_menu_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_request::LetterMenuRequest}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}, pause_menu::{pause_menu_face::PauseMenuFace, pause_menu_face_request::PauseMenuFaceRequest, pause_menu_request::PauseMenuRequest, pause_menu_state::PauseMenuState}};
+use crate::core::ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_request::LetterMenuRequest}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}, pause_menu::{pause_menu_face::PauseMenuFace, pause_menu_face_request::PauseMenuFaceRequest, pause_menu_request::PauseMenuRequest, pause_menu_state::PauseMenuState}};
 
 
 #[derive(GodotClass)]
@@ -98,7 +98,7 @@ impl IControl for PauseMenuStateMachine {
 
 #[godot_dyn]
 impl IState for PauseMenuStateMachine {
-    fn do_enter(&mut self) {
+    fn enter(&mut self) {
         self.is_active = true;
 
         // Retrigger enter state
@@ -109,7 +109,7 @@ impl IState for PauseMenuStateMachine {
     }
 
 
-    fn do_exit(&mut self) {
+    fn exit(&mut self) {
         self.is_active = false;
         self.exit_all_substates();
         self.base_mut().hide();
@@ -136,7 +136,7 @@ impl PauseMenuStateMachine {
 
         if self.is_active {
             let mut active_submenu = self.get_submenu_control(new_state);
-            active_submenu.dyn_bind_mut().do_enter();
+            active_submenu.dyn_bind_mut().enter();
             active_submenu.show();
         }
         
@@ -191,7 +191,7 @@ impl PauseMenuStateMachine {
         let all_submenus = self.get_all_submenu_controls();
 
         for mut submenu in all_submenus {
-            submenu.dyn_bind_mut().do_exit();
+            submenu.dyn_bind_mut().exit();
             submenu.hide();
         }
 

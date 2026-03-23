@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl, InputEvent, RichTextLabel}, prelude::*};
 
-use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, letter_menu::{letter_menu_inbox_state::LetterMenuInboxState, letter_menu_request::LetterMenuRequest}}, utility::node_utility}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, letter_menu::{letter_menu_inbox_state::LetterMenuInboxState, letter_menu_request::LetterMenuRequest}}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -64,7 +64,7 @@ impl IHasRun for LetterMenu {
 
 #[godot_dyn]
 impl IState for LetterMenu {
-    fn do_enter(&mut self) {
+    fn enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
 
         if self.inbox_state == LetterMenuInboxState::NewMail {
@@ -79,7 +79,7 @@ impl IState for LetterMenu {
     }
 
 
-    fn do_exit(&mut self) {
+    fn exit(&mut self) {
         self.base_mut().set_process_unhandled_input(false);
 
         self.base_mut().hide();

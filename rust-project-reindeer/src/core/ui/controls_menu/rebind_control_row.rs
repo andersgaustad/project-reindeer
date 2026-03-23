@@ -1,8 +1,11 @@
 use godot::{classes::{Button, Engine, HBoxContainer, IHBoxContainer, InputEvent, InputEventJoypadButton, InputEventJoypadMotion, InputEventKey, InputMap, Label, Texture2D, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{controls_menu::rebind_control_row_state::RebindControlRowState, i_sub_menu_state::IState}, utility::node_utility}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{controls_menu::rebind_control_row_state::RebindControlRowState, i_state::IState}, utility::node_utility}, input_map::UI_CANCEL};
 
 
+// Note:
+// The Godot editor really doesn't like OnReady or OnEditor for 'tool' classes.
+// Thus, RebindControlRow uses Options for all nullable references.
 #[derive(GodotClass)]
 #[class(init, tool, base=HBoxContainer)]
 pub struct RebindControlRow {
@@ -32,20 +35,17 @@ pub struct RebindControlRow {
     #[var(get, set = set_controller_icon)]
     controller_icon : Option<Gd<Texture2D>>,
 
-
-    // Non-exported
-
+    #[export]
     #[var]
-    #[init(node = "%ActionNameLabel")]
-    action_name_label : OnReady<Gd<Label>>,
+    action_name_label : Option<Gd<Label>>,
 
+    #[export]
     #[var]
-    #[init(node = "%RebindButton1")]
-    rebind_button_1 : OnReady<Gd<Button>>,
+    rebind_button_1 : Option<Gd<Button>>,
 
+    #[export]
     #[var]
-    #[init(node = "%RebindButton2")]
-    rebind_button_2 : OnReady<Gd<Button>>,
+    rebind_button_2 : Option<Gd<Button>>,
 
 
     // set = rust_set_state
@@ -70,7 +70,9 @@ impl IHBoxContainer for RebindControlRow {
         let buttons = self.get_rebind_buttons();
 
         for (i, button) in buttons.iter().enumerate() {
-            let button = button.clone();
+            let Some(button) = button.clone() else {
+                continue;
+            };
             let button_gd = button.clone();
 
             // pressed
@@ -171,11 +173,11 @@ impl IHasRun for RebindControlRow {
 
 #[godot_dyn]
 impl IState for RebindControlRow {
-    fn do_enter(&mut self) {
+    fn enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
     }
 
-    fn do_exit(&mut self) {
+    fn exit(&mut self) {
         self.base_mut().set_process_unhandled_input(false);
     }
 }
@@ -199,7 +201,9 @@ impl RebindControlRow {
             return;
         }
 
-        self.action_name_label.set_text(&label_name);
+        if let Some(action_name_label) = self.action_name_label.as_mut() {
+            action_name_label.set_text(&label_name);
+        }
     }
 
 
@@ -224,7 +228,10 @@ impl RebindControlRow {
         }
 
         let mut buttons = self.get_rebind_buttons();
-        for button in buttons.iter_mut() {
+        for button_opt in buttons.iter_mut() {
+            let Some(button) = button_opt else {
+                continue;
+            };
             button.set_text(&text);
         }
     }
@@ -240,7 +247,10 @@ impl RebindControlRow {
         }
 
         let mut buttons = self.get_rebind_buttons();
-        for button in buttons.iter_mut() {
+        for button_opt in buttons.iter_mut() {
+            let Some(button) = button_opt else {
+                continue;
+            };
             button.set_button_icon(icon_opt.as_ref());
         }
     }
@@ -266,7 +276,10 @@ impl RebindControlRow {
 
     fn set_buttons_disabled(&mut self, disabled : bool) {
         let mut buttons = self.get_rebind_buttons();
-        for button in buttons.iter_mut() {
+        for button_opt in buttons.iter_mut() {
+            let Some(button) = button_opt else {
+                continue;
+            };
             button.set_disabled(disabled);
         }
     }
@@ -294,7 +307,10 @@ impl RebindControlRow {
                 event_button.set_text("Press any button...");
 
                 let mut buttons = self.get_rebind_buttons();
-                for button in buttons.iter_mut() {
+                for button_opt in buttons.iter_mut() {
+                    let Some(button) = button_opt else {
+                        continue;
+                    };
                     let is_event_button = *button == event_button;
 
                     button.set_disabled(!is_event_button);
@@ -378,20 +394,28 @@ impl RebindControlRow {
             .take(2);
 
         let mut buttons = self.get_rebind_buttons();
-        for button in buttons.iter_mut() {
+        for button_opt in buttons.iter_mut() {
+            let Some(button) = button_opt else {
+                continue;
+            };
+
             button.set_text(&self.unassigned_text);
             button.set_button_icon(self.unassigned_icon.as_ref());
         }
 
         let parsed_and_buttons = events_and_text_and_icons.zip(buttons.iter_mut());
-        for ((_, button_text, button_icon), button) in parsed_and_buttons {
+        for ((_, button_text, button_icon), button_opt) in parsed_and_buttons {
+            let Some(button) = button_opt else {
+                continue;
+            };
+            
             button.set_text(&button_text);
             button.set_button_icon(button_icon.as_ref());
         }
     }
 
 
-    pub fn get_rebind_buttons(&self) -> [Gd<Button>; 2] {
+    pub fn get_rebind_buttons(&self) -> [Option<Gd<Button>>; 2] {
         [
             self.rebind_button_1.clone(),
             self.rebind_button_2.clone(),
@@ -400,7 +424,10 @@ impl RebindControlRow {
 
 
     pub fn get_button(&self, idx : usize) -> Option<Gd<Button>> {
-        self.get_rebind_buttons().get(idx).cloned()
+        self
+            .get_rebind_buttons()
+            .get(idx)?
+            .clone()
     }
 
 

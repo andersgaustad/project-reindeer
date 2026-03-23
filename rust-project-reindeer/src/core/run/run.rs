@@ -1,6 +1,6 @@
 use godot::{classes::{Input, input::MouseMode, object::ConnectFlags}, prelude::*};
 
-use crate::core::{audio::sfx_manager::SFXManager, levels::main_level::{main_level::MainLevel, main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}}, options::options::Options, ui::{i_sub_menu_state::IState, main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}}};
+use crate::core::{audio::sfx_manager::SFXManager, levels::main_level::{main_level::MainLevel, main_level_constructor_info::{GodotMainLevelConstructorInfo, MainLevelConstructorInfo}}, options::options::Options, ui::{i_state::IState, main_menu::{main_menu_state::MainMenuState, main_menu_state_machine::MainMenuStateMachine}}};
 
 
 #[derive(GodotClass)]
@@ -41,7 +41,9 @@ impl INode for Run {
             .main_menu_state_machine
             .signals()
             .request_initialize_level()
-            .connect_other(
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(
                 self,
                 Self::on_receive_level_constructor_info
             );
@@ -59,13 +61,13 @@ impl Run {
         // Handle existing
         let existing_level_opt = std::mem::take(&mut self.main_level);
         if let Some(mut existing_level) = existing_level_opt {
-            existing_level.clone().into_dyn::<dyn IState>().dyn_bind_mut().do_exit();
+            existing_level.clone().into_dyn::<dyn IState>().dyn_bind_mut().exit();
             existing_level.queue_free();
         }
 
         // Exit menu state as well
         
-        self.main_menu_state_machine.clone().into_dyn::<dyn IState>().dyn_bind_mut().do_exit();
+        self.main_menu_state_machine.clone().into_dyn::<dyn IState>().dyn_bind_mut().exit();
 
         // Setting
         self.main_level = main_level;
@@ -95,7 +97,7 @@ impl Run {
                         }
                     );
                 
-                main_level.into_dyn::<dyn IState>().dyn_bind_mut().do_enter();
+                main_level.into_dyn::<dyn IState>().dyn_bind_mut().enter();
                 
             },
             None => {
@@ -104,7 +106,7 @@ impl Run {
 
                 // Reset to title
                 let main_menu_state_machine = &mut self.main_menu_state_machine;
-                main_menu_state_machine.clone().into_dyn::<dyn IState>().dyn_bind_mut().do_enter();
+                main_menu_state_machine.clone().into_dyn::<dyn IState>().dyn_bind_mut().enter();
                 main_menu_state_machine.bind_mut().set_state(MainMenuState::Title);
             },
         }
@@ -145,11 +147,11 @@ impl Run {
         bound_main_level.set_turning_cost(cost_per_rotation);
         bound_main_level.set_color_a(color_a);
         bound_main_level.set_color_b(color_b);
+        bound_main_level.set_maze(Some(maze.clone()));
         drop(bound_main_level);
 
         self.base_mut().add_child(&main_level.clone().upcast::<Node>());
-        self.set_main_level(Some(main_level.clone()));
 
-        main_level.bind_mut().set_maze(Some(maze));
+        self.set_main_level(Some(main_level.clone()));
     }
 }

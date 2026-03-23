@@ -5,10 +5,13 @@
 [ext_resource type="Texture2D" uid="uid://s50r6ej5qha6" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/mouse.png" id="2_kg4db"]
 [ext_resource type="Texture2D" uid="uid://c3xi7a2u8xe4b" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/gamepad.png" id="3_rqkde"]
 
-[node name="RebindControlRow" type="RebindControlRow"]
+[node name="RebindControlRow" type="RebindControlRow" node_paths=PackedStringArray("action_name_label", "rebind_button_1", "rebind_button_2")]
 unassigned_icon = ExtResource("1_p185e")
 keyboard_icon = ExtResource("2_kg4db")
 controller_icon = ExtResource("3_rqkde")
+action_name_label = NodePath("ActionNameLabel")
+rebind_button_1 = NodePath("RebindButton1")
+rebind_button_2 = NodePath("RebindButton2")
 offset_right = 1110.0
 offset_bottom = 108.0
 size_flags_horizontal = 0
@@ -17,7 +20,6 @@ theme = ExtResource("1_ils1g")
 theme_override_constants/separation = 30
 
 [node name="ActionNameLabel" type="Label" parent="."]
-unique_name_in_owner = true
 custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -29,7 +31,6 @@ vertical_alignment = 1
 layout_mode = 2
 
 [node name="RebindButton1" type="Button" parent="."]
-unique_name_in_owner = true
 custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
 focus_neighbor_right = NodePath("../RebindButton2")
@@ -38,7 +39,6 @@ icon = ExtResource("1_p185e")
 text_overrun_behavior = 3
 
 [node name="RebindButton2" type="Button" parent="."]
-unique_name_in_owner = true
 custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
 focus_neighbor_left = NodePath("../RebindButton1")

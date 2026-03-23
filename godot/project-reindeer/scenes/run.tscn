@@ -2,12 +2,11 @@
 
 [ext_resource type="PackedScene" uid="uid://buhhonnkkvo8t" path="res://scenes/ui/main_menu/main_menu_state_machine.tscn" id="1_2d5n6"]
 [ext_resource type="PackedScene" uid="uid://bhaqw7kkuvp2d" path="res://scenes/levels/main_level.tscn" id="1_6elw1"]
+[ext_resource type="Options" uid="uid://cq1jb2rktlhe3" path="res://resources/options.tres" id="1_hnrwf"]
 [ext_resource type="PackedScene" uid="uid://b4f4n45irwc7" path="res://scenes/audio/sfx_manager.tscn" id="3_kyqep"]
 
-[sub_resource type="Options" id="Options_6elw1"]
-
 [node name="Run" type="Run" node_paths=PackedStringArray("sfx_mananger")]
-options = SubResource("Options_6elw1")
+options = ExtResource("1_hnrwf")
 sfx_mananger = NodePath("SFXManager")
 main_level_scene = ExtResource("1_6elw1")
 
@@ -15,3 +14,6 @@ main_level_scene = ExtResource("1_6elw1")
 unique_name_in_owner = true
 
 [node name="SFXManager" parent="." instance=ExtResource("3_kyqep")]
+
+[node name="OptionsWrapperNode" type="OptionsWrapperNode" parent="."]
+options = ExtResource("1_hnrwf")

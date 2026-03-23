@@ -1,9 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://enihlfva4ccy"]
+[gd_scene load_steps=4 format=3 uid="uid://enihlfva4ccy"]
 
 [ext_resource type="Theme" uid="uid://d2tsxc2550myd" path="res://themes/main_menu_theme/main_menu_theme.tres" id="1_1ch07"]
 [ext_resource type="Texture2D" uid="uid://c5h4yk6tahuhq" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/information.png" id="2_e8t4i"]
+[ext_resource type="Texture2D" uid="uid://b7gg26dy8v4re" path="res://assets/dev_assets/source/kenney_game-icons/PNG/White/2x/contrast.png" id="2_qt1dd"]
 
-[node name="MainMenu" type="MainMenu"]
+[node name="MainMenu" type="MainMenuFace"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -20,16 +21,18 @@ grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
 
-[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer"]
+[node name="MainContainer" type="CenterContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MainContainer"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/CenterContainer"]
+[node name="CenterlContainer" type="CenterContainer" parent="VBoxContainer/MainContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="CenterlContainer" type="CenterContainer" parent="VBoxContainer/CenterContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Title" type="RichTextLabel" parent="VBoxContainer/CenterContainer/VBoxContainer/CenterlContainer"]
+[node name="Title" type="RichTextLabel" parent="VBoxContainer/MainContainer/VBoxContainer/CenterlContainer"]
 custom_minimum_size = Vector2(1080, 200)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -39,51 +42,53 @@ text = "Project Reindeer"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer/MainContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="StartButton" type="Button" parent="VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="StartButton" type="Button" parent="VBoxContainer/MainContainer/VBoxContainer"]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0.5019608)
 layout_mode = 2
 text = "Start"
 
-[node name="OptionsButton" type="Button" parent="VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="OptionsButton" type="Button" parent="VBoxContainer/MainContainer/VBoxContainer"]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0.5019608)
 layout_mode = 2
 text = "Options"
 
-[node name="ControlsButton" type="Button" parent="VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="ControlsButton" type="Button" parent="VBoxContainer/MainContainer/VBoxContainer"]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0.5019608)
 layout_mode = 2
 text = "Controls"
 
-[node name="ExitButton" type="Button" parent="VBoxContainer/CenterContainer/VBoxContainer"]
+[node name="ExitButton" type="Button" parent="VBoxContainer/MainContainer/VBoxContainer"]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0.5019608)
 layout_mode = 2
 text = "Exit"
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 150)
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 0
+layout_mode = 2
+size_flags_vertical = 8
 theme_override_constants/margin_left = 15
 theme_override_constants/margin_top = 15
 theme_override_constants/margin_right = 15
 theme_override_constants/margin_bottom = 15
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/MarginContainer"]
 layout_mode = 2
+size_flags_vertical = 8
 
-[node name="AboutButton" type="Button" parent="MarginContainer/HBoxContainer"]
+[node name="ShowHideUIButton" type="Button" parent="VBoxContainer/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 2
+icon = ExtResource("2_qt1dd")
+
+[node name="AboutButton" type="Button" parent="VBoxContainer/MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 10

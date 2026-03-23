@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, IControl, InputEvent, ScrollContainer, Texture2D, object::ConnectFlags}, obj::WithBaseField, prelude::*};
 
-use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, rebind_control_row::RebindControlRow}, i_sub_menu_state::IState}, utility::node_utility}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{controls_menu::{controls_menu_request::ControlsMenuRequest, rebind_control_row::RebindControlRow}, i_state::IState}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -122,12 +122,16 @@ impl IControl for ControlsMenu {
                 );
             
             // Focus
-            let mut left_most_button = row.bind().get_rebind_button_1();
-            left_most_button.set_focus_neighbor(Side::LEFT, &back_button_path);
+            let left_most_button_opt = row.bind().get_rebind_button_1();
+            if let Some(mut left_most_button) = left_most_button_opt {
+                left_most_button.set_focus_neighbor(Side::LEFT, &back_button_path);
+            }
 
             let mut buttons = row.bind().get_rebind_buttons();
-            for button in buttons.iter() {
-                let button = button.clone();
+            for button_opt in buttons.iter() {
+                let Some(button) = button_opt.clone() else {
+                    continue;
+                };
                 let button_gd = button.clone();
 
                 // scroll_container__ensure_control_visible
@@ -154,7 +158,14 @@ impl IControl for ControlsMenu {
             if let Some(north_neighbor) = north_neighbor_opt {
                 let neighbor_buttons = north_neighbor.bind().get_rebind_buttons();
 
-                for (row_button, neighbor) in buttons.iter_mut().zip(neighbor_buttons) {
+                for (row_button_opt, neighbor_opt) in buttons.iter_mut().zip(neighbor_buttons) {
+                    let Some(row_button) = row_button_opt else {
+                        continue;
+                    };
+
+                    let Some(neighbor) = neighbor_opt else {
+                        continue;
+                    };
                     row_button.set_focus_neighbor(Side::TOP, &neighbor.get_path());
                 }
             }
@@ -162,7 +173,15 @@ impl IControl for ControlsMenu {
             if let Some(south_neighbor) = south_neighbor_opt {
                 let neighbor_buttons = south_neighbor.bind().get_rebind_buttons();
 
-                for (row_button, neighbor) in buttons.iter_mut().zip(neighbor_buttons) {
+                for (row_button_opt, neighbor_opt) in buttons.iter_mut().zip(neighbor_buttons) {
+                    let Some(row_button) = row_button_opt else {
+                        continue;
+                    };
+
+                    let Some(neighbor) = neighbor_opt else {
+                        continue;
+                    };
+
                     row_button.set_focus_neighbor(Side::BOTTOM, &neighbor.get_path());
                 }               
             }
@@ -201,12 +220,12 @@ impl IHasRun for ControlsMenu {
 
 #[godot_dyn]
 impl IState for ControlsMenu {
-    fn do_enter(&mut self) {
+    fn enter(&mut self) {
         let rows = self.get_rebind_control_rows();
 
         for row in rows.iter() {
             let row = row.clone();
-            row.into_dyn::<dyn IState>().dyn_bind_mut().do_enter();
+            row.into_dyn::<dyn IState>().dyn_bind_mut().enter();
         }
 
         self.base_mut().set_process_unhandled_input(true);
@@ -215,9 +234,14 @@ impl IState for ControlsMenu {
             .scroll_containter
             .set_v_scroll(0);
 
-        let first_row_opt = rows.first().cloned();
-        if let Some(first_row) = first_row_opt {
-            let mut first_button = first_row.bind().get_rebind_button_1();
+        let first_button_opt = (|| {
+            rows
+                .first()?
+                .bind()
+                .get_rebind_button_1()
+        })();
+
+        if let Some(mut first_button) = first_button_opt {
             first_button.grab_focus();
         }
         
@@ -225,11 +249,11 @@ impl IState for ControlsMenu {
     }
 
 
-    fn do_exit(&mut self) {
+    fn exit(&mut self) {
         let rows = self.get_rebind_control_rows();
 
         for row in rows.into_iter() {
-            row.into_dyn::<dyn IState>().dyn_bind_mut().do_exit();
+            row.into_dyn::<dyn IState>().dyn_bind_mut().exit();
         }
 
         self.base_mut().set_process_unhandled_input(false);

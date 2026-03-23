@@ -1,7 +1,7 @@
 use godot::{classes::{Button, CheckButton, Control, HSlider, IControl, InputEvent, Label, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, options::option_change::OptionChange, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, options_menu::options_menu_request::OptionsMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, options::option_change::OptionChange, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, options_menu::options_menu_request::OptionsMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -166,7 +166,7 @@ impl IHasRun for OptionsMenu {
 
 #[godot_dyn]
 impl IState for OptionsMenu {
-    fn do_enter(&mut self) {
+    fn enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
 
         self.low_performance_toggle_button.grab_focus();
@@ -175,7 +175,7 @@ impl IState for OptionsMenu {
     }
 
 
-    fn do_exit(&mut self) {
+    fn exit(&mut self) {
         self.base_mut().set_process_unhandled_input(false);
     }
 }

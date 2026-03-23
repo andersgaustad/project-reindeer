@@ -1,7 +1,7 @@
 use godot::{classes::{AudioStreamPlayer, BoxMesh, BoxShape3D, CollisionShape3D, Input, InputEvent, Material, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextLabel, ShaderMaterial, StandardMaterial3D, Timer, Tween, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_info::MazeInfo, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::option_change::OptionChange, player::Player, props::cabin::Cabin, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}}, utility::{bounding_box_utility, node_utility}}, input_map::UI_CANCEL};
+use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::option_change::OptionChange, player::Player, props::cabin::Cabin, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}}, utility::{bounding_box_utility, node_utility}}, input_map::UI_CANCEL};
 
 
 const N_VISIBLE_TREES_IN_LOW_PERFORMANCE_MODE : i32 = 100;
@@ -213,6 +213,11 @@ pub struct MainLevel {
     default_mail_notification_sfx_player_volume : f32,
 
 
+    #[var(get, set = set_maze)]
+    maze : Option<Gd<Maze>>,
+
+
+
     #[var(get, set = set_level_run_state)]
     #[init(val = LevelRunState::Running)]
     level_run_state : LevelRunState,
@@ -224,7 +229,6 @@ pub struct MainLevel {
 
     rng : Gd<RandomNumberGenerator>,
 
-    maze_info : Option<MazeInfo>,
 
     run : Option<Gd<Run>>,
 
@@ -339,7 +343,7 @@ impl IHasRun for MainLevel {
 
 #[godot_dyn]
 impl IState for MainLevel {
-    fn do_enter(&mut self) {
+    fn enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
 
         self.background_music_player.play();
@@ -348,7 +352,7 @@ impl IState for MainLevel {
     }
 
 
-    fn do_exit(&mut self) {
+    fn exit(&mut self) {
         self.base_mut().set_process_unhandled_input(false);
 
         self.background_music_player.stop();
@@ -383,9 +387,9 @@ impl MainLevel {
 
         let mut pause_menu = self.pause_menu.clone().into_dyn::<dyn IState>();
         if paused {
-            pause_menu.dyn_bind_mut().do_enter();
+            pause_menu.dyn_bind_mut().enter();
         } else {
-            pause_menu.dyn_bind_mut().do_exit();
+            pause_menu.dyn_bind_mut().exit();
         }
 
         let mouse_mode = if paused {
@@ -461,7 +465,12 @@ impl MainLevel {
 
     #[func]
     pub fn set_maze(&mut self, maze_opt : Option<Gd<Maze>>) {
-        self.maze_info = None;
+        // Set
+        self.maze = maze_opt;
+
+        if !self.base().is_node_ready() {
+            return;
+        }
 
         let multimesh_opt = self.tile_spawner.get_multimesh();
         let Some(mut tile_multimesh) = multimesh_opt else {
@@ -482,7 +491,7 @@ impl MainLevel {
         };
 
 
-        if let Some(maze) = maze_opt.clone() {
+        if let Some(maze) = self.maze.clone() {
             let bound_maze = maze.bind();
             let dim_x = bound_maze.rust_get_dim_x();
             let dim_y = bound_maze.rust_get_dim_y();
@@ -634,14 +643,17 @@ impl MainLevel {
 
             let mut spawned_props = Vec::new();
 
-            if let Some(cabin_polygon) = cabin_polygon_opt {
-                spawned_props.push(cabin_polygon);
-                godot_print!("Spawned cabin!");
+            #[cfg(debug_assertions)]
+            {
+                if let Some(cabin_polygon) = cabin_polygon_opt {
+                    spawned_props.push(cabin_polygon);
+                    godot_print!("Spawned cabin!");
 
-            } else {
-                godot_print!("Failed spawning cabin");
+                } else {
+                    godot_print!("Failed spawning cabin");
+                }
             }
-
+            
 
             // Spawn snow props
 
@@ -1000,142 +1012,133 @@ impl MainLevel {
 
             self.tree_spawner.set_custom_aabb(forest_custom_aabb);
 
-            if let Some(mut tree_multimesh) = tree_multimesh_opt {
-                // Get tree positions
+            let Some(mut tree_multimesh) = tree_multimesh_opt else {
+                godot_error!("No tree multimesh found??");
+                return;
+            };
 
-                let mut tree_spawn_positions = Vec::with_capacity(n_tree_spawn_attempts);
+            // Get tree positions
 
-                for _ in 0..n_tree_spawn_attempts {
-                    let x = self.rng.randf_range(0.0, forest_size.x);
-                    let y = self.rng.randf_range(0.0, forest_size.y);
+            let mut tree_spawn_positions = Vec::with_capacity(n_tree_spawn_attempts);
 
-                    let local_point = Vector2::new(x, y);
+            for _ in 0..n_tree_spawn_attempts {
+                let x = self.rng.randf_range(0.0, forest_size.x);
+                let y = self.rng.randf_range(0.0, forest_size.y);
 
-                    let point = local_point + forest_span.position;
+                let local_point = Vector2::new(x, y);
 
-                    // Only add if this point is in the forest but not in clearing
-                    if clearing_span.contains_point(point) {
+                let point = local_point + forest_span.position;
+
+                // Only add if this point is in the forest but not in clearing
+                if clearing_span.contains_point(point) {
+                    continue;
+                }
+
+                // Else
+                tree_spawn_positions.push(point);
+            }
+
+            // Spawn main forest
+
+            let bound_tree_spawner = self.tree_spawner.bind();
+
+            let n_trees = tree_spawn_positions.len() as i32;
+            tree_multimesh.set_instance_count(n_trees);
+            for (i, top_down_position) in tree_spawn_positions.into_iter().enumerate() {
+                let i = i as i32;
+                let position = Vector3::new(
+                    top_down_position.x,
+                    maze_top_left_corner_center_position.y,
+                    top_down_position.y
+                );
+
+                let transform = bound_tree_spawner.create_object_transform(position, self.rng.clone());
+                tree_multimesh.set_instance_transform(i, transform);
+            }
+            drop(bound_tree_spawner);
+
+
+            // Spawn side forests
+
+            // Delete old side forests
+            for mut old_side_forest in self.side_forest_spawners_root.get_children().iter_shared() {
+                old_side_forest.queue_free();
+            }
+
+            let forest_rings = self.outer_forest_rings;
+
+            let super_forest_position = *forest_position - (*forest_size * (forest_rings as f32));
+            let super_forest_size = (forest_rings * 2 + 1) as f32 * *forest_size;
+
+            let super_forest_span = Rect2::new(super_forest_position, super_forest_size);
+
+            self.set_ground_dimensions(super_forest_span);
+
+            // Spawn new forests
+            for x_major in -forest_rings..=forest_rings {
+                for y_major in -forest_rings..=forest_rings {
+                    if x_major == 0 && y_major == 0 {
                         continue;
                     }
 
-                    // Else
-                    tree_spawn_positions.push(point);
-                }
+                    let x_major = x_major as f32;
+                    let y_major = y_major as f32;
 
-                // Spawn main forest
+                    let x = x_major * forest_size.x;
+                    let y = y_major * forest_size.y;
 
-                let bound_tree_spawner = self.tree_spawner.bind();
+                    let side_forest_position = *forest_position + Vector2::new(x, y);
 
-                let n_trees = tree_spawn_positions.len() as i32;
-                tree_multimesh.set_instance_count(n_trees);
-                for (i, top_down_position) in tree_spawn_positions.into_iter().enumerate() {
-                    let i = i as i32;
-                    let position = Vector3::new(
-                        top_down_position.x,
-                        maze_top_left_corner_center_position.y,
-                        top_down_position.y
-                    );
+                    let tree_mesh_opt = tree_multimesh.get_mesh();
+                    let mut tree_multimesh = MultiMesh::new_gd();
 
-                    let transform = bound_tree_spawner.create_object_transform(position, self.rng.clone());
-                    tree_multimesh.set_instance_transform(i, transform);
-                }
-                drop(bound_tree_spawner);
+                    tree_multimesh.set_instance_count(0);
+                    tree_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
+                    tree_multimesh.set_mesh(tree_mesh_opt.as_ref());
 
+                    let side_forest_spawner_opt = (|| {
+                        self.tree_spawner.duplicate()?.try_cast::<EnchancedMultiMeshInstance3D>().ok()
+                    })();
 
-                // Spawn side forests
+                    let Some(mut forest_spawner) = side_forest_spawner_opt else {
+                        continue;
+                    };
 
-                // Delete old side forests
-                for mut old_side_forest in self.side_forest_spawners_root.get_children().iter_shared() {
-                    old_side_forest.queue_free();
-                }
+                    forest_spawner.set_multimesh(&tree_multimesh);
 
-                let forest_rings = self.outer_forest_rings;
+                    let mut side_forest_custom_aabb = forest_custom_aabb.clone();
+                    side_forest_custom_aabb.position.x = side_forest_position.x;
+                    side_forest_custom_aabb.position.z = side_forest_position.y;
 
-                let super_forest_position = *forest_position - (*forest_size * (forest_rings as f32));
-                let super_forest_size = (forest_rings * 2 + 1) as f32 * *forest_size;
-
-                let super_forest_span = Rect2::new(super_forest_position, super_forest_size);
-
-                self.set_ground_dimensions(super_forest_span);
-
-                // Spawn new forests
-                for x_major in -forest_rings..=forest_rings {
-                    for y_major in -forest_rings..=forest_rings {
-                        if x_major == 0 && y_major == 0 {
-                            continue;
-                        }
-
-                        let x_major = x_major as f32;
-                        let y_major = y_major as f32;
-
-                        let x = x_major * forest_size.x;
-                        let y = y_major * forest_size.y;
-
-                        let side_forest_position = *forest_position + Vector2::new(x, y);
-
-                        let tree_mesh_opt = tree_multimesh.get_mesh();
-                        let mut tree_multimesh = MultiMesh::new_gd();
-
-                        tree_multimesh.set_instance_count(0);
-                        tree_multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
-                        tree_multimesh.set_mesh(tree_mesh_opt.as_ref());
-
-                        let side_forest_spawner_opt = (|| {
-                            self.tree_spawner.duplicate()?.try_cast::<EnchancedMultiMeshInstance3D>().ok()
-                        })();
-
-                        let Some(mut forest_spawner) = side_forest_spawner_opt else {
-                            continue;
-                        };
-
-                        forest_spawner.set_multimesh(&tree_multimesh);
-
-                        let mut side_forest_custom_aabb = forest_custom_aabb.clone();
-                        side_forest_custom_aabb.position.x = side_forest_position.x;
-                        side_forest_custom_aabb.position.z = side_forest_position.y;
-
-                        forest_spawner.set_custom_aabb(side_forest_custom_aabb);
+                    forest_spawner.set_custom_aabb(side_forest_custom_aabb);
 
 
-                        // Spawn
-                        self.side_forest_spawners_root.add_child(&forest_spawner);
+                    // Spawn
+                    self.side_forest_spawners_root.add_child(&forest_spawner);
 
-                        let n_tree_spawn_attempts = n_tree_spawn_attempts as i32;
-                        tree_multimesh.set_instance_count(n_tree_spawn_attempts);
+                    let n_tree_spawn_attempts = n_tree_spawn_attempts as i32;
+                    tree_multimesh.set_instance_count(n_tree_spawn_attempts);
 
-                        for i in 0..n_tree_spawn_attempts {
-                            let x = self.rng.randf_range(0.0, forest_size.x) + side_forest_position.x;
-                            let y = self.rng.randf_range(0.0, forest_size.y) + side_forest_position.y;
+                    for i in 0..n_tree_spawn_attempts {
+                        let x = self.rng.randf_range(0.0, forest_size.x) + side_forest_position.x;
+                        let y = self.rng.randf_range(0.0, forest_size.y) + side_forest_position.y;
 
-                            let position_3d = Vector3::new(
-                                x,
-                                maze_top_left_corner_center_position.y,
-                                y
-                            );
+                        let position_3d = Vector3::new(
+                            x,
+                            maze_top_left_corner_center_position.y,
+                            y
+                        );
 
-                            let transform = forest_spawner.bind().create_object_transform(
-                                position_3d,
-                                self.rng.clone()
-                            );
+                        let transform = forest_spawner.bind().create_object_transform(
+                            position_3d,
+                            self.rng.clone()
+                        );
 
-                            tree_multimesh.set_instance_transform(i, transform);
-                        }
+                        tree_multimesh.set_instance_transform(i, transform);
                     }
                 }
             }
-
-
-            // Finally, set maze info
             
-            drop(bound_maze);
-
-            let maze_info = MazeInfo {
-                maze,
-                size : bounding_box_size
-            };
-
-            self.maze_info = Some(maze_info);
-
         } else {
             // Reset
             let multimeshes = [
@@ -1326,9 +1329,7 @@ impl MainLevel {
             MazeTileState::Active => {
                 multimesh.set_instance_color(idx, Color::GREEN);
 
-                if let Some(maze_info) = self.maze_info.as_ref() {
-                    let maze = maze_info.maze.clone();
-
+                if let Some(maze) = self.maze.clone() {
                     if let Ok(idx_usize) = usize::try_from(idx) {
                         let dim_x = maze.bind().rust_get_dim_x();
                         let coordinate_opt = Coordinate::try_from_value(idx_usize, dim_x);
@@ -1381,7 +1382,6 @@ impl MainLevel {
 
     #[func]
     fn on_maze_commit_found_path(&mut self, path_info_opt : Option<Gd<PathInfo>>) {
-        godot_print!("Path commited!");
         self.set_pathfinding_state(PathfindingState::Done);
 
         self.maze_ghost_reindeer.hide();
@@ -1482,8 +1482,6 @@ impl MainLevel {
                 arrow_multimesh.set_instance_transform(i_i32, transform);
                 arrow_multimesh.set_instance_custom_data(i_i32, custom_data);
             }
-
-            godot_print!("Found path!");
         };
     }
 
@@ -1513,7 +1511,7 @@ impl MainLevel {
         let pathfinding_state = self.pathfinding_state.clone();
         self.set_pathfinding_state(pathfinding_state);
 
-        let maze = std::mem::take(&mut self.maze_info).map(|info| info.maze);
+        let maze = std::mem::take(&mut self.maze);
         self.set_maze(maze);
 
         for possible_option_change in OptionChange::iter() {
@@ -1524,11 +1522,10 @@ impl MainLevel {
 
     #[func]
     fn run_maze_solver(&mut self) {
-        let Some(maze_info) = self.maze_info.as_ref() else {
+        let Some(mut maze) = self.maze.clone() else {
             godot_warn!("Tried running maze solver without maze? Returning...");
             return;
         };
-        let mut maze = maze_info.maze.clone();
 
         let maze_solver_info = self.maze_solver_info.clone();
         let mut handle = maze.bind_mut().find_paths(maze_solver_info, self.turning_cost);

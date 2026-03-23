@@ -1,6 +1,6 @@
 use godot::{classes::{Button, Control, FileAccess, IControl, Input, InputEvent, Os, RichTextLabel, ScrollContainer, TabContainer, TextureButton, VScrollBar, file_access::ModeFlags, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_sub_menu_state::IState, main_menu::about_menu_request::AboutMenuRequest}, utility::node_utility}, input_map::{UI_CANCEL, UI_DOWN, UI_UP}};
+use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, main_menu::about_menu_request::AboutMenuRequest}, utility::node_utility}, input_map::{UI_CANCEL, UI_DOWN, UI_UP}};
 
 
 #[derive(GodotClass)]
@@ -190,7 +190,7 @@ impl IHasRun for AboutMenu {
 
 #[godot_dyn]
 impl IState for AboutMenu {
-    fn do_enter(&mut self) {
+    fn enter(&mut self) {
         self.base_mut().set_process(true);
         self.base_mut().set_process_unhandled_input(true);
 
@@ -200,7 +200,7 @@ impl IState for AboutMenu {
     }
     
 
-    fn do_exit(&mut self) {
+    fn exit(&mut self) {
         self.base_mut().set_process(false);
         self.base_mut().set_process_unhandled_input(false);
     }

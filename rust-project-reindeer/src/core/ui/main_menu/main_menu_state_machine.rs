@@ -1,7 +1,7 @@
 use godot::{classes::{AudioStreamPlayer, Control, IControl}, prelude::*};
 use strum::{EnumCount, IntoEnumIterator, VariantArray};
 
-use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, options::option_change::OptionChange, run::{run::Run, i_has_run::IHasRun}, ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_sub_menu_state::IState, main_menu::{about_menu::AboutMenu, about_menu_request::AboutMenuRequest, load_map_menu::LoadMapMenu, load_map_menu_request::LoadMapMenuRequest, main_menu::MainMenu, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}, utility::node_utility};
+use crate::core::{levels::main_level::main_level_constructor_info::GodotMainLevelConstructorInfo, options::option_change::OptionChange, run::{run::Run, i_has_run::IHasRun}, ui::{controls_menu::{controls_menu::ControlsMenu, controls_menu_request::ControlsMenuRequest}, i_state::IState, main_menu::{about_menu::AboutMenu, about_menu_request::AboutMenuRequest, load_map_menu::LoadMapMenu, load_map_menu_request::LoadMapMenuRequest, main_menu_face::MainMenuFace, main_menu_state::MainMenuState}, options_menu::{options_menu::OptionsMenu, options_menu_request::OptionsMenuRequest}}, utility::node_utility};
 
 
 #[derive(GodotClass)]
@@ -17,7 +17,7 @@ pub struct MainMenuStateMachine {
     // Non-exported
     #[var]
     #[init(node = "%TitleMenu")]
-    title_menu : OnReady<Gd<MainMenu>>,
+    title_menu : OnReady<Gd<MainMenuFace>>,
 
     #[var]
     #[init(node = "%LoadMapMenu")]
@@ -158,7 +158,7 @@ impl IHasRun for MainMenuStateMachine {
 
 #[godot_dyn]
 impl IState for MainMenuStateMachine {
-    fn do_enter(&mut self) {
+    fn enter(&mut self) {
         self.base_mut().set_process_unhandled_input(true);
 
         self.toggle_background_level(true);
@@ -168,7 +168,7 @@ impl IState for MainMenuStateMachine {
     }
 
 
-    fn do_exit(&mut self) {
+    fn exit(&mut self) {
         self.base_mut().set_process_unhandled_input(false);
 
         self.toggle_background_level(false);
@@ -177,7 +177,7 @@ impl IState for MainMenuStateMachine {
 
         let submenus = self.get_all_submenu_controls();
         for mut submenu in submenus {
-            submenu.dyn_bind_mut().do_exit();
+            submenu.dyn_bind_mut().exit();
         }
         
         self.base_mut().hide();
@@ -201,12 +201,12 @@ impl MainMenuStateMachine {
         let all_submenus = self.get_all_submenu_controls();
 
         for mut submenu in all_submenus {
-            submenu.dyn_bind_mut().do_exit();
+            submenu.dyn_bind_mut().exit();
             submenu.hide();
         }
 
         let mut active_submenu = self.get_submenu_control(state);
-        active_submenu.dyn_bind_mut().do_enter();
+        active_submenu.dyn_bind_mut().enter();
         active_submenu.show();
     }
 
