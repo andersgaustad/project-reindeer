@@ -42,7 +42,7 @@ jobs:
     needs: cargo-build
     runs-on: ubuntu-24.04
     container:
-      image: barichello/godot-ci:$GODOT_VERSION
+      image: barichello/godot-ci:4.4
 
     steps:
       - name: Checkout 
