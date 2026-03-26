@@ -36,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: rust-${{ matrix.os }}-build
-          path: target/release/*.@(so|dll|dylib)
+          path: target/release/*project_reindeer*
     
   godot-export:
     needs: cargo-build
