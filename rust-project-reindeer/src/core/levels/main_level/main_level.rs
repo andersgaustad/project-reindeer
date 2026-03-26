@@ -711,7 +711,7 @@ impl MainLevel {
                     // Note - this causes O(n^2) time
                     let any_overlap = spawned_props
                         .iter()
-                        .any(|existing_polygon| {
+                        .any(|existing_polygon : &ConvexPolygon| {
                             existing_polygon.overlaps_with(&polygon)
                         });
                     
