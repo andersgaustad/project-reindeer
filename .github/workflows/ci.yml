@@ -70,7 +70,7 @@ jobs:
         run: |
           ls build
           ls build/$LINUX_NAME
-          godot --headless --verbose --path "$PROJECT_PATH" --export-release "$LINUX_NAME" "build/$LINUX_NAME/$LINUX_NAME.x86_64"
+          godot --headless --verbose --path "$PROJECT_PATH" --export-release "$LINUX_NAME" "build/$LINUX_NAME"
 
       - name: Upload Linux
         uses: actions/upload-artifact@v7
@@ -79,7 +79,7 @@ jobs:
           path: build/$LINUX_NAME
 
       - name: Build Windows
-        run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$WINDOWS_NAME" "build/$WINDOWS_NAME/$WINDOWS_NAME.exe"
+        run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$WINDOWS_NAME" "build/$WINDOWS_NAME"
 
       - name: Upload Windows
         uses: actions/upload-artifact@v7
@@ -88,7 +88,7 @@ jobs:
           path: build/$WINDOWS_NAME
 
       - name: Build Mac
-        run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$MAC_OS_NAME" "build/$MAC_OS_NAME/$MAC_OS_NAME.zip"
+        run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$MAC_OS_NAME" "build/$MAC_OS_NAME"
         
       - name: Upload MacOS
         uses: actions/upload-artifact@v7
