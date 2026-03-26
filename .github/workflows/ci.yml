@@ -67,7 +67,10 @@ jobs:
           path: target/release
         
       - name: Build Linux
-        run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$LINUX_NAME" " build/$LINUX_NAME/$LINUX_NAME.x86_64"
+        run: |
+          ls build
+          ls build/$LINUX_NAME
+          godot --headless --verbose --path "$PROJECT_PATH" --export-release "$LINUX_NAME" "build/$LINUX_NAME/$LINUX_NAME.x86_64"
 
       - name: Upload Linux
         uses: actions/upload-artifact@v7
