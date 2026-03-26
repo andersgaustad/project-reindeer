@@ -6,12 +6,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  GODOT_VERSION: 4.4
   EXPORT_NAME: project-reindeer
-  PROJECT_PATH: godot/project-reindeer
-  LINUX_NAME: linux-x86_64
-  WINDOWS_NAME: windows
-  MAC_OS_NAME: macos
 
 jobs:
   cargo-build:
@@ -42,7 +37,7 @@ jobs:
     needs: cargo-build
     runs-on: ubuntu-24.04
     container:
-      image: barichello/godot-ci:4.4
+      image: barichello/godot-ci:${{ vars.GODOT_VERSION }}
 
     steps:
       - name: Checkout 
@@ -56,10 +51,10 @@ jobs:
           mkdir -v -p ~/.local/share/godot/export_templates/
           mkdir -v -p ~/.config/
           mv /root/.config/godot ~/.config/godot
-          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-          mkdir -v -p $PROJECT_PATH/build/$LINUX_NAME
-          mkdir -v -p $PROJECT_PATH/build/$WINDOWS_NAME
-          mkdir -v -p $PROJECT_PATH/build/$MAC_OS_NAME
+          mv /root/.local/share/godot/export_templates/${{ vars.GODOT_VERSION }}.stable ~/.local/share/godot/export_templates/${{ vars.GODOT_VERSION }}.stable
+          mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.LINUX_NAME }}
+          mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.WINDOWS_NAME }}
+          mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.MAC_OS_NAME }}
       
       - name: Download
         uses: actions/download-artifact@v7
@@ -71,28 +66,28 @@ jobs:
         run: ls target/release
         
       - name: Build Linux
-        run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$LINUX_NAME" "build/$LINUX_NAME/$LINUX_NAME.x86_64"
+        run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.LINUX_NAME }}" "build/${{ vars.LINUX_NAME }}/$EXPORT_NAME-${{ vars.LINUX_NAME }}.x86_64"
 
       - name: Upload Linux
         uses: actions/upload-artifact@v7
         with:
-          name: $LINUX_NAME
-          path: build/$LINUX_NAME
+          name: ${{ vars.LINUX_NAME }}
+          path: ${{ vars.PROJECT_PATH }}/build/${{ vars.LINUX_NAME }}
 
       - name: Build Windows
-        run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$WINDOWS_NAME" "build/$WINDOWS_NAME/$WINDOWS_NAME.exe"
+        run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.WINDOWS_NAME }}" "build/${{ vars.WINDOWS_NAME }}/$EXPORT_NAME-${{ vars.WINDOWS_NAME }}.exe"
 
       - name: Upload Windows
         uses: actions/upload-artifact@v7
         with:
-          name: $WINDOWS_NAME
-          path: build/$WINDOWS_NAME
+          name: ${{ vars.WINDOWS_NAME }}
+          path: ${{ vars.PROJECT_PATH }}/build/${{ vars.WINDOWS_NAME }}
 
       - name: Build Mac
-        run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$MAC_OS_NAME" "build/$MAC_OS_NAME/$MAC_OS_NAME.zip"
+        run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.MAC_OS_NAME }}" "build/${{ vars.MAC_OS_NAME }}/$EXPORT_NAME-${{ vars.MAC_OS_NAME }}.zip"
         
       - name: Upload MacOS
         uses: actions/upload-artifact@v7
         with:
-          name: $MAC_OS_NAME
-          path: build/$MAC_OS_NAME
+          name: ${{ vars.MAC_OS_NAME }}
+          path: ${{ vars.PROJECT_PATH }}/build/${{ vars.MAC_OS_NAME }}
