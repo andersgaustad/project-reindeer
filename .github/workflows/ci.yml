@@ -67,12 +67,13 @@ jobs:
           path: target/release
 
       - name: Enter Godot project
-        run: |
-          cd $PROJECT_PATH
-          ls
+        run: cd $PROJECT_PATH
         
       - name: Build Linux
-        run: godot --headless --verbose --export-release "$LINUX_NAME" "../build/$LINUX_NAME/$LINUX_NAME.x86_64"
+        run: |
+          ls
+          ls ../build/
+          godot --headless --verbose --export-release "$LINUX_NAME" "../build/$LINUX_NAME/$LINUX_NAME.x86_64"
 
       - name: Upload Linux
         uses: actions/upload-artifact@v7
