@@ -65,36 +65,30 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           path: target/release
-
-      - name: Enter Godot project
-        run: cd $PROJECT_PATH
         
       - name: Build Linux
-        run: |
-          ls
-          ls ../build/
-          godot --headless --verbose --export-release "$LINUX_NAME" "../build/$LINUX_NAME/$LINUX_NAME.x86_64"
+        run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$LINUX_NAME" " build/$LINUX_NAME/$LINUX_NAME.x86_64"
 
       - name: Upload Linux
         uses: actions/upload-artifact@v7
         with:
           name: $LINUX_NAME
-          path: ../build/$LINUX_NAME
+          path: build/$LINUX_NAME
 
       - name: Build Windows
-        run: godot --headless --verbose --export-release "$WINDOWS_NAME" "../build/$WINDOWS_NAME/$WINDOWS_NAME.exe"
+        run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$WINDOWS_NAME" "build/$WINDOWS_NAME/$WINDOWS_NAME.exe"
 
       - name: Upload Windows
         uses: actions/upload-artifact@v7
         with:
           name: $WINDOWS_NAME
-          path: ../build/$WINDOWS_NAME
+          path: build/$WINDOWS_NAME
 
       - name: Build Mac
-        run: godot --headless --verbose --export-release "$MAC_OS_NAME" "../build/$MAC_OS_NAME/$MAC_OS_NAME.zip"
+        run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$MAC_OS_NAME" "build/$MAC_OS_NAME/$MAC_OS_NAME.zip"
         
       - name: Upload MacOS
         uses: actions/upload-artifact@v7
         with:
           name: $MAC_OS_NAME
-          path: ../build/$MAC_OS_NAME
+          path: build/$MAC_OS_NAME
