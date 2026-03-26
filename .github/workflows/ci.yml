@@ -65,6 +65,10 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           path: target/release
+          merge-multiple: true
+    
+      - name: Show downloaded files
+        run: ls target/release
         
       - name: Build Linux
         run: godot --headless --verbose --path "$PROJECT_PATH" --export-release "$LINUX_NAME" "build/$LINUX_NAME/$LINUX_NAME.x86_64"
