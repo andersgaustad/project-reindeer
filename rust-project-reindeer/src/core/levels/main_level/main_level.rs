@@ -593,6 +593,8 @@ impl MainLevel {
             ];
             
 
+            // Unused in release builds
+            #[allow(unused)]
             let cabin_polygon_opt = (|| {
                 let extent = (width + height) * std::f32::consts::SQRT_2 / 4.0;
 
