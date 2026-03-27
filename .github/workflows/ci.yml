@@ -51,9 +51,9 @@ jobs:
           mkdir -v -p ~/.config/
           mv /root/.config/godot ~/.config/godot
           mv /root/.local/share/godot/export_templates/${{ vars.GODOT_VERSION }}.stable ~/.local/share/godot/export_templates/${{ vars.GODOT_VERSION }}.stable
-          mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.LINUX_NAME }}
-          mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.WINDOWS_NAME }}
-          mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.MAC_OS_NAME }}
+          mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}
+          mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.WINDOWS_NAME }}
+          mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.MAC_OS_NAME }}
       
       - name: Download
         uses: actions/download-artifact@v7
