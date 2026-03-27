@@ -32,10 +32,6 @@ window/stretch/aspect="expand"
 
 movie_writer/movie_file="/home/anders/code/projects/project-reindeer/godot/project-reindeer/video_out/movie.avi"
 
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/godotresourcecleaner/plugin.cfg")
-
 [input]
 
 ui_accept={
