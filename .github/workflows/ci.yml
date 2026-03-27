@@ -43,6 +43,9 @@ jobs:
         uses: actions/checkout@v6
         with:
           lfs: true
+      
+      - name: Install Dependencies
+        run: sudo apt install -y curl
 
       - name: Setup Rust
         # We need to setup Rust here as well to register classes and import them for the export to work.
