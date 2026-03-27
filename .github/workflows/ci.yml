@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.os }}-raw-rust-build
-          path: target/release/*project_reindeer*
+          path: target/release/*project*reindeer*
     
   godot-export:
     needs: cargo-build
@@ -60,6 +60,15 @@ jobs:
         with:
           path: target/release
           merge-multiple: true
+
+      - name: Showing Directory
+        run: |
+          echo "In root:"
+          ls
+          echo "In target/"
+          ls target
+          echo "In target/release/"
+          ls target/release
         
       - name: Build Linux
         run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.LINUX_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}.x86_64"
