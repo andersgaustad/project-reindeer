@@ -66,6 +66,7 @@ jobs:
         run: |
           VERSION=$(cargo pkgid --manifest-path rust-project-reindeer/Cargo.toml | cut -d '#' -f2)
           echo "Game version: $VERSION"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
         
       - name: Setup Directories
         run: |
@@ -92,9 +93,6 @@ jobs:
 
       - name: Build Linux
         run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.LINUX_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}.x86_64"
-
-      - name: Check VERSION
-        run: echo "Version is $VERSION"
 
       - name: Butler Push - ${{ vars.LINUX_NAME }}
         uses: yeslayla/butler-publish-itchio-action@v1.2.0
