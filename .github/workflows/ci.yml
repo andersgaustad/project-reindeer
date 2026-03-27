@@ -44,7 +44,18 @@ jobs:
         with:
           lfs: true
 
-      - name: Setup
+      - name: Setup Rust
+        # We need to setup Rust here as well to register classes and import them for the export to work.
+        # See below.
+        uses: actions-rust-lang/setup-rust-toolchain@v1.15.4
+    
+      - name: Register Classes
+        # Note that this will create a debug build of the Rust code,
+        # and only for Linux.
+        # Needed for importing class names, see below.
+        run: cargo build
+        
+      - name: Setup Directories
         run: |
           mkdir -v -p target/release
           mkdir -v -p ~/.local/share/godot/export_templates/
@@ -60,16 +71,13 @@ jobs:
         with:
           path: target/release
           merge-multiple: true
+      
+      - name: Import Registered Classes
+        # For some reason, class names are only registered from debug builds for Linux.
+        # Thus, we must (as far as I know at least) create a debug build and import before exporting.
+        # Note that the debug build itself is not exported.
+        run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --import 
 
-      - name: Showing Directory
-        run: |
-          echo "In root:"
-          ls
-          echo "In target/"
-          ls target
-          echo "In target/release/"
-          ls target/release
-        
       - name: Build Linux
         run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.LINUX_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}.x86_64"
 
