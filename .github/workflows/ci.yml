@@ -5,7 +5,10 @@ on:
     branches: [ "main" ]
 
 env:
+  BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
   CARGO_TERM_COLOR: always
+  ITCH_GAME: project-reindeer
+  ITCH_USER: andersgaustad
 
 jobs:
   cargo-build:
@@ -29,7 +32,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.os }}-raw-rust-build
+          name: raw-rust-build-${{ matrix.os }}
           path: target/release/*project*reindeer*
     
   godot-export:
@@ -57,6 +60,12 @@ jobs:
         # and only for Linux.
         # Needed for importing class names, see below.
         run: cargo build
+
+      - name: Extract Version
+        # Version is used by Butler's Upload to itchio Action
+        run: |
+          VERSION=$(cargo pkgid --manifest-path rust-project-reindeer/Cargo.toml | cut -d '#' -f2)
+          echo "Game version: $GAME_VERSION"
         
       - name: Setup Directories
         run: |
@@ -84,6 +93,12 @@ jobs:
       - name: Build Linux
         run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.LINUX_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}.x86_64"
 
+      - name: Butler Push - ${{ vars.LINUX_NAME }}
+        uses: yeslayla/butler-publish-itchio-action@v1.2.0
+        env:
+          CHANNEL: ${{ vars.LINUX_NAME }}
+          PACKAGE: ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}
+
       - name: Upload Linux
         uses: actions/upload-artifact@v7
         with:
@@ -92,6 +107,12 @@ jobs:
 
       - name: Build Windows
         run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.WINDOWS_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.WINDOWS_NAME }}/${{ vars.EXPORT_NAME }}-${{ vars.WINDOWS_NAME }}.exe"
+    
+      - name: Butler Push - ${{ vars.WINDOWS_NAME }}
+        uses: yeslayla/butler-publish-itchio-action@v1.2.0
+        env:
+          CHANNEL: ${{ vars.WINDOWS_NAME }}
+          PACKAGE: ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.WINDOWS_NAME }}
 
       - name: Upload Windows
         uses: actions/upload-artifact@v7
@@ -101,6 +122,12 @@ jobs:
 
       - name: Build Mac
         run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.MAC_OS_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.MAC_OS_NAME }}/${{ vars.EXPORT_NAME }}-${{ vars.MAC_OS_NAME }}.zip"
+
+      - name: Butler Push - ${{ vars.MAC_OS_NAME }}
+        uses: yeslayla/butler-publish-itchio-action@v1.2.0
+        env:
+          CHANNEL: ${{ vars.MAC_OS_NAME }}
+          PACKAGE: ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.MAC_OS_NAME }}
         
       - name: Upload MacOS
         uses: actions/upload-artifact@v7
