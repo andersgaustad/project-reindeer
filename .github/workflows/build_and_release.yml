@@ -1,8 +1,8 @@
 name: Build and Release
 
 on:
-  push:
-    branches: [ "main" ]
+  release:
+    types: [published]
 
 env:
   BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
@@ -35,7 +35,7 @@ jobs:
           name: raw-rust-build-${{ matrix.os }}
           path: target/release/*project*reindeer*
     
-  godot-export:
+  godot-export-and-release:
     needs: cargo-build
     runs-on: ubuntu-24.04
     container:
@@ -64,8 +64,8 @@ jobs:
       - name: Extract Version
         # Version is used by Butler's Upload to itchio Action
         run: |
-          VERSION=$(cargo pkgid --manifest-path rust-project-reindeer/Cargo.toml | cut -d '#' -f2)
-          echo "Game version: $VERSION"
+          VERSION=${{ github.ref }}
+          echo "Release Version: $VERSION"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
         
       - name: Setup Directories
