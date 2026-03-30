@@ -593,8 +593,6 @@ impl MainLevel {
             ];
             
 
-            // Unused in release builds
-            #[allow(unused)]
             let cabin_polygon_opt = (|| {
                 let extent = (width + height) * std::f32::consts::SQRT_2 / 4.0;
 
@@ -645,15 +643,15 @@ impl MainLevel {
 
             let mut spawned_props = Vec::new();
 
-            #[cfg(debug_assertions)]
-            {
-                if let Some(cabin_polygon) = cabin_polygon_opt {
-                    spawned_props.push(cabin_polygon);
-                    godot_print!("Spawned cabin!");
+            if let Some(cabin_polygon) = cabin_polygon_opt {
+                spawned_props.push(cabin_polygon);
 
-                } else {
-                    godot_print!("Failed spawning cabin");
-                }
+                #[cfg(debug_assertions)]
+                godot_print!("Spawned cabin!");
+
+            } else {
+                #[cfg(debug_assertions)]
+                godot_print!("Failed spawning cabin");
             }
             
 
