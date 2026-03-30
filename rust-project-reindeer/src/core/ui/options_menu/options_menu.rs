@@ -1,4 +1,4 @@
-use godot::{classes::{Button, CheckButton, Control, HSlider, IControl, InputEvent, Label, object::ConnectFlags}, prelude::*};
+use godot::{classes::{Button, CheckButton, Control, DisplayServer, HSlider, IControl, InputEvent, Label, OptionButton, display_server::WindowMode, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
 use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, options::option_change::OptionChange, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, options_menu::options_menu_request::OptionsMenuRequest}, utility::node_utility}, input_map::UI_CANCEL};
@@ -14,6 +14,10 @@ pub struct OptionsMenu {
     #[var]
     #[init(node = "%ToggleLowPerformanceModeButton")]
     low_performance_toggle_button : OnReady<Gd<CheckButton>>,
+
+    #[var]
+    #[init(node = "%WindowModeOptionButton")]
+    window_mode_option_button : OnReady<Gd<OptionButton>>,
 
     #[var]
     #[init(node = "%MusicVolumeSlider")]
@@ -62,6 +66,17 @@ impl IControl for OptionsMenu {
                 Self::on_low_performance_mode_toggled_locally
             );
         
+        self
+            .window_mode_option_button
+            .signals()
+            .item_selected()
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(
+                self,
+                Self::on_window_mode_option_item_selected
+            );
+
         // music_volume_slider
         self
             .music_volume_slider
@@ -171,7 +186,7 @@ impl IState for OptionsMenu {
 
         self.low_performance_toggle_button.grab_focus();
 
-        self.refresh();
+        self.update_ui();
     }
 
 
@@ -240,6 +255,25 @@ impl OptionsMenu {
 
 
     #[func]
+    fn on_window_mode_option_item_selected(&mut self, id : i64) {
+        let Ok(as_usize) = usize::try_from(id) else {
+            return;
+        };
+
+        let window_modes = window_modes_at_ids();
+        let window_mode_opt = window_modes.get(as_usize).cloned();
+        let Some(window_mode) = window_mode_opt else {
+            return;
+        };
+
+        let mut display_server = DisplayServer::singleton();
+        display_server.window_set_mode(window_mode);
+
+        self.update_window_mode_button_text();
+    }
+
+
+    #[func]
     fn on_volume_changed(&mut self) {
         let Some(options) = self.get_options() else {
             return;
@@ -294,6 +328,23 @@ impl OptionsMenu {
         let low_performance_toggle_button = &mut self.low_performance_toggle_button;
         low_performance_toggle_button.set_disabled(!has_options);
         low_performance_toggle_button.set_tooltip_text(tooltip);
+
+        self.update_window_mode_button_text();
+    }
+
+
+    fn update_window_mode_button_text(&mut self) {
+        let display_server = DisplayServer::singleton();
+        let window_mode = display_server.window_get_mode();
+        let window_mode_as_str = window_mode.as_str();
+
+        let id_array = window_modes_at_ids();
+        let id = id_array.into_iter().position(|window_mode| {
+            window_mode.as_str() == window_mode_as_str
+        
+        }).map(|u| u as i32).unwrap_or(-1);
+
+        self.window_mode_option_button.select(id);
     }
 
 
@@ -322,4 +373,12 @@ fn as_percentage_string(number : f32) -> String {
     let string = format!("{}%", percentage);
 
     string
+}
+
+
+const fn window_modes_at_ids() -> [WindowMode; 2] {
+    [
+        WindowMode::WINDOWED,
+        WindowMode::FULLSCREEN
+    ]
 }

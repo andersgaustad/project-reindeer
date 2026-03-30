@@ -73,60 +73,97 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 40
 
-[node name="VBoxContainer1" type="VBoxContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2"]
+[node name="VBoxContainerPerformance" type="VBoxContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Label" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer1"]
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerPerformance"]
 layout_mode = 2
 text = "Performance"
 horizontal_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer1"]
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerPerformance"]
 layout_mode = 2
 
-[node name="GridContainer" type="GridContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer1"]
+[node name="GridContainer" type="GridContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerPerformance"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/h_separation = 128
 columns = 2
 
-[node name="LowPerformanceModeText" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer1/GridContainer"]
+[node name="LowPerformanceModeText" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerPerformance/GridContainer"]
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
 text = "Low-performance mode:"
 
-[node name="ToggleLowPerformanceModeButton" type="CheckButton" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer1/GridContainer"]
+[node name="ToggleLowPerformanceModeButton" type="CheckButton" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerPerformance/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 6
+flat = true
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2"]
+[node name="VBoxContainerVideo" type="VBoxContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Label" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2"]
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerVideo"]
+layout_mode = 2
+text = "Video"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerVideo"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerVideo"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 64
+columns = 2
+
+[node name="WindowModeLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerVideo/GridContainer"]
+custom_minimum_size = Vector2(760, 0)
+layout_mode = 2
+text = "Window Mode:"
+
+[node name="WindowModeOptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerVideo/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+selected = 0
+item_count = 2
+popup/item_0/text = "Windowed"
+popup/item_0/id = 0
+popup/item_1/text = "Fullscreen"
+popup/item_1/id = 1
+
+[node name="VBoxContainerAudio" type="VBoxContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio"]
 layout_mode = 2
 text = "Audio"
 horizontal_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2"]
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio"]
 layout_mode = 2
 
-[node name="GridContainer" type="GridContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2"]
+[node name="GridContainer" type="GridContainer" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/h_separation = 64
 columns = 3
 
-[node name="MusicVolumeLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+[node name="MusicVolumeLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio/GridContainer"]
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
 text = "Music Volume:"
 
-[node name="MusicVolumeSlider" type="HSlider" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+[node name="MusicVolumeSlider" type="HSlider" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -138,18 +175,18 @@ scrollable = false
 tick_count = 3
 ticks_on_borders = true
 
-[node name="MusicVolumePercentageLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+[node name="MusicVolumePercentageLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio/GridContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(170, 0)
 layout_mode = 2
 text = "100%"
 
-[node name="SFXVolumeLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+[node name="SFXVolumeLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio/GridContainer"]
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
 text = "Sound Effect Volume:"
 
-[node name="SFXVolumeSlider" type="HSlider" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+[node name="SFXVolumeSlider" type="HSlider" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -161,7 +198,7 @@ scrollable = false
 tick_count = 3
 ticks_on_borders = true
 
-[node name="SFXVolumePercentageLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainer2/GridContainer"]
+[node name="SFXVolumePercentageLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio/GridContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(170, 0)
 layout_mode = 2
