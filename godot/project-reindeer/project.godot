@@ -15,9 +15,10 @@ data/keep_list=Array[String](["res://rust-project-reindeer.gdextension", "res://
 [application]
 
 config/name="ProjectReindeer"
+config/version="0.1.0"
 run/main_scene="uid://d2xp6l0n7ch86"
 config/features=PackedStringArray("4.5", "GL Compatibility")
-config/icon="res://assets/committed/source/godot_icon/icon.svg"
+config/icon="uid://d4mw0rvie6p6b"
 
 [display]
 
