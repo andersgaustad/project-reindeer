@@ -7,10 +7,6 @@ use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, opt
 #[derive(GodotClass)]
 #[class(init, base=Control)]
 pub struct OptionsMenu {
-    // Non-exported:
-
-    // Options
-
     #[var]
     #[init(node = "%ToggleLowPerformanceModeButton")]
     low_performance_toggle_button : OnReady<Gd<CheckButton>>,

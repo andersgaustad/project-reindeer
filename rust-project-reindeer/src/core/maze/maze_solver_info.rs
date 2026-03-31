@@ -7,10 +7,10 @@ use crate::core::maze::maze_tile_state::MazeTileState;
 #[class(init, base=Resource)]
 pub struct MazeSolverInfo {
     #[export(flags = (
-        Normal = MazeTileState::Normal.to_godot_flag(),
-        Touched = MazeTileState::Touched.to_godot_flag(),
-        Committed = MazeTileState::Committed.to_godot_flag(),
-        Active = MazeTileState::Active.to_godot_flag()
+        Normal =        MazeTileState::Normal.to_godot_flag(),
+        Touched =       MazeTileState::Touched.to_godot_flag(),
+        Committed =     MazeTileState::Committed.to_godot_flag(),
+        Active =        MazeTileState::Active.to_godot_flag()
     ))]
     #[var]
     #[init(val = MazeTileState::Active.to_godot_flag())]

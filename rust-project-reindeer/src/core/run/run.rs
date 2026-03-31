@@ -37,6 +37,8 @@ pub struct Run {
 impl INode for Run {
     fn ready(&mut self) {
         // Signals
+
+        // request_initialize_level
         self
             .main_menu_state_machine
             .signals()
@@ -58,14 +60,14 @@ impl INode for Run {
 impl Run {
     #[func]
     pub fn set_main_level(&mut self, main_level : Option<Gd<MainLevel>>) {
-        // Handle existing
+        // Handle existing.
         let existing_level_opt = std::mem::take(&mut self.main_level);
         if let Some(mut existing_level) = existing_level_opt {
             existing_level.clone().into_dyn::<dyn IState>().dyn_bind_mut().exit();
             existing_level.queue_free();
         }
 
-        // Exit menu state as well
+        // Exit menu state as well.
         
         self.main_menu_state_machine.clone().into_dyn::<dyn IState>().dyn_bind_mut().exit();
 
@@ -120,7 +122,7 @@ impl Run {
             return;
         }
 
-        // Else, spawn new
+        // Else, spawn new.
 
         let main_level_opt = self.main_level_scene.try_instantiate_as::<MainLevel>();
         let Some(mut main_level) = main_level_opt else {

@@ -15,20 +15,7 @@ pub struct GodotMainLevelConstructorInfo {
 
 
 impl GodotMainLevelConstructorInfo {
-    pub fn new(
-        inner : MainLevelConstructorInfo,
-
-        /*
-        maze : Gd<Maze>,
-        seed : GString,
-        tree_density : f32,
-        outer_forest_rings : i32,
-        cost_per_rotation : u32,
-        color_a : Color,
-        color_b : Color,
-         */
-
-    ) -> Gd<Self> {
+    pub fn new(inner : MainLevelConstructorInfo,) -> Gd<Self> {
         Gd::from_init_fn(|base| {
             Self {
                 inner,

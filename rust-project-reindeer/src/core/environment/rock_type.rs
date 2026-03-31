@@ -1,6 +1,7 @@
 use godot::{classes::{RandomNumberGenerator, class_macros::sys::static_assert}, obj::Gd};
 use strum::{EnumCount, VariantArray};
 
+
 #[derive(Clone, Copy, EnumCount, VariantArray)]
 pub enum RockType {
     Small,

@@ -35,7 +35,6 @@ pub struct SFXManager {
 }
 
 
-
 #[godot_api]
 impl INode for SFXManager {
     fn ready(&mut self) {

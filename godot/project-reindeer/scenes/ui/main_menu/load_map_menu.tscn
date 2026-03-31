@@ -39,6 +39,13 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+tooltip_text = "Create a maze, or leave blank for default!
+
+Legend:
+. - Empty space
+# - Wall
+S - Starting position
+E - Goal"
 focus_neighbor_right = NodePath("../../ExpandAdvancedOptionsButton")
 focus_neighbor_bottom = NodePath("../HBoxContainer/LoadButton")
 theme = ExtResource("1_5qoqg")
@@ -95,6 +102,7 @@ text = "Cancel"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
+tooltip_text = "Open/close advanced options."
 focus_neighbor_left = NodePath("../LoadMap/MazeTextEdit")
 theme_override_styles/normal = ExtResource("5_r5as2")
 theme_override_styles/hover = ExtResource("6_d7vfq")
@@ -157,6 +165,9 @@ columns = 2
 
 [node name="SeedLabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid"]
 layout_mode = 2
+tooltip_text = "RNG seed.
+Used for spawning objects and cosmetic effects."
+mouse_filter = 1
 text = "Seed:"
 
 [node name="SeedTextEdit" type="LineEdit" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid"]
@@ -168,6 +179,8 @@ select_all_on_focus = true
 
 [node name="TreeDensityLabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid"]
 layout_mode = 2
+tooltip_text = "Number of trees spawned per square unit."
+mouse_filter = 1
 text = "Tree Density:"
 
 [node name="TreeDensityOptionDropDownButton" type="OptionButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid"]
@@ -185,6 +198,9 @@ popup/item_2/id = 2
 
 [node name="ForestSizeLabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid"]
 layout_mode = 2
+tooltip_text = "Size of forest.
+Each level dramatically increases forest span."
+mouse_filter = 1
 text = "Forest Size:"
 
 [node name="ForestSizeDropDownButton" type="OptionButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/ForestOptions/ForestOptionsGrid"]
@@ -220,6 +236,10 @@ columns = 2
 
 [node name="MazeRotationCostLabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]
 layout_mode = 2
+tooltip_text = "How much does it cost for the reindeer to \"turn\".
+Set to 0 for normal A* algorithm.
+Larger values will make the reindeer prefer straight lines."
+mouse_filter = 1
 text = "Turning Cost:"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]
@@ -248,6 +268,8 @@ allow_greater = true
 
 [node name="ColorALabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]
 layout_mode = 2
+tooltip_text = "Color A of the maze board."
+mouse_filter = 1
 text = "Color A:"
 
 [node name="ColorAPickerButton" type="ColorPickerButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]
@@ -258,6 +280,8 @@ edit_alpha = false
 
 [node name="ColorBLabel" type="Label" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]
 layout_mode = 2
+tooltip_text = "Color B of the maze board."
+mouse_filter = 1
 text = "Color B:"
 
 [node name="ColorBPickerButton" type="ColorPickerButton" parent="HBoxContainer/AdvancedOptions/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/MazeOptions/MazeOptionsGrid"]

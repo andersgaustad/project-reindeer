@@ -11,7 +11,7 @@ pub struct BackgroundLevel {
     #[init(node = "%Cabin")]
     cabin : OnReady<Gd<Cabin>>,
 
-    
+
     run : Option<Gd<Run>>,
 
 

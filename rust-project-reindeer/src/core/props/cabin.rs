@@ -20,6 +20,7 @@ pub struct Cabin {
 }
 
 
+#[godot_api]
 impl Cabin {
     pub fn toggle_effects(&mut self, active : bool) {
         self.fire_light.set_visible(active);    

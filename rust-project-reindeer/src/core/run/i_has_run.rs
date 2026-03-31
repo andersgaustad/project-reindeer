@@ -3,6 +3,9 @@ use godot::prelude::*;
 use crate::core::{audio::sfx_manager::SFXManager, options::{options::Options, options_wrapper_node::OptionsWrapperNode}, run::run::Run};
 
 
+/// Convenience trait for sturct that can return a Gd<Run>.
+/// 
+/// Provides shortcuts to e.g., Options and SFXManager. 
 pub trait IHasRun
 {
     fn get_run(&self) -> Option<Gd<Run>>;

@@ -77,7 +77,7 @@ impl GetBoundingBoxArgs {
                 continue;
             };
 
-            // Make sure this is NOT a Light3D
+            // Make sure this is NOT a Light3D.
             let child_3d_light_result = child_3d.try_cast::<Light3D>();
             let Err(child_3d) = child_3d_light_result else {
                 continue;

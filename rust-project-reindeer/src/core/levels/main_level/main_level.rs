@@ -242,7 +242,6 @@ impl INode3D for MainLevel {
     fn ready(&mut self) {
         let gd = self.to_gd();
 
-        // Run
         self.run = node_utility::try_find_parent_of_type(gd.upcast());
 
         let options_opt = self.get_options();
@@ -280,16 +279,16 @@ impl INode3D for MainLevel {
         // PauseMenu -> MainLevel
 
         // on_pause_menu_button_pressed
-            self
-                .pause_menu
-                .signals()
-                .request()
-                .builder()
-                .flags(ConnectFlags::DEFERRED)
-                .connect_other_mut(
-                    self,
-                    Self::on_pause_menu_request
-                );
+        self
+            .pause_menu
+            .signals()
+            .request()
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(
+                self,
+                Self::on_pause_menu_request
+            );
         
         // Reset arrow count
         // Needed as arrows persist even after main level is freed?
@@ -306,7 +305,9 @@ impl INode3D for MainLevel {
 
 
     fn process(&mut self, _delta : f64) {
+        // When in PathfindingState::Countdown:
         if self.pathfinding_state == PathfindingState::Countdown {
+            // Update countdown each frame
             let time_left = self.countdown_to_start_timer.get_time_left();
 
             let string = format!("Starting in {:>5.2}s", time_left);
@@ -316,6 +317,7 @@ impl INode3D for MainLevel {
 
 
     fn unhandled_input(&mut self, event: Gd<InputEvent>) {
+        // Only handle input when Running
         if self.level_run_state != LevelRunState::Running {
             return;
         }
@@ -347,8 +349,6 @@ impl IState for MainLevel {
         self.base_mut().set_process_unhandled_input(true);
 
         self.background_music_player.play();
-
-        self.refresh();
     }
 
 
@@ -378,10 +378,8 @@ impl MainLevel {
             return;
         };
 
-        let previous_state = self.level_run_state;
-
         // Set
-        self.level_run_state = new_state;
+        let previous_state = std::mem::replace(&mut self.level_run_state, new_state);
 
         let paused = new_state == LevelRunState::Paused;
 
@@ -392,6 +390,7 @@ impl MainLevel {
             pause_menu.dyn_bind_mut().exit();
         }
 
+        // Show mouse when paused, capture when running
         let mouse_mode = if paused {
             MouseMode::VISIBLE
         } else {
@@ -415,10 +414,8 @@ impl MainLevel {
 
     #[func]
     pub fn set_pathfinding_state(&mut self, new_state : PathfindingState) {
-        let previous_state = self.pathfinding_state;
-
         // Set
-        self.pathfinding_state = new_state;
+        let previous_state = std::mem::replace(&mut self.pathfinding_state, new_state);
 
         match new_state {
             PathfindingState::NotStarted => {
@@ -430,11 +427,14 @@ impl MainLevel {
                     self.starting_in_label.show();
                     self.countdown_to_start_timer.start();
 
+                    // When countdown reaches zero, set state to InProgress
                     self
                         .countdown_to_start_timer
                         .signals()
                         .timeout()
-                        .connect_other(
+                        .builder()
+                        .flags(ConnectFlags::DEFERRED | ConnectFlags::ONE_SHOT)
+                        .connect_other_mut(
                             self,
                             |me| {
                                 me.set_pathfinding_state(PathfindingState::InProgress);
@@ -444,6 +444,8 @@ impl MainLevel {
                 }
             },
             PathfindingState::InProgress => {
+                // Disable timer, start maze solving
+
                 self.starting_in_label.hide();
                 self.countdown_to_start_timer.stop();
                 
@@ -474,23 +476,30 @@ impl MainLevel {
 
         let multimesh_opt = self.tile_spawner.get_multimesh();
         let Some(mut tile_multimesh) = multimesh_opt else {
+            godot_error!("MainLevel could not find MultiMesh??");
             return;
         };
         let Some(mut tile_mesh) = tile_multimesh.get_mesh() else {
+            godot_error!("MainLevel could not find Mesh??");
             return;
         };
 
         let Some(mut small_rock_multimesh) = self.rock_small_spawner.get_multimesh() else {
+            godot_error!("MainLevel could not find SmallRock MultiMesh??");
             return;
         };
         let Some(mut medium_rock_multimesh) = self.rock_medium_spawner.get_multimesh() else {
+            godot_error!("MainLevel could not find MediumRock MultiMesh??");
             return;
         };
         let Some(mut large_rock_multimesh) = self.rock_large_spawner.get_multimesh() else {
+            godot_error!("MainLevel could not find LargeRock MultiMesh??");
             return;
         };
 
 
+        // Setting maze to None resets spawned maze props.
+        // When maze is Some, build maze and most of the level.
         if let Some(maze) = self.maze.clone() {
             let bound_maze = maze.bind();
             let dim_x = bound_maze.rust_get_dim_x();
@@ -506,6 +515,7 @@ impl MainLevel {
 
             tile_mesh.surface_set_material(0, &material);
 
+            // A lot of conversions from usize to i32 as Rust likes usizes and Godot likes i32s...
             let dim_x_i32 = dim_x as i32;
             let dim_y_i32 = dim_y as i32;
 
@@ -543,8 +553,11 @@ impl MainLevel {
 
             // Zones
 
+            // MazeSpan represents area that maze covers.
             let maze_span = Rect2::new(maze_top_left_corner_position_from_above, bounding_box_size);
 
+            // ForecourtSpan represents the area in front of the maze.
+            // Cabin and props are spawned here.
             let forecourt_position = Vector2::new(
                 maze_top_left_corner_position_from_above.x,
                 maze_top_left_corner_position_from_above.y + maze_span.size.y + self.maze_to_forecourt_padding
@@ -555,17 +568,22 @@ impl MainLevel {
             );
             let forecourt_span = Rect2::new(forecourt_position, forecourt_size);
 
+            // InnerSpan represents Maze and Forecourt.
             let inner_span = Rect2::from_corners(
                 maze_span.position,
                 forecourt_span.end()
             );
 
+            // ClearingSpan contains InnerSpan and a slight padding before the forest starts.
             let clearing_span = inner_span.grow_with_padding(self.clearing_ring.clone());
+
+            // Outermost span is ForestSpan which contains all other spans.
+            // Trees are spawned at points inside ForestSpan but not in ClearingSpan.
             let forest_span = clearing_span.grow_with_padding(self.forest_ring.clone());
 
 
-            // Spawn (or move) cabin
-
+            // "Spawn" cabin.
+            // Technically, cabin already exists but is moved instead.
             let cabin_aabb = bounding_box_utility::get_node_aabb_ex()
                 .node(Some(self.cabin.clone().upcast()))
                 .build()
@@ -592,20 +610,19 @@ impl MainLevel {
                 bottom_left,
             ];
             
-
+            // Find a polygon that represents the four corners of the cabin if it fits inside the forecourt and does not clip into other zones.
             let cabin_polygon_opt = (|| {
                 let extent = (width + height) * std::f32::consts::SQRT_2 / 4.0;
-
-                // Else, should be able to spawn
-
                 let middle_of_forecourt = forecourt_span.center();
 
                 let mut point = Vector2::new(extent, extent) + forecourt_position;
                 let mut rotation = std::f32::consts::FRAC_PI_4;
 
+                // Mirroring is randomized using seed.
                 let flip_against_y = self.rng.randi() % 2 == 0;
                 let flip_against_x = self.rng.randi() % 2 == 0;
 
+                // Math!
                 if flip_against_y {
                     let mut relative = point - middle_of_forecourt;
                     relative.x *= -1.0;
@@ -614,6 +631,7 @@ impl MainLevel {
                     rotation *= -1.0;
                 }
 
+                // More math!
                 if flip_against_x {
                     let mut relative = point - middle_of_forecourt;
                     relative.y *= -1.0;
@@ -622,6 +640,7 @@ impl MainLevel {
                     rotation = std::f32::consts::PI - rotation;
                 }
 
+                // Cabin center - does not depend on rotation.
                 let cabin_position = Vector3::new(
                     point.x,
                     maze_top_left_corner_center_position.y,
@@ -641,6 +660,11 @@ impl MainLevel {
                 polygon
             })();
 
+            // All spawned props - including cabin - is put into a vector.
+            // This is checked later when spawning new props.
+            // Unfortunately, checking this vector for every new prop results in O(n^2) runtime, but I think this is tolerable for a low number of props.
+            // A better solution would be something like Poisson Disk Sampling (https://en.wikipedia.org/wiki/Supersampling#Poisson_disk),
+            // but that seems like overkill for this project.
             let mut spawned_props = Vec::new();
 
             if let Some(cabin_polygon) = cabin_polygon_opt {
@@ -655,7 +679,7 @@ impl MainLevel {
             }
             
 
-            // Spawn snow props
+            // Spawn snow props.
 
             let props = self.prop_root.get_children();
             for prop in props.iter_shared() {
@@ -680,7 +704,8 @@ impl MainLevel {
                     Vector2::new(position_2d.x, end_2d.y),
                 ];
 
-                // Attempt k times for each prop
+                // Attempt k times for each prop.
+                // Note: k should be kept small in order to not explode prop spawning time.
                 for _ in 0..self.max_spawn_attempts_per_prop {
                     let x = self.rng.randf_range(0.0, forecourt_size.x);
                     let y = self.rng.randf_range(0.0, forecourt_size.y);
@@ -708,7 +733,7 @@ impl MainLevel {
                         continue;
                     };
 
-                    // Note - this causes O(n^2) time
+                    // Note - this is what causes O(n^2) time.
                     let any_overlap = spawned_props
                         .iter()
                         .any(|existing_polygon : &ConvexPolygon| {
@@ -735,12 +760,17 @@ impl MainLevel {
                 }
             }
 
-            // Spawn snow
+            // Spawn snow.
             let n_expected_snow_piles = (self.snow_per_square_unit * forecourt_size.length()) as i32;
 
-            const N_BARS : usize = 3 - 1;
+            const N_BARS : usize = 3 - 1; // Clarification: 3 - 1 = 2, in case there was any doubt.
+
+            // Split the snow "units" into 3 groups with 2 "bars" seperating them. 
             let mut bars = Vec::with_capacity(N_BARS);
             for _ in 0..N_BARS {
+                // Each "bar" can be thought of as an item seperating two* groups.
+                // If we e.g. have 10 items and 2 bars with indices 1 and 5 it would look like this:
+                // O|OO|OOOO
                 let bar_index = self.rng.randi_range(0, n_expected_snow_piles);
                 bars.push(bar_index);
             }
@@ -748,6 +778,7 @@ impl MainLevel {
             bars.sort();
 
             
+            // Three groups: Piles, Flats, Bunkers.
             let n_snow_piles = bars[0];
             let n_snow_flats = bars[1] - n_snow_piles;
             let n_snow_bunkers = n_expected_snow_piles - n_snow_piles - n_snow_flats;
@@ -819,6 +850,7 @@ impl MainLevel {
                         continue;
                     };
 
+                    // Note - this causes O(n^2) time.
                     let any_collision = spawned_props
                         .iter()
                         .any(|existing_polygon| {
@@ -829,7 +861,7 @@ impl MainLevel {
                         continue;
                     }
 
-                    // Ok to spawn
+                    // Ok to spawn.
                     let basis = Basis::from_axis_angle(Vector3::UP, rotation);
                     let transform = Transform3D::new(basis, position_3d);
 
@@ -847,7 +879,7 @@ impl MainLevel {
             }
 
 
-            // Create maze
+            // Create maze.
 
             let mut x = 0;
             let mut y = 0;
@@ -864,16 +896,17 @@ impl MainLevel {
                 let pos_x = position.coordinates.x;
                 let pos_y = position.coordinates.y;
 
+                // Looking top down, 2D X -> 3D X and 2D Y -> 3D -> Z.
+                // 3D Y represents height and is not important.
                 let vector = Vector3::new(pos_x, 0.0, pos_y) + maze_top_left_corner_center_position;
                 let basis = Basis::default();
                 let transform = Transform3D::new(basis, vector);
 
+                // This causes a checkered maze board.
                 let color = if (x + y) % 2 == 0 { self.color_a } else { self.color_b };
 
                 tile_multimesh.set_instance_transform(i, transform);
                 tile_multimesh.set_instance_color(i, color);
-
-                // Wall?
 
                 let array = bound_maze.rust_get_array();
                 let tile_opt = (|| {
@@ -884,7 +917,9 @@ impl MainLevel {
                 })();
 
                 if let Some(tile) = tile_opt {
+                    // Wall?
                     if tile == &Tile::Wall {
+                        // Tile is wall - roll for rock type using RNG seed.
                         let rock_type = RockType::get_random(self.rng.clone());
                         let rock_array = match rock_type {
                             RockType::Small => &mut small_rock_positions,
@@ -899,23 +934,26 @@ impl MainLevel {
                 x += 1;
             }
 
-            // Initialize rock spawners
-            let rock_multimeshes_and_positions = [
+            // Initialize rock spawners.
+            let rock_spawners_and_multimeshes_and_positions = [
                 (&mut self.rock_small_spawner, &mut small_rock_multimesh, small_rock_positions),
                 (&mut self.rock_medium_spawner, &mut medium_rock_multimesh, medium_rock_positions),
                 (&mut self.rock_large_spawner, &mut large_rock_multimesh, large_rock_positions),
             ];
 
-            // Spawn all rocks
-            for (spawner, multimesh, positions) in rock_multimeshes_and_positions {
+            // Spawn all rocks.
+            for (spawner, multimesh, positions) in rock_spawners_and_multimeshes_and_positions {
+                // Each rock type resets its multimesh and spawns rocks according to the rolled number.
                 let n_rocks_of_type = positions.len();
                 multimesh.set_instance_count(0);
                 multimesh.set_transform_format(TransformFormat::TRANSFORM_3D);
                 multimesh.set_instance_count(n_rocks_of_type as i32);
 
                 for (i, mut position) in positions.into_iter().enumerate() {
+                    // Spawn rock on top of tile.
                     position.y += tile_height;
 
+                    // Transform properties including rotation is randomized.
                     let transform = spawner.bind().create_object_transform(position, self.rng.clone());
 
                     multimesh.set_instance_transform(i as i32, transform);
@@ -923,6 +961,7 @@ impl MainLevel {
             }
 
             // Reindeer
+            // Put reindeer on top of its starting tile, facing north (by default).
 
             let reindeer_start = maze.bind().rust_get_reindeer_start_coordinate().clone();
             let x = reindeer_start.x as i32;
@@ -948,6 +987,7 @@ impl MainLevel {
 
 
             // Present
+            // Goal is represented by present/gift.
 
             let present_coordinate = maze.bind().rust_get_end_coordinate().clone();
             let x = present_coordinate.x as i32;
@@ -971,7 +1011,7 @@ impl MainLevel {
             present.show();
 
 
-            // Teleport player if enabled
+            // Teleport player if enabled.
             if self.teleport_player_on_maze_set {
                 let forecourt_center = forecourt_span.center();
                 let mut player_position = self.player.get_position();
@@ -983,8 +1023,9 @@ impl MainLevel {
             }
 
 
-            // Create surrounding forest
-            // Note that this is done here after everything else as we want the same seed to generate the same cabin and prop variants regardless of forest size
+            // Create surrounding forest.
+            // Note that this is done here after everything else.
+            // We want the same seed to generate the same cabin and prop variants regardless of forest size.
 
             let forest_position = &forest_span.position;
             let forest_size = &forest_span.size;
@@ -997,6 +1038,8 @@ impl MainLevel {
                 Some(height)
 
             })().unwrap_or(1.0);
+
+            // Creating a custom AABB as we know the forest size and the tree's height.
             let forest_custom_aabb = Aabb::new(
                 Vector3::new(
                     forest_position.x,
@@ -1017,7 +1060,8 @@ impl MainLevel {
                 return;
             };
 
-            // Get tree positions
+
+            // Get tree positions.
 
             let mut tree_spawn_positions = Vec::with_capacity(n_tree_spawn_attempts);
 
@@ -1029,7 +1073,8 @@ impl MainLevel {
 
                 let point = local_point + forest_span.position;
 
-                // Only add if this point is in the forest but not in clearing
+                // Only add if this point is in the forest but not in clearing.
+                // We already know this is in the forest span.
                 if clearing_span.contains_point(point) {
                     continue;
                 }
@@ -1038,10 +1083,11 @@ impl MainLevel {
                 tree_spawn_positions.push(point);
             }
 
-            // Spawn main forest
+            // Spawn main forest.
 
             let bound_tree_spawner = self.tree_spawner.bind();
 
+            // We can now spawn trees as we know how many trees are being spawned and their positions.
             let n_trees = tree_spawn_positions.len() as i32;
             tree_multimesh.set_instance_count(n_trees);
             for (i, top_down_position) in tree_spawn_positions.into_iter().enumerate() {
@@ -1058,15 +1104,20 @@ impl MainLevel {
             drop(bound_tree_spawner);
 
 
-            // Spawn side forests
+            // Spawn side forests.
 
-            // Delete old side forests
+            // Delete old side forests.
+            // There shouldn't be any old forests, but we are doing this just in case.
             for mut old_side_forest in self.side_forest_spawners_root.get_children().iter_shared() {
                 old_side_forest.queue_free();
             }
 
             let forest_rings = self.outer_forest_rings;
 
+            // SuperForestSpan represent ALL forests.
+            // Instead of expanding the "main" forest, we create "tiles" around the main forest that we populate with seperate forests.
+            // Since we are using MultiMeshes all trees are drawn if ANY are visible.
+            // Spawning multiple "forests" makes it possible to forego drawing induvidual forests if they are not visible.
             let super_forest_position = *forest_position - (*forest_size * (forest_rings as f32));
             let super_forest_size = (forest_rings * 2 + 1) as f32 * *forest_size;
 
@@ -1074,7 +1125,7 @@ impl MainLevel {
 
             self.set_ground_dimensions(super_forest_span);
 
-            // Spawn new forests
+            // Spawn new forests.
             for x_major in -forest_rings..=forest_rings {
                 for y_major in -forest_rings..=forest_rings {
                     if x_major == 0 && y_major == 0 {
@@ -1140,7 +1191,9 @@ impl MainLevel {
             }
             
         } else {
-            // Reset
+            // If maze == None:
+
+            // Reset all MultiMeshes.
             let multimeshes = [
                 &mut tile_multimesh,
                 &mut small_rock_multimesh,
@@ -1156,8 +1209,8 @@ impl MainLevel {
             self.present.hide();
         }
 
-        // Finally, refresh options to apply low performance mode
-        // Not using refresh() here as that would lead to an unfortunate infinite loop
+        // Finally, refresh options to apply low performance mode.
+        // Not using refresh() here as that would lead to an unfortunate infinite loop.
         self.on_low_performance_mode_change();
     }
 
@@ -1191,7 +1244,7 @@ impl MainLevel {
         self.ground_mesh.set_position(ground_position);
 
 
-        // Collision, copied from mesh
+        // Collision, copied from mesh.
 
         let mut box_collision = (|| {
             self
@@ -1225,15 +1278,19 @@ impl MainLevel {
 
         let low_performance_mode = options.bind().get_low_performance_mode();
 
+        // Goal here is to collect all forests (main and side) to reduce (or reset) number of visible trees.
         let mut forest_spawners = vec![self.tree_spawner.clone().upcast::<MultiMeshInstance3D>()];
+
         let side_forests = self.side_forest_spawners_root.get_children();
         for child in side_forests.iter_shared() {
             let as_multimesh_instance_result = child.try_cast::<MultiMeshInstance3D>();
             if let Ok(as_multimesh_instance) = as_multimesh_instance_result {
+                // If configured correctly, this branch is always taken and the side forest is always registered.
                 forest_spawners.push(as_multimesh_instance);
             }
         }
 
+        // Desired number of visible trees depend on if we are in low-performance mode or not.
         let desired_visible_count = self.get_number_of_visible_trees();
         for spawner in forest_spawners {
             let Some(mut tree_multimesh) = spawner.get_multimesh() else {
@@ -1246,6 +1303,7 @@ impl MainLevel {
             }
         }
 
+        // Also tell cabin that we are or are not in low-performance mode.
         self.cabin.bind_mut().toggle_effects(!low_performance_mode);
     }
 
@@ -1276,6 +1334,7 @@ impl MainLevel {
 
         for (item, volume_factor) in components_and_default_factors {
             for (component, default_factor) in item {
+                // Volume is the factor set in options multiplied by the value set in Godot.
                 let volume = volume_factor * *default_factor;
                 component.set_volume_linear(volume);
             }
@@ -1285,6 +1344,7 @@ impl MainLevel {
 
     #[func]
     fn on_pause_menu_request(&mut self, request : PauseMenuRequest) {
+        // Ignore if game is not paused.
         if self.level_run_state != LevelRunState::Paused {
             return;
         }
@@ -1310,7 +1370,13 @@ impl MainLevel {
 
 
     #[func]
-    fn on_maze_update_idx(&mut self, idx : i32, state : MazeTileState, direction : Direction, acknowledger : Gd<Communicator>) {
+    fn on_maze_update_idx(
+        &mut self,
+        idx : i32,
+        state : MazeTileState,
+        direction : Direction,
+        acknowledger : Gd<Communicator>
+    ) {
         let Some(mut multimesh) = self.tile_spawner.get_multimesh() else {
             godot_error!("Expected multimesh!");
             return;
@@ -1327,8 +1393,12 @@ impl MainLevel {
                 multimesh.set_instance_color(idx, Color::ORANGE);
             },
             MazeTileState::Active => {
+                // When a tile is marked "active":
+
+                // Set it to be green...
                 multimesh.set_instance_color(idx, Color::GREEN);
 
+                // ... and - depending on a lot of checks - move the ghost reindeer to that tile.
                 if let Some(maze) = self.maze.clone() {
                     if let Ok(idx_usize) = usize::try_from(idx) {
                         let dim_x = maze.bind().rust_get_dim_x();
@@ -1350,7 +1420,7 @@ impl MainLevel {
 
                                 ) + self.maze_top_left_corner.get_position();
 
-                                // Move ghost reindeer
+                                // Move ghost reindeer.
                                 let ghost_reindeer = &mut self.maze_ghost_reindeer;
                                 ghost_reindeer.set_position(position_3d);
                                 ghost_reindeer.bind_mut().set_reindeer_rotation(direction);
@@ -1362,6 +1432,7 @@ impl MainLevel {
             },
         }
 
+        // Create a "one-shot" timer that tells the maze finder to continue after some time.
         let delay = self.maze_solver_info.bind().wait_delay;
         let mut scene_tree = self.base().get_tree().expect("Failed getting scene tree??");
         let timer = scene_tree.create_timer(delay).expect("Failed creating timer??");
@@ -1382,10 +1453,13 @@ impl MainLevel {
 
     #[func]
     fn on_maze_commit_found_path(&mut self, path_info_opt : Option<Gd<PathInfo>>) {
+        // Set pathfinding state to done regardless of if path was found or not.
         self.set_pathfinding_state(PathfindingState::Done);
 
         self.maze_ghost_reindeer.hide();
 
+        // Mail content depends on if path was found or not.
+        // Note that the IGenerateMail trait is implemented for an Option<_>.
         let mail = path_info_opt.generate_mail();
         self.send_mail_to_letter_menu(mail);
 
@@ -1394,14 +1468,16 @@ impl MainLevel {
             let paths = bound.rust_get_paths();
 
             let empty = Vec::new();
+
+            // Fetch the first found path (as there can be multiple).
             let first_path = paths.first().unwrap_or(&empty);
 
+            // Number of arrows is equal to number of (unique) coordinates in path except goal coordinate.
             let n_arrows = first_path.len().checked_sub(1).unwrap_or(0);
-
             let arrow_pulse_frequency = self.arrow_pulse_frequency_factor / (n_arrows as f32);
 
 
-            // Configure arrow spawner
+            // Configure arrow spawner.
 
             self.arrow_spawner.set_material_overlay(Some(&self.arrow_shader_material.clone().upcast::<Material>()));
 
@@ -1440,6 +1516,8 @@ impl MainLevel {
                     break;
                 };
 
+                // Rotation depend on current arrow and the next.
+
                 let x = current.x;
                 let y = current.y;
 
@@ -1461,10 +1539,12 @@ impl MainLevel {
 
                 ) + maze_top_left_corner_offset;
 
+                // Note - create_object_transform expects a RNG, though this is not used as arrow should not have any random rotation.
                 let mut transform = self.arrow_spawner.bind().create_object_transform(position, self.rng.clone());
 
                 let direction_from_current_to_next_opt = next.try_get_direction_of_other(current);
                 if let Some(direction_from_current_to_next) = direction_from_current_to_next_opt {
+                    // Get alignment and rotate to point at next arrow.
                     let alignment = self.arrow_spawner.bind().rust_get_mesh_directional_alignment();
                     let rotations = alignment.counter_clockwise_rotations_to(&direction_from_current_to_next);
 
@@ -1476,6 +1556,8 @@ impl MainLevel {
 
                 let i_i32 = i32::try_from(i).unwrap();
 
+                // Arrows are pulsating using shader code and "custom data".
+                // Setting the first component (red aka r) to pulse time.
                 let mut custom_data = Color::BLACK;
                 custom_data.r = ((n_arrows - i) as f32) * arrow_pulse_frequency;
 
@@ -1533,6 +1615,7 @@ impl MainLevel {
         
         // Level -> Communicator
 
+        // notify_level_run_state_update
         self
             .signals()
             .notify_level_run_state_update()
@@ -1556,12 +1639,14 @@ impl MainLevel {
 
         // Communicator -> Level
         
+        // update_idx
         handle
             .signals()
             .update_idx()
             .builder()
             .connect_other_mut(self, Self::on_maze_update_idx);
 
+        // commit_finished
         handle
             .signals()
             .commit_finished()
@@ -1636,15 +1721,18 @@ impl MainLevel {
 
 
     fn send_mail_to_letter_menu(&mut self, mail : GString) {
+        // Play sound and mark mail as sent.
         self.mail_notification_sfx_player.play();
         self.pause_menu.bind_mut().send_mail_to_letter_menu(mail);
 
+        // Stop any old tweens.
         let tween_opt = self.base_mut().create_tween();
         let old_tween_opt = std::mem::replace(&mut self.mail_message_tween, tween_opt);
         if let Some(mut old_tween) = old_tween_opt {
             old_tween.stop();
         }
 
+        // Create a tween that displays a message to the player.
         let tween_opt = self.mail_message_tween.clone();
         if let Some(mut tween) = tween_opt {
             self.mail_message_label.show();

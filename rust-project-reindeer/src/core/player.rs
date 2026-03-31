@@ -72,13 +72,13 @@ impl ICharacterBody3D for Player {
             CAMERA_DOWN,
         );
 
-        // If camera movement, handle rotation
-        // Note: Vector is normalized, so multipliying with a sensitivity factor
+        // If camera movement, handle rotation.
+        // Note: Vector is normalized, so multipliying with a sensitivity factor.
         if !camera_vector.is_zero_approx() {
             self.handle_camera_vector_movement(camera_vector * self.camera_sensitivity_for_controller);
         }
 
-        // Double speed if sprinting        
+        // Double speed if sprinting.
         let mut speed = self.speed;
         if self.sprint_toggled {
             speed *= 2.0;
@@ -127,20 +127,20 @@ impl ICharacterBody3D for Player {
 
     
     fn unhandled_input(&mut self, event : Gd<InputEvent>) {
-        // Check cancel
+        // Check cancel:
         let mut input = Input::singleton();
         if event.is_action_pressed(UI_CANCEL) {
             input.set_mouse_mode(MouseMode::VISIBLE);
             return;
         }
 
-        // Else, check mouse click
+        // Else, check mouse click:
         if event.is_action_pressed(MOUSE_LEFT) {
             input.set_mouse_mode(MouseMode::CAPTURED);
             return;
         }
 
-        // Else, check mouse motion
+        // Else, check mouse motion:
         let input_event_mouse_motion_result = event.clone().try_cast::<InputEventMouseMotion>();
         if let Ok(input_event_mouse_motion) = input_event_mouse_motion_result {
             let event_relative = input_event_mouse_motion.get_relative();
@@ -148,21 +148,21 @@ impl ICharacterBody3D for Player {
             return;
         }
 
-        // Else, check sprint
+        // Else, check sprint:
         if event.is_action_pressed(TOGGLE_SPRINT) {
             let toggled = !self.sprint_toggled;
             self.sprint_toggled = toggled;
             return;
         }
 
-        // Else, check visibility
+        // Else, check visibility:
         if event.is_action_pressed(TOGGLE_VISIBILITY) {
             let toggled = !self.get_body_visible();
             self.set_body_visible(toggled);
             return;
         }
 
-        // Else, check light input
+        // Else, check light input:
         if event.is_action_pressed(TOGGLE_LIGHT) {
             let toggled = !self.get_light_on();
             self.set_light_on(toggled);

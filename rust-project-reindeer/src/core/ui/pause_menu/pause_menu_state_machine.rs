@@ -53,6 +53,7 @@ impl IControl for PauseMenuStateMachine {
                 Self::on_pause_menu_face_request
             );
         
+        // letter_menu
         self
             .letter_menu
             .signals()
@@ -88,7 +89,7 @@ impl IControl for PauseMenuStateMachine {
             );
         
 
-        // Make it so face knows of letter menu
+        // Make it so face knows of letter menu.
         self.face_pause_menu.bind_mut().set_letter_menu(Some(self.letter_menu.clone()));
 
         self.refresh();
@@ -101,7 +102,7 @@ impl IState for PauseMenuStateMachine {
     fn enter(&mut self) {
         self.is_active = true;
 
-        // Retrigger enter state
+        // Retrigger enter state.
         let current_state = self.state.clone();
         self.set_state(current_state);
 
@@ -194,7 +195,6 @@ impl PauseMenuStateMachine {
             submenu.dyn_bind_mut().exit();
             submenu.hide();
         }
-
     }
 
 

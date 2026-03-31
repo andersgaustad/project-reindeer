@@ -230,7 +230,7 @@ impl Maze {
                 ).await;
                 // AWAIT
 
-                // Unwrapping this as if this is an option then I have done something wrong
+                // Unwrapping this as if this is an option then I have done something wrong.
                 let cost_to_get_here = *coordinate_state_to_cost.get(&current).unwrap();
 
                 if current_coordinate == end_coordinate {
@@ -240,12 +240,12 @@ impl Maze {
                     }
                 }
 
-
+                // Valid candidates and costs depend on rotation cost - see below:
                 let valid_candidates_and_costs = if rotations_are_free {
-                    // Special scenario - rotation cost is 0
-                    // Tracking predecessors when rotation cost is 0 will result in an infinite loop under normal circumstances 
-                    // There will always be a "free" action of moving from rotation A to B
-                    // Fixing this by skipping rotations and dealing with all neighbors instead regardless of orientation
+                    // Special scenario - rotation cost is 0.
+                    // Tracking predecessors when rotation cost is 0 will result in an infinite loop under normal circumstances. 
+                    // There will always be a "free" action of moving from rotation A to B.
+                    // Fixing this by skipping rotations and dealing with all neighbors instead regardless of orientation.
 
                     let results = Direction::iter().filter_map(|direction| {
                         let move_target = current_coordinate.clone() + direction.to_vector();
@@ -270,11 +270,11 @@ impl Maze {
                     results
                     
                 } else {
-                    // Generic scenario (rotations are not free) - we can either continue in our current direction or rotate
+                    // Generic scenario (rotations are not free) - we can either continue in our current direction or rotate.
 
                     let mut results = Vec::new();
 
-                    // Move options
+                    // Move options:
                     let move_target = current_coordinate.clone() + current_direction.to_vector();
                     if let Some((_, tile)) = gd.bind().get_index_and_content_by_coordinate(&move_target) {
                         if tile == &Tile::Ground {
@@ -319,7 +319,7 @@ impl Maze {
 
                     let candidate_index = candidate_coordinate.try_to_index(map_dim_x, map_dim_y).unwrap();
 
-                    // Notify touched
+                    // Notify touched.
                     // AWAIT
                     let _await = Self::wait_for_update_idx(
                         communicator.clone(),
@@ -341,7 +341,7 @@ impl Maze {
         
                     let skip_overshooting_cost = REMEMBER_BEST_PATH && cost_to_move_here_from_current > score_opt.unwrap_or(IMPLIED_UNVISITED_COST);
                     if cost_to_move_cmp != Ordering::Less || skip_overshooting_cost {
-                        // Notify non-committed by reverting to default state
+                        // Notify non-committed by reverting to default state.
 
                         // AWAIT
                         let _await = Self::wait_for_update_idx(
@@ -356,9 +356,9 @@ impl Maze {
                         continue;
                     }
         
-                    // Else, we should have found new optimal path
+                    // Else, we should have found new optimal path.
 
-                    // Notify candidate committed
+                    // Notify candidate committed.
                     // AWAIT
                     let _await = Self::wait_for_update_idx(
                         communicator.clone(),
@@ -378,7 +378,7 @@ impl Maze {
                     any_new_coordinate_added = true;
                 }
 
-                // At the end, sort by heurestic (lower is closer)
+                // If any coordinates were added, sort them by heurestic (lower is closer).
                 if any_new_coordinate_added {
                     to_visit.sort_unstable_by(|a, b| {
                         let a_cost = coordinate_state_to_cost.get(a).unwrap_or(&IMPLIED_UNVISITED_COST);
@@ -399,7 +399,7 @@ impl Maze {
                     });
                 }
 
-                // Finally, notify and mark current as normal
+                // Finally, notify and mark current as normal.
                 // AWAIT
                 let _await = Self::wait_for_update_idx(
                     communicator.clone(),
@@ -411,6 +411,7 @@ impl Maze {
                 // AWAIT
             }
 
+            // Either path is found or all coordinates have been exhausted.
             let path_info_opt = score_opt.map(|score| {
                 let end_state = Direction::iter().map(|direction| {
                     let state = CoordinateAndDirecton {
@@ -455,7 +456,6 @@ impl Maze {
 
                 let path_info = PathInfo::new_gd(paths, score);
                 path_info
-
             });
 
             communicator.signals().commit_finished().emit(path_info_opt.as_ref());
@@ -471,14 +471,14 @@ impl Maze {
 
         while let Some(current_predecessors) = key_got_here_from_value_map.get(&current) {
             if current_predecessors.len() == 1 {
-                // Single predecessor
+                // Single predecessor:
                 let predecessor = current_predecessors.iter().next().unwrap();
 
                 path.push(predecessor.clone());
                 current = predecessor.clone();
 
             } else {
-                // Multiple predecessors
+                // Multiple predecessors:
                 let mut all_paths = Vec::with_capacity(current_predecessors.len());
                 for predecessor in current_predecessors {
                     let sub_paths = self.reconstruct_path_from_end_reversed(predecessor.clone(), key_got_here_from_value_map);
@@ -543,7 +543,7 @@ impl Maze {
 
             2 => 2 * cost_per_rotation,
 
-            // Should never happen
+            // Should never happen.
             _ => {
                 panic!("Got {} rotations - should not have been possible!", &clamped);
             }
@@ -601,12 +601,6 @@ impl Maze {
         }
     }
 }
-
-
-
-
-
-
 
 
 // ParsedTile
@@ -685,6 +679,8 @@ impl From<&Tile> for char {
 
 // Reindeer
 
+// ^- Not to be confused with the public Godot Reindeer.
+ 
 #[derive(Clone)]
 struct Reindeer {
     direction : Direction,

@@ -95,6 +95,8 @@ columns = 2
 [node name="LowPerformanceModeText" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerPerformance/GridContainer"]
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
+tooltip_text = "Enabling this will reduce amount of visible trees and cosmetic effects like cabin chimney smoke."
+mouse_filter = 1
 text = "Low-performance mode:"
 
 [node name="ToggleLowPerformanceModeButton" type="CheckButton" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerPerformance/GridContainer"]
@@ -125,6 +127,8 @@ columns = 2
 [node name="WindowModeLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerVideo/GridContainer"]
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
+tooltip_text = "Window Mode"
+mouse_filter = 1
 text = "Window Mode:"
 
 [node name="WindowModeOptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerVideo/GridContainer"]
@@ -161,6 +165,8 @@ columns = 3
 [node name="MusicVolumeLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio/GridContainer"]
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
+tooltip_text = "Volume of background music."
+mouse_filter = 1
 text = "Music Volume:"
 
 [node name="MusicVolumeSlider" type="HSlider" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio/GridContainer"]
@@ -184,6 +190,8 @@ text = "100%"
 [node name="SFXVolumeLabel" type="Label" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio/GridContainer"]
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
+tooltip_text = "Volume of sound effects like UI sounds."
+mouse_filter = 1
 text = "Sound Effect Volume:"
 
 [node name="SFXVolumeSlider" type="HSlider" parent="PanelContainer/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/ScrollContainer/VBoxContainer2/VBoxContainerAudio/GridContainer"]

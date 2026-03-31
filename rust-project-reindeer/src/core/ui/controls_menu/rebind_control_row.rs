@@ -473,6 +473,9 @@ impl RebindControlRow {
 // Utility
 
 fn simplify_controller_text(gstring : GString) -> GString {
+    // Controller/Joypad text is a bit unpredicatable.
+    // Trimming stuff before first '(', and ending on either a ',' or ')'
+    
     let part_1 = gstring.split("(").get(1).unwrap_or_default();
 
     let end_tokens = [

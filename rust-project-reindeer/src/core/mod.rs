@@ -6,7 +6,6 @@ pub mod maze;
 pub mod options;
 pub mod player;
 pub mod props;
-pub mod random;
 pub mod run;
 pub mod ui;
 pub mod utility;

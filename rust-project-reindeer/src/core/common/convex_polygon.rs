@@ -3,8 +3,6 @@ use godot::prelude::*;
 use crate::core::common::plane_2d::Plane2D;
 
 
-// ConvexPolygon
-
 pub struct ConvexPolygon {
     corners : Vec<Vector2>,
 

@@ -12,7 +12,7 @@ pub enum LevelRunState {
 
 impl LevelRunState {
     pub fn is_paused(&self) -> bool {
-        // Matching might seem like overkill, but handy to get a compile error/warning if I for some reason add more enum states
+        // Matching might seem like overkill, but handy to get a compile error/warning if I for some reason add more enum states.
         match self {
             LevelRunState::Running => false,
             LevelRunState::Paused => true,

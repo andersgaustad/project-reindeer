@@ -86,7 +86,7 @@ impl IControl for ControlsMenu {
 
         let rebind_rows = self.get_rebind_control_rows();
 
-        // Iterate over vertical neighbors
+        // Iterate over vertical neighbors.
         let n_rows = rebind_rows.len();
         for i in 0..n_rows {
             let Some(row) = rebind_rows.get(i).cloned() else {
