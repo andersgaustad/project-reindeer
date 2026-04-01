@@ -64,7 +64,7 @@ jobs:
       - name: Extract Version
         # Version is used by Butler's Upload to itchio Action
         run: |
-          VERSION=${{ github.ref }}
+          VERSION=${{ github.ref_name }}
           echo "Release Version: $VERSION"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
         
