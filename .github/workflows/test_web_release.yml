@@ -107,7 +107,7 @@ jobs:
         run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --import 
 
       - name: Export - ${{ vars.WEB_W_THREADS_NAME }}
-        run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.WEB_W_THREADS_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.WINDOWS_NAME }}/index.html"
+        run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.WEB_W_THREADS_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.WEB_W_THREADS_NAME }}/index.html"
 
       - name: Butler Push - ${{ vars.WEB_W_THREADS_NAME }}
         uses: yeslayla/butler-publish-itchio-action@v1.2.0
