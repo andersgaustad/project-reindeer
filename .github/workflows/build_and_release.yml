@@ -54,6 +54,7 @@ jobs:
                 build-essential \
                 curl \
                 gcc-multilib \
+                libclang-dev \
                 python3
 
       - name: Setup Rust
