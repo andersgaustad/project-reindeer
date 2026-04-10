@@ -61,7 +61,7 @@ jobs:
         # Needed for importing class names, see below.
         run: GODOT4_BIN=$(which godot) cargo build
 
-      - name: Build Web
+      - name: Build ${{ vars.WEB_W_THREADS_NAME }}
         run: |
             RUSTFLAGS="-C link-args=-pthread \
                 -C target-feature=+atomics \
@@ -73,6 +73,7 @@ jobs:
                 -Z unstable-options" \
                 GODOT4_BIN=$(which godot) \
                 cargo +nightly build -r -Zbuild-std --target wasm32-unknown-emscripten
+                mv target/wasm32-unknown-emscripten/release/rust_project_reindeer.wasm target/wasm32-unknown-emscripten/release/rust_project_reindeer.threads.wasm
 
       - name: Extract Version
         # Version is used by Butler's Upload to itchio Action
