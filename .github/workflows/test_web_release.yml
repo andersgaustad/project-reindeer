@@ -26,9 +26,10 @@ jobs:
         run: |
             apt-get update && \
             apt-get install -y \
-                curl \
                 build-essential \
-                gcc-multilib
+                curl \
+                gcc-multilib \
+                python
 
       - name: Setup Rust
         # We need to setup Rust here as well to register classes and import them for the export to work.
