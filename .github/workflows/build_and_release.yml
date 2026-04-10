@@ -48,7 +48,10 @@ jobs:
           lfs: true
       
       - name: Install Dependencies
-        run: apt-get update && apt-get install -y curl build-essential
+        run: apt-get update && apt-get install -y \
+            curl \
+            build-essential \
+            gcc-multilib
 
       - name: Setup Rust
         # We need to setup Rust here as well to register classes and import them for the export to work.
@@ -91,7 +94,7 @@ jobs:
         # Note that the debug build itself is not exported.
         run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --import 
 
-      - name: Build Linux
+      - name: Export - ${{ vars.LINUX_NAME }}
         run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.LINUX_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}.x86_64"
 
       - name: Butler Push - ${{ vars.LINUX_NAME }}
@@ -100,13 +103,13 @@ jobs:
           CHANNEL: ${{ vars.LINUX_NAME }}
           PACKAGE: ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}
 
-      - name: Upload Linux
+      - name: Upload - ${{ vars.LINUX_NAME }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}
           path: ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}
 
-      - name: Build Windows
+      - name: Export - ${{ vars.WINDOWS_NAME }}
         run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.WINDOWS_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.WINDOWS_NAME }}/${{ vars.EXPORT_NAME }}-${{ vars.WINDOWS_NAME }}.exe"
     
       - name: Butler Push - ${{ vars.WINDOWS_NAME }}
@@ -115,13 +118,13 @@ jobs:
           CHANNEL: ${{ vars.WINDOWS_NAME }}
           PACKAGE: ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.WINDOWS_NAME }}
 
-      - name: Upload Windows
+      - name: Upload - ${{ vars.WINDOWS_NAME }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ vars.EXPORT_NAME }}-${{ vars.WINDOWS_NAME }}
           path: ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.WINDOWS_NAME }}
 
-      - name: Build Mac
+      - name: Export - ${{ vars.MAC_OS_NAME }}
         run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.MAC_OS_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.MAC_OS_NAME }}/${{ vars.EXPORT_NAME }}-${{ vars.MAC_OS_NAME }}.zip"
 
       - name: Butler Push - ${{ vars.MAC_OS_NAME }}
@@ -130,7 +133,7 @@ jobs:
           CHANNEL: ${{ vars.MAC_OS_NAME }}
           PACKAGE: ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.MAC_OS_NAME }}
         
-      - name: Upload MacOS
+      - name: Upload - ${{ vars.MAC_OS_NAME }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ vars.EXPORT_NAME }}-${{ vars.MAC_OS_NAME }}
