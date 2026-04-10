@@ -60,6 +60,7 @@ jobs:
         # Needed for importing class names, see below.
         run: |
             alias godot4=godot
+            godot4 --version
             cargo build
 
       - name: Build Web
