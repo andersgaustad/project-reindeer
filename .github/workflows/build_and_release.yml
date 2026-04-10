@@ -48,10 +48,7 @@ jobs:
           lfs: true
       
       - name: Install Dependencies
-        run: apt-get update && apt-get install -y \
-            curl \
-            build-essential \
-            gcc-multilib
+        run: apt-get update && apt-get install -y curl build-essential gcc-multilib
 
       - name: Setup Rust
         # We need to setup Rust here as well to register classes and import them for the export to work.

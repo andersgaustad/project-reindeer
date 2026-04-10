@@ -11,7 +11,7 @@ env:
   ITCH_USER: andersgaustad
 
 jobs:
-  godot-export-and-release:
+  test-wasm-release:
     runs-on: ubuntu-24.04
     container:
       image: barichello/godot-ci:${{ vars.GODOT_VERSION }}
@@ -23,10 +23,12 @@ jobs:
           lfs: true
       
       - name: Install Dependencies
-        run: apt-get update && apt-get install -y \
-            curl \
-            build-essential \
-            gcc-multilib
+        run: |
+            apt-get update && \
+            apt-get install -y \
+                curl \
+                build-essential \
+                gcc-multilib
 
       - name: Setup Rust
         # We need to setup Rust here as well to register classes and import them for the export to work.
@@ -47,12 +49,10 @@ jobs:
             source ./emsdk/emsdk_env.sh
         
       - name: Check emcc
-        run: |
-            emcc --version
+        run: emcc --version
 
       - name: Modify Cargo.toml
-        run: |
-            mv rust/project_reindeer/Cargo.wasm.toml rust/project_reindeer/Cargo.toml
+        run: mv rust/project_reindeer/Cargo.wasm.toml rust/project_reindeer/Cargo.toml
 
       - name: Register Classes
         # Note that this will create a debug build of the Rust code,
@@ -61,15 +61,16 @@ jobs:
         run: cargo build
 
       - name: Build Web
-        run: RUSTFLAGS="-C link-args=-pthread \
-            -C target-feature=+atomics \
-            -C link-args=-sSIDE_MODULE=2 \
-            -C llvm-args=-enable-emscripten-cxx-exceptions=0 \
-            -Z default-visibility=hidden \
-            -Z link-native-libraries=no \
-            -Z emscripten-wasm-eh=false \
-            -Z unstable-options" \
-            cargo +nightly build -r -Zbuild-std --target wasm32-unknown-emscripten
+        run: |
+            RUSTFLAGS="-C link-args=-pthread \
+                -C target-feature=+atomics \
+                -C link-args=-sSIDE_MODULE=2 \
+                -C llvm-args=-enable-emscripten-cxx-exceptions=0 \
+                -Z default-visibility=hidden \
+                -Z link-native-libraries=no \
+                -Z emscripten-wasm-eh=false \
+                -Z unstable-options" \
+                cargo +nightly build -r -Zbuild-std --target wasm32-unknown-emscripten
 
       - name: Extract Version
         # Version is used by Butler's Upload to itchio Action
