@@ -58,10 +58,13 @@ jobs:
         # Note that this will create a debug build of the Rust code,
         # and only for Linux.
         # Needed for importing class names, see below.
-        run: cargo build
+        run: |
+            alias godot4=godot
+            cargo build
 
       - name: Build Web
         run: |
+            alias godot4=godot
             RUSTFLAGS="-C link-args=-pthread \
                 -C target-feature=+atomics \
                 -C link-args=-sSIDE_MODULE=2 \
