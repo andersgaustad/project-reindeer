@@ -61,6 +61,20 @@ jobs:
         # We need to setup Rust here as well to register classes and import them for the export to work.
         # See below.
         uses: actions-rust-lang/setup-rust-toolchain@v1.15.4
+
+      - name: Add WASM Cargo target
+        # WASM is used later
+        run: |
+            rustup toolchain install nightly
+            rustup component add rust-src --toolchain nightly
+            rustup target add wasm32-unknown-emscripten --toolchain nightly
+    
+      - name: Setup Emscripten toolchain
+        # For WASM
+        uses: emscripten-core/setup-emsdk@v16
+        with:
+            version: 3.1.74
+            actions-cache-folder: 'emsdk-cache'
     
       - name: Register Classes
         # Note that this will create a debug build of the Rust code,
@@ -85,6 +99,7 @@ jobs:
           mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.LINUX_NAME }}
           mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.WINDOWS_NAME }}
           mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.MAC_OS_NAME }}
+          mkdir -v -p ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.WEB_W_THREADS_NAME }}
       
       - name: Download
         uses: actions/download-artifact@v7
@@ -142,3 +157,47 @@ jobs:
         with:
           name: ${{ vars.EXPORT_NAME }}-${{ vars.MAC_OS_NAME }}
           path: ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.MAC_OS_NAME }}
+
+
+      - name: Modify Cargo.toml for WASM build
+        run: mv rust-project-reindeer/Cargo.wasm.toml rust-project-reindeer/Cargo.toml
+
+      - name: Re-register Classes
+        # For consistency, register classes for web build as well.
+        run: GODOT4_BIN=$(which godot) cargo build
+    
+      - name: Build ${{ vars.WEB_W_THREADS_NAME }}
+        # Building for WASM.
+        # This is still quite experimental, and should be changed when we have a more stable method.
+        run: |
+            RUSTFLAGS="-C link-args=-pthread \
+                -C target-feature=+atomics \
+                -C link-args=-sSIDE_MODULE=2 \
+                -C llvm-args=-enable-emscripten-cxx-exceptions=0 \
+                -Z default-visibility=hidden \
+                -Z link-native-libraries=no \
+                -Z emscripten-wasm-eh=false \
+                -Z unstable-options" \
+                GODOT4_BIN=$(which godot) \
+                cargo +nightly build -r -Zbuild-std --target wasm32-unknown-emscripten
+                mv target/wasm32-unknown-emscripten/release/rust_project_reindeer.wasm target/wasm32-unknown-emscripten/release/rust_project_reindeer.threads.wasm
+      
+      - name: Re-Import Registered Classes
+        # Import registered classes again.
+        # Not sure if this is strictly needed, but techncially classes might have changed.
+        run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --import
+
+      - name: Export - ${{ vars.WEB_W_THREADS_NAME }}
+        run: godot --headless --verbose --path "${{ vars.PROJECT_PATH }}" --export-release "${{ vars.WEB_W_THREADS_NAME }}" "build/${{ vars.EXPORT_NAME }}-${{ vars.WEB_W_THREADS_NAME }}/index.html"
+
+      - name: Butler Push - ${{ vars.WEB_W_THREADS_NAME }}
+        uses: yeslayla/butler-publish-itchio-action@v1.2.0
+        env:
+          CHANNEL: ${{ vars.WEB_W_THREADS_NAME }}
+          PACKAGE: ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.WEB_W_THREADS_NAME }}
+      
+      - name: Upload - ${{ vars.WEB_W_THREADS_NAME }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ vars.EXPORT_NAME }}-${{ vars.WEB_W_THREADS_NAME }}
+          path: ${{ vars.PROJECT_PATH }}/build/${{ vars.EXPORT_NAME }}-${{ vars.WEB_W_THREADS_NAME }}
