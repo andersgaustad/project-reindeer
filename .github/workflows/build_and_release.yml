@@ -54,7 +54,7 @@ jobs:
                 build-essential \
                 curl \
                 gcc-multilib \
-                python
+                python3
 
       - name: Setup Rust
         # We need to setup Rust here as well to register classes and import them for the export to work.
