@@ -52,7 +52,7 @@ jobs:
         run: emcc --version
 
       - name: Modify Cargo.toml
-        run: mv rust/project_reindeer/Cargo.wasm.toml rust/project_reindeer/Cargo.toml
+        run: mv rust-project-reindeer/Cargo.wasm.toml rust-project-reindeer/Cargo.toml
 
       - name: Register Classes
         # Note that this will create a debug build of the Rust code,
