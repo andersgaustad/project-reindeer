@@ -193,7 +193,11 @@ impl PauseMenuFace {
                     return;
                 };
 
-                tree.quit();
+                if cfg::is_web_build() {
+                    godot_warn!("Tried exiting in web build! Ignoring...");
+                } else {
+                    tree.quit();
+                }
             },
         }
     }
