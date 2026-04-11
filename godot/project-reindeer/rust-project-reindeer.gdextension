@@ -4,11 +4,15 @@ compatibility_minimum = 4.3
 reloadable = true
 
 [libraries]
-linux.debug.x86_64 =     "res://../../target/debug/librust_project_reindeer.so"
-linux.release.x86_64 =   "res://../../target/release/librust_project_reindeer.so"
-windows.debug.x86_64 =   "res://../../target/debug/rust_project_reindeer.dll"
-windows.release.x86_64 = "res://../../target/release/rust_project_reindeer.dll"
-macos.debug =            "res://../../target/debug/librust_project_reindeer.dylib"
-macos.release =          "res://../../target/release/librust_project_reindeer.dylib"
-macos.debug.arm64 =      "res://../../target/debug/librust_project_reindeer.dylib"
-macos.release.arm64 =    "res://../../target/release/librust_project_reindeer.dylib"
+linux.debug.x86_64 =            "res://../../target/debug/librust_project_reindeer.so"
+linux.release.x86_64 =          "res://../../target/release/librust_project_reindeer.so"
+windows.debug.x86_64 =          "res://../../target/debug/rust_project_reindeer.dll"
+windows.release.x86_64 =        "res://../../target/release/rust_project_reindeer.dll"
+macos.debug =                   "res://../../target/debug/librust_project_reindeer.dylib"
+macos.release =                 "res://../../target/release/librust_project_reindeer.dylib"
+macos.debug.arm64 =             "res://../../target/debug/librust_project_reindeer.dylib"
+macos.release.arm64 =           "res://../../target/release/librust_project_reindeer.dylib"
+web.debug.wasm32 =              "res://../../target/wasm32-unknown-emscripten/debug/rust_project_reindeer.wasm"
+web.release.wasm32 =            "res://../../target/wasm32-unknown-emscripten/release/rust_project_reindeer.wasm"
+web.debug.threads.wasm32 =      "res://../../target/wasm32-unknown-emscripten/debug/rust_project_reindeer.threads.wasm"
+web.release.threads.wasm32 =    "res://../../target/wasm32-unknown-emscripten/release/rust_project_reindeer.threads.wasm"
