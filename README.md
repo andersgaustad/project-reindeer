@@ -18,19 +18,20 @@ None.
 ### Playing
 
 1. Go to [the Project Reindeer itch.io page](https://andersgaustad.itch.io/project-reindeer).
-2. Download the version that fits your operating system, and extract the `.zip` to a folder of your choice.
-    - If on Mac, contents should not be extracted in Downloads as [Gatekeeper breaks Godot's internal paths due to security reasons](https://docs.godotengine.org/en/latest/tutorials/export/running_on_macos.html#doc-running-on-macos). To resolve this, extract or move the project to e.g., the `/Applications` folder.
-3. Run the game by running (e.g., double-clicking) the `ProjectReindeer` application/binary/executable. 
+2. **Play the game directly in the browser** or **download the version that fits your operating system**
+    a. If downloading the project:
+    1. Extract the `.zip` to a folder of your choice.
+    2. If on Mac, contents should not be extracted in Downloads as [Gatekeeper breaks Godot's internal paths due to security reasons](https://docs.godotengine.org/en/latest/tutorials/export/running_on_macos.html#doc-running-on-macos). To resolve this, extract or move the project to e.g., the `/Applications` folder.
+    3. Run the game by running (e.g., double-clicking) the `ProjectReindeer` application/binary/executable. 
 
 First, create your own maze or load the default one by pressing `Load Maze` or `Load Default`.
 If the maze is valid, you should be spawned into a forest clearing with the maze in the middle.
 Use WASD to move, and Spacebar and Left Control to ascend/descend.
-Pause the game with Escape.
+Pause the game with Escape or P (the latter is useful when playing the game in the browser in fullscreen as Escape will exit fullscreen instead).
 See Controls in the in-game menu for all controls.
 
 
-
-## How to Access Project
+## How to Access Project (for Developers)
 
 ### Dependencies (Accessing Project)
 
