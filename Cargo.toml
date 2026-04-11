@@ -3,5 +3,6 @@ resolver = "2"
 members = [
     "rust-project-reindeer",
     "project-reindeer-credits-generator",
-    "project-reindeer-macros"
+    "project-reindeer-macros",
+    "project-reindeer-version-syncer"
 ]

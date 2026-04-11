@@ -1,0 +1,3 @@
+godot\project-reindeer\project.godot
+rust-project-reindeer\Cargo.toml
+rust-project-reindeer\Cargo.wasm.toml
