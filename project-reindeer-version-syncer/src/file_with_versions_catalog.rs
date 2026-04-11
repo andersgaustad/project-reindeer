@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use crate::version_syncing::{cargo_toml_file::CargoTomlFile, i_version_syncing::IVersionSyncing, project_godot_file::ProjectGodotFile};
 
+
 pub fn get_targets() -> Vec<Box<dyn IVersionSyncing>> {
     let path_to_here = std::fs::canonicalize(file!()).unwrap();
 
@@ -36,8 +37,8 @@ pub fn get_targets() -> Vec<Box<dyn IVersionSyncing>> {
 
 
 fn path_to_syncable_file(pathbuf : PathBuf) -> Box<dyn IVersionSyncing> {
-    let file_name = pathbuf
-        .file_name()
+    let extension = pathbuf
+        .extension()
         .unwrap_or_else(|| {
             panic!(
                 "Path '{}' has no file name!",
@@ -45,18 +46,19 @@ fn path_to_syncable_file(pathbuf : PathBuf) -> Box<dyn IVersionSyncing> {
             )
         });
     
-    // Cargo.toml
-    if file_name == "Cargo.toml" {
+    // .toml
+    if extension == "toml" {
         return Box::new(
             CargoTomlFile { pathbuf }
         );
     }
 
-    if file_name == "project.godot" {
+    // .godot
+    if extension == "godot" {
         return Box::new(
             ProjectGodotFile { pathbuf }
         );
     }
 
-    panic!("No match for extension '{}'", file_name.display());    
+    panic!("No match for extension '{}'", extension.display());    
 }
