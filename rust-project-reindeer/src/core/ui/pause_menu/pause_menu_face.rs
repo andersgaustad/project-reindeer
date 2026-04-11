@@ -1,7 +1,7 @@
 use godot::{classes::{Button, Control, IControl, InputEvent, Texture2D}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, levels::main_level::pathfinding_state::PathfindingState, run::{i_has_run::IHasRun, run::Run}, ui::{buttons::button_state_info::ButtonStateInfo, i_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_inbox_state::LetterMenuInboxState}, pause_menu::{pause_menu_button_type::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}, utility::node_utility}, input_map::UI_CANCEL};
+use crate::{cfg, core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, levels::main_level::pathfinding_state::PathfindingState, run::{i_has_run::IHasRun, run::Run}, ui::{buttons::button_state_info::ButtonStateInfo, i_state::IState, letter_menu::{letter_menu::LetterMenu, letter_menu_inbox_state::LetterMenuInboxState}, pause_menu::{pause_menu_button_type::PauseMenuButtonType, pause_menu_face_request::PauseMenuFaceRequest}}, utility::node_utility}, input_map::UI_CANCEL};
 
 
 #[derive(GodotClass)]
@@ -74,6 +74,13 @@ impl IControl for PauseMenuFace {
                         me.on_button_pressed(button_type);
                     }
                 );
+        }
+
+        // Web build?
+        if cfg::is_web_build() {
+            let exit_button = &mut self.exit_button;
+            exit_button.set_disabled(true);
+            exit_button.set_tooltip_text(cfg::WEB_BUILD_BUTTON_DISABLED_TOOLTIP);
         }
 
         self.update_mail_button();
