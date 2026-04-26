@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://5ktul3yljk32"]
+[gd_scene load_steps=28 format=3 uid="uid://5ktul3yljk32"]
 
 [ext_resource type="PackedScene" uid="uid://c0hahcleepgei" path="res://scenes/present.tscn" id="4_0m2sm"]
 [ext_resource type="PackedScene" uid="uid://kpn4fhy8kxca" path="res://scenes/props/cabin.tscn" id="5_ck8vk"]
@@ -11,21 +11,14 @@
 [ext_resource type="PackedScene" uid="uid://upm0aighr76e" path="res://assets/committed/source/kenney_holiday-kit/Models/GLB format/tree-snow-a.glb" id="17_q6ckx"]
 [ext_resource type="PackedScene" uid="uid://cgd7sgs4vsqjn" path="res://assets/committed/source/kenney_holiday-kit/Models/FBX format/present-b-rectangle.fbx" id="17_xnsmq"]
 [ext_resource type="PackedScene" uid="uid://dyly861cdm56d" path="res://assets/committed/source/kenney_holiday-kit/Models/FBX format/present-b-cube.fbx" id="18_lqsml"]
+[ext_resource type="Material" uid="uid://dvftcmmnxymln" path="res://scenes/particles/snow_gpu_material.tres" id="18_ophlj"]
 [ext_resource type="PackedScene" uid="uid://baadgl0jbpvct" path="res://assets/committed/source/kenney_holiday-kit/Models/FBX format/present-a-round.fbx" id="19_1tngg"]
+[ext_resource type="Texture2D" uid="uid://djkqtxokrrihf" path="res://assets/committed/source/kenney_particle-pack/PNG (Transparent)/star_09.png" id="19_g7mpe"]
 [ext_resource type="PackedScene" uid="uid://5y0dpppxjbdi" path="res://assets/committed/source/kenney_holiday-kit/Models/FBX format/sled-long.fbx" id="20_kjo2b"]
 [ext_resource type="PackedScene" uid="uid://u3ujp04toqw7" path="res://assets/committed/source/kenney_holiday-kit/Models/FBX format/sled.fbx" id="21_8hhqt"]
 [ext_resource type="PackedScene" uid="uid://wk8lhstoo2l1" path="res://assets/committed/source/kenney_holiday-kit/Models/FBX format/snowman-hat.fbx" id="22_1w1a4"]
 [ext_resource type="PackedScene" uid="uid://dju0s05r0mt3n" path="res://assets/committed/source/kenney_holiday-kit/Models/FBX format/snowman.fbx" id="23_eaqjh"]
 [ext_resource type="PackedScene" uid="uid://b1li531q4jhe3" path="res://assets/committed/source/kenney_holiday-kit/Models/FBX format/tree-decorated.fbx" id="24_x1n2s"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wkbr6"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_wkbr6"]
-material = SubResource("StandardMaterial3D_wkbr6")
-size = Vector3(60, 2, 60)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]
-size = Vector3(60, 2, 60)
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_mafxj"]
 sky_top_color = Color(0.39396158, 0.69545203, 0.9992464, 1)
@@ -40,9 +33,41 @@ background_mode = 2
 sky = SubResource("Sky_ojqrr")
 reflected_light_source = 2
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wkbr6"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_wkbr6"]
+material = SubResource("StandardMaterial3D_wkbr6")
+size = Vector3(60, 2, 60)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wkbr6"]
+size = Vector3(60, 2, 60)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_usqa0"]
+transparency = 1
+shading_mode = 0
+albedo_texture = ExtResource("19_g7mpe")
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_epqat"]
+material = SubResource("StandardMaterial3D_usqa0")
+
 [node name="BackgroundLevel" type="BackgroundLevel"]
 
 [node name="Level" type="StaticBody3D" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Level"]
+environment = SubResource("Environment_lx3qq")
+
+[node name="Sun" type="DirectionalLight3D" parent="Level/WorldEnvironment"]
+transform = Transform3D(1, 0, 0, 0, 0.6335565, 0.77369654, 0, -0.77369654, 0.6335565, 0, 0, 0)
+shadow_enabled = true
+shadow_blur = 2.0
+directional_shadow_mode = 0
+sky_mode = 2
 
 [node name="GroundMesh" type="MeshInstance3D" parent="Level"]
 mesh = SubResource("BoxMesh_wkbr6")
@@ -182,16 +207,18 @@ transform = Transform3D(0.20893598, 0, -0.97792935, 0, 1, 0, 0.97792935, 0, 0.20
 [node name="tree-snow-a-21" parent="Level/Objects/Trees" instance=ExtResource("17_q6ckx")]
 transform = Transform3D(0.20893598, 0, -0.97792935, 0, 1, 0, 0.97792935, 0, 0.20893598, -2.3241448, 0.9999995, -4.7575035)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="Level"]
-environment = SubResource("Environment_lx3qq")
-
-[node name="Sun" type="DirectionalLight3D" parent="Level/WorldEnvironment"]
-transform = Transform3D(1, 0, 0, 0, 0.6335565, 0.77369654, 0, -0.77369654, 0.6335565, 0, 0, 0)
-shadow_enabled = true
-shadow_blur = 2.0
-directional_shadow_mode = 0
-sky_mode = 2
-
 [node name="Camera3D" type="Camera3D" parent="Level"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1696446, 2.1734269, 4.138532)
 current = true
+
+[node name="SnowGPUParticles3D" type="GPUParticles3D" parent="Level"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 0)
+amount = 512
+lifetime = 5.0
+preprocess = 5.0
+visibility_aabb = AABB(-54.870388, -205.8951, -53.067467, 110.58237, 207.8591, 106.0027)
+process_material = ExtResource("18_ophlj")
+draw_pass_1 = SubResource("QuadMesh_epqat")
+
+[node name="GPUParticlesCollisionBox3D" type="GPUParticlesCollisionBox3D" parent="Level"]
+size = Vector3(60, 2, 60)

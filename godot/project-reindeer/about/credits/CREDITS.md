@@ -37,6 +37,11 @@ Huge thanks to all the creators!
 - Source: **[link](https://opengameart.org/content/old-parchment-paper)**
 - License: **[CC0](https://creativecommons.org/publicdomain/zero/1.0/)**
 
+**Particle Pack**
+- Author: **Kenney**
+- Source: **[link](https://www.kenney.nl/assets/particle-pack)**
+- License: **[CC0](https://creativecommons.org/publicdomain/zero/1.0/)**
+
 **Rust programming language logo**
 - Author: *(not attributed)*
 - Source: **[link](https://rust-lang.org/)**
