@@ -4,5 +4,6 @@ pub mod coordinate;
 pub mod direction;
 pub mod i_add_padding;
 pub mod i_generate_mail;
+pub mod i_has_snow_spawner;
 pub mod padding;
 pub mod plane_2d;

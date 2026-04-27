@@ -90,6 +90,9 @@ impl SFXManager {
                     sfx.set_volume_linear(new_volume);
                 }
             },
+            OptionChange::EffectChange => {
+                // Do nothing
+            },
         }
     }
 

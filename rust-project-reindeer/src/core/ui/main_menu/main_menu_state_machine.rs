@@ -276,6 +276,9 @@ impl MainMenuStateMachine {
                 // Do nothing
             },
             OptionChange::VolumeChange => self.on_volume_change(),
+            OptionChange::EffectChange => {
+                // Do nothing
+            },
         }
     }
 

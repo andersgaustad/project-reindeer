@@ -1,7 +1,7 @@
 use godot::{classes::GpuParticles3D, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::core::{options::option_change::OptionChange, props::cabin::Cabin, run::{i_has_run::IHasRun, run::Run}, utility::node_utility};
+use crate::core::{blankets::i_change_snow_amout::IChangeSnowAmount, common::i_has_snow_spawner::IHasSnowSpawner, options::option_change::OptionChange, props::cabin::Cabin, run::{i_has_run::IHasRun, run::Run}, utility::node_utility};
 
 
 #[derive(GodotClass)]
@@ -53,6 +53,13 @@ impl IHasRun for BackgroundLevel {
 }
 
 
+impl IHasSnowSpawner for BackgroundLevel {
+    fn get_snow_spawner(&self) -> Gd<GpuParticles3D> {
+        self.snow_particle_spawner.clone()
+    }
+}
+
+
 #[godot_api]
 impl BackgroundLevel {
     #[func]
@@ -65,10 +72,13 @@ impl BackgroundLevel {
             OptionChange::LowPerformanceMode => {
                 let low_performance_mode = options.bind().get_low_performance_mode();
                 self.cabin.bind_mut().toggle_effects(!low_performance_mode);
-                self.snow_particle_spawner.set_emitting(!low_performance_mode);
+                self.refresh_snow_amount();
             },
             OptionChange::VolumeChange => {
                 // Do nothing
+            },
+            OptionChange::EffectChange => {
+                self.refresh_snow_amount();
             },
         }
     }

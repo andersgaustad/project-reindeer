@@ -128,25 +128,6 @@ impl IControl for ControlsMenu {
             }
 
             let mut buttons = row.bind().get_rebind_buttons();
-            for button_opt in buttons.iter() {
-                let Some(button) = button_opt.clone() else {
-                    continue;
-                };
-                let button_gd = button.clone();
-
-                // scroll_container__ensure_control_visible
-                button
-                    .signals()
-                    .focus_entered()
-                    .builder()
-                    .flags(ConnectFlags::DEFERRED)
-                    .connect_other_gd(
-                        &self.scroll_containter.clone(),
-                        move |mut scroll_container| {
-                            scroll_container.ensure_control_visible(&button_gd);
-                        }
-                    );
-            }
             
             let north_neighbor_opt = (|| {
                 let north_i = i.checked_sub(1)?;

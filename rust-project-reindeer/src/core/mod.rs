@@ -1,4 +1,5 @@
 pub mod audio;
+pub mod blankets;
 pub mod common;
 pub mod environment;
 pub mod levels;

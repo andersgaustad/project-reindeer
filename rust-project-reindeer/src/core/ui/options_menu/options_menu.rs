@@ -32,6 +32,10 @@ pub struct OptionsMenu {
     sfx_volume_percentage_label : OnReady<Gd<Label>>,
 
     #[var]
+    #[init(node = "%ToggleSnowEffectsModeButton")]
+    toggle_snow_effects_mode_button : OnReady<Gd<CheckButton>>,
+
+    #[var]
     #[init(node = "%BackButton")]
     back_button : OnReady<Gd<Button>>,
 
@@ -62,6 +66,7 @@ impl IControl for OptionsMenu {
                 Self::on_low_performance_mode_toggled_locally
             );
         
+        // window_mode_option_button
         self
             .window_mode_option_button
             .signals()
@@ -94,8 +99,20 @@ impl IControl for OptionsMenu {
             .flags(ConnectFlags::DEFERRED)
             .connect_other_mut(
                 self,
-            Self::on_sfx_volume_changed_locally
+                Self::on_sfx_volume_changed_locally
         );
+
+        // toggle_snow_effects_mode_button
+        self
+            .toggle_snow_effects_mode_button
+            .signals()
+            .toggled()
+            .builder()
+            .flags(ConnectFlags::DEFERRED)
+            .connect_other_mut(
+                self,
+                Self::on_snow_effects_toggled_locally
+            );
         
         // back_button
         self
@@ -130,9 +147,8 @@ impl IControl for OptionsMenu {
                 control.set_focus_neighbor(Side::TOP, &north_neighbor.get_path());
             }
 
-            if let Some(south_neighbor) = south_neighbor_opt {
-                control.set_focus_neighbor(Side::BOTTOM, &south_neighbor.get_path());
-            }
+            let south_neighbor = south_neighbor_opt.unwrap_or_else(|| self.back_button.clone().upcast());
+            control.set_focus_neighbor(Side::BOTTOM, &south_neighbor.get_path());
         }
 
         self.run = node_utility::try_find_parent_of_type(gd.upcast());
@@ -231,22 +247,51 @@ impl OptionsMenu {
 
 
     #[func]
-    fn on_options_changed(&mut self, change : OptionChange) {
-        match change {
-            OptionChange::LowPerformanceMode => self.on_low_performance_mode_changed(),
-            OptionChange::VolumeChange => self.on_volume_changed(),
-        }
+    fn on_snow_effects_toggled_locally(&mut self, toggled : bool) {
+        let options_opt = self.get_options();
+        let Some(mut options) = options_opt else {
+            return;
+        };
+
+        options.bind_mut().set_snow_effects(toggled);
     }
 
 
     #[func]
-    fn on_low_performance_mode_changed(&mut self) {
+    fn on_options_changed(&mut self, change : OptionChange) {
         let Some(options) = self.get_options() else {
             return;
         };
 
-        let is_toggled = options.bind().get_low_performance_mode();
-        self.low_performance_toggle_button.set_pressed(is_toggled);
+        match change {
+            OptionChange::LowPerformanceMode => {
+                let is_toggled = options.bind().get_low_performance_mode();
+                self.low_performance_toggle_button.set_pressed(is_toggled);
+            },
+
+            OptionChange::VolumeChange => {
+                let bound_options = options.bind();
+                let sfx_factor = bound_options.get_sfx_volume();
+                let mut values_and_sliders_and_labels = [
+                    (bound_options.get_music_volume(), self.music_volume_slider.clone(), self.music_volume_percentage_label.clone()),
+                    (sfx_factor, self.sfx_volume_slider.clone(), self.sfx_volume_percentage_label.clone()),
+                ];
+                drop(bound_options);
+
+                for (value, slider, label) in values_and_sliders_and_labels.iter_mut() {
+                    let value = *value;
+                    let percentage_string = as_percentage_string(value);
+
+                    label.set_text(&percentage_string);
+                    slider.set_value(f64::from(value));
+                }
+            },
+
+            OptionChange::EffectChange => {
+                let snow_enabled = options.bind().get_snow_effects();
+                self.toggle_snow_effects_mode_button.set_pressed(snow_enabled);
+            },
+        }
     }
 
 
@@ -266,30 +311,6 @@ impl OptionsMenu {
         display_server.window_set_mode(window_mode);
 
         self.update_window_mode_button_text();
-    }
-
-
-    #[func]
-    fn on_volume_changed(&mut self) {
-        let Some(options) = self.get_options() else {
-            return;
-        };
-
-        let bound_options = options.bind();
-        let sfx_factor = bound_options.get_sfx_volume();
-        let mut values_and_sliders_and_labels = [
-            (bound_options.get_music_volume(), self.music_volume_slider.clone(), self.music_volume_percentage_label.clone()),
-            (sfx_factor, self.sfx_volume_slider.clone(), self.sfx_volume_percentage_label.clone()),
-        ];
-        drop(bound_options);
-
-        for (value, slider, label) in values_and_sliders_and_labels.iter_mut() {
-            let value = *value;
-            let percentage_string = as_percentage_string(value);
-
-            label.set_text(&percentage_string);
-            slider.set_value(f64::from(value));
-        }
     }
 
 
@@ -350,11 +371,12 @@ impl OptionsMenu {
     }
 
 
-    fn get_focusable_controls_in_order(&self) -> [Gd<Control>; 3] {
+    fn get_focusable_controls_in_order(&self) -> [Gd<Control>; 4] {
         let controls = [
             self.low_performance_toggle_button.clone().upcast(),
             self.music_volume_slider.clone().upcast(),
             self.sfx_volume_slider.clone().upcast(),
+            self.toggle_snow_effects_mode_button.clone().upcast(),
         ];
 
         controls

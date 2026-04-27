@@ -1,7 +1,7 @@
 use godot::{classes::{AudioStreamPlayer, BoxMesh, BoxShape3D, CollisionShape3D, GpuParticles3D, Input, InputEvent, Material, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, ParticleProcessMaterial, RandomNumberGenerator, RichTextLabel, ShaderMaterial, StandardMaterial3D, Timer, Tween, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::option_change::OptionChange, player::Player, props::cabin::Cabin, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}}, utility::{bounding_box_utility, node_utility}}, input_map::UI_CANCEL};
+use crate::{core::{blankets::i_change_snow_amout::IChangeSnowAmount, common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, i_has_snow_spawner::IHasSnowSpawner, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::option_change::OptionChange, player::Player, props::cabin::Cabin, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}}, utility::{bounding_box_utility, node_utility}}, input_map::UI_CANCEL};
 
 
 const N_VISIBLE_TREES_IN_LOW_PERFORMANCE_MODE : i32 = 100;
@@ -342,6 +342,13 @@ impl INode3D for MainLevel {
 impl IHasRun for MainLevel {
     fn get_run(&self) -> Option<Gd<Run>> {
         self.run.clone()
+    }
+}
+
+
+impl IHasSnowSpawner for MainLevel {
+    fn get_snow_spawner(&self) -> Gd<GpuParticles3D> {
+        self.snow_particle_spawner.clone()
     }
 }
 
@@ -1238,6 +1245,8 @@ impl MainLevel {
             let snow_particle_spawner = &mut self.snow_particle_spawner;
             snow_particle_spawner.set_position(new_snow_particle_position);
             snow_particle_spawner.set_visibility_aabb(snow_particles_aabb);
+
+            self.refresh_snow_amount();
             
         } else {
             // If maze == None:
@@ -1315,6 +1324,7 @@ impl MainLevel {
         match options_change {
             OptionChange::LowPerformanceMode => self.on_low_performance_mode_change(),
             OptionChange::VolumeChange => self.on_volume_change(),
+            OptionChange::EffectChange => self.on_effect_change(),
         }
     }
 
@@ -1352,8 +1362,11 @@ impl MainLevel {
             }
         }
 
-        // Also tell cabin that we are or are not in low-performance mode.
+        // Tell cabin that we are or are not in low-performance mode.
         self.cabin.bind_mut().toggle_effects(!low_performance_mode);
+
+        // Inform snow particle system as well.
+        self.refresh_snow_amount();
     }
 
 
@@ -1388,6 +1401,12 @@ impl MainLevel {
                 component.set_volume_linear(volume);
             }
         }
+    }
+
+
+    #[func]
+    fn on_effect_change(&mut self) {
+        self.refresh_snow_amount();
     }
 
 
