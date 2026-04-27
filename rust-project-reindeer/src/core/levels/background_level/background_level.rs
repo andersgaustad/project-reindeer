@@ -1,4 +1,4 @@
-use godot::prelude::*;
+use godot::{classes::GpuParticles3D, prelude::*};
 use strum::IntoEnumIterator;
 
 use crate::core::{options::option_change::OptionChange, props::cabin::Cabin, run::{i_has_run::IHasRun, run::Run}, utility::node_utility};
@@ -10,6 +10,9 @@ pub struct BackgroundLevel {
     #[var]
     #[init(node = "%Cabin")]
     cabin : OnReady<Gd<Cabin>>,
+
+    #[init(node = "%SnowGPUParticles3D")]
+    snow_particle_spawner : OnReady<Gd<GpuParticles3D>>,
 
 
     run : Option<Gd<Run>>,
@@ -62,6 +65,7 @@ impl BackgroundLevel {
             OptionChange::LowPerformanceMode => {
                 let low_performance_mode = options.bind().get_low_performance_mode();
                 self.cabin.bind_mut().toggle_effects(!low_performance_mode);
+                self.snow_particle_spawner.set_emitting(!low_performance_mode);
             },
             OptionChange::VolumeChange => {
                 // Do nothing

@@ -212,6 +212,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1696446, 2.1734269, 4.1385
 current = true
 
 [node name="SnowGPUParticles3D" type="GPUParticles3D" parent="Level"]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 0)
 amount = 512
 lifetime = 5.0
