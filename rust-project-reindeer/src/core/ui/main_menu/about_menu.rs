@@ -1,6 +1,6 @@
-use godot::{classes::{Button, Control, FileAccess, IControl, Input, InputEvent, Os, RichTextLabel, ScrollContainer, TabContainer, TextureButton, VScrollBar, file_access::ModeFlags, object::ConnectFlags}, prelude::*};
+use godot::{classes::{Button, Control, FileAccess, IControl, Input, InputEvent, Label, Os, RichTextLabel, ScrollContainer, TabContainer, TextureButton, VScrollBar, file_access::ModeFlags, object::ConnectFlags}, prelude::*};
 
-use crate::{core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, main_menu::about_menu_request::AboutMenuRequest}, utility::node_utility}, input_map::{UI_CANCEL, UI_DOWN, UI_UP}};
+use crate::{cfg, core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, main_menu::about_menu_request::AboutMenuRequest}, utility::node_utility}, input_map::{UI_CANCEL, UI_DOWN, UI_UP}};
 
 
 #[derive(GodotClass)]
@@ -17,6 +17,10 @@ pub struct AboutMenu {
 
 
     // Non-exported
+
+    #[var]
+    #[init(node = "%VersionLabel")]
+    version_label : OnReady<Gd<Label>>,
 
     #[var]
     #[init(node = "%TabContainer")]
@@ -150,6 +154,9 @@ impl IControl for AboutMenu {
                 self,
                 Self::on_scroller_gui_input
             );
+        
+        // Show version:
+        self.version_label.set_text(&format!("v{}", cfg::get_version()));
 
         self.refresh();        
     }

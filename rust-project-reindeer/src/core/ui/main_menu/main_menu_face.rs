@@ -1,7 +1,7 @@
 use godot::{classes::{Button, CenterContainer, Control, IControl}, prelude::*};
 use strum::IntoEnumIterator;
 
-use crate::core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, main_menu::{main_menu_face_button_type::MainMenuFaceButtonType, main_menu_state::MainMenuState}}, utility::node_utility};
+use crate::{cfg, core::{audio::{i_sfx_manager::ISFXManager, sfx_entry::SFXEntry}, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, main_menu::{main_menu_face_button_type::MainMenuFaceButtonType, main_menu_state::MainMenuState}}, utility::node_utility}};
 
 
 #[derive(GodotClass)]
@@ -65,6 +65,13 @@ impl IControl for MainMenuFace {
                         me.on_button_pressed(button_type);
                     }
                 );
+        }
+
+        // Web build
+        if cfg::is_web_build() {
+            let exit_button = &mut self.exit_button;
+            exit_button.set_disabled(true);
+            exit_button.set_tooltip_text(cfg::WEB_BUILD_BUTTON_DISABLED_TOOLTIP);
         }
     }
 }
@@ -130,7 +137,13 @@ impl MainMenuFace {
                 self.emit_request_for(MainMenuState::Controls);
             },
             MainMenuFaceButtonType::Exit => {
-                self.base().get_tree().unwrap().quit();
+                // Make sure we don't exit in web builds:
+                if cfg::is_web_build() {
+                    godot_warn!("Tried exiting in web build!");
+                } else {
+                    // Not web build, exit.
+                    self.base().get_tree().unwrap().quit();
+                }
             },
             MainMenuFaceButtonType::ShowHide => {
                 self.set_showing_ui(!self.showing_ui);

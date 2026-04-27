@@ -15,7 +15,7 @@ data/keep_list=Array[String](["res://rust-project-reindeer.gdextension", "res://
 [application]
 
 config/name="ProjectReindeer"
-config/version="0.1.0"
+config/version="0.2.0"
 run/main_scene="uid://d2xp6l0n7ch86"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="uid://d4mw0rvie6p6b"
@@ -48,6 +48,7 @@ ui_cancel={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194305,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 , Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":1,"pressure":0.0,"pressed":true,"script":null)
 , Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":6,"pressure":0.0,"pressed":true,"script":null)
+, Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":80,"physical_keycode":0,"key_label":0,"unicode":112,"location":0,"echo":false,"script":null)
 ]
 }
 move_left={

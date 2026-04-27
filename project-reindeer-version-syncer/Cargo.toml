@@ -1,0 +1,9 @@
+[package]
+name = "project-reindeer-version-syncer"
+version = "0.1.0"
+authors = ["Anders Gaustad <anders.gaustad@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.6.0", features = ["derive"] }
+in-place = "0.2.1"
