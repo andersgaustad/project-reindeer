@@ -1,4 +1,4 @@
-use godot::{classes::{AudioStreamPlayer, BoxMesh, BoxShape3D, CollisionShape3D, Input, InputEvent, Material, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, RandomNumberGenerator, RichTextLabel, ShaderMaterial, StandardMaterial3D, Timer, Tween, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
+use godot::{classes::{AudioStreamPlayer, BoxMesh, BoxShape3D, CollisionShape3D, GpuParticles3D, Input, InputEvent, Material, Mesh, MeshInstance3D, MultiMesh, MultiMeshInstance3D, ParticleProcessMaterial, RandomNumberGenerator, RichTextLabel, ShaderMaterial, StandardMaterial3D, Timer, Tween, base_material_3d::Flags, input::MouseMode, multi_mesh::TransformFormat, object::ConnectFlags}, prelude::*};
 use strum::IntoEnumIterator;
 
 use crate::{core::{common::{communicator::Communicator, convex_polygon::ConvexPolygon, coordinate::Coordinate, direction::Direction, i_add_padding::IAddPadding, i_generate_mail::IGenerateMail, padding::Padding}, environment::{enchanced_multi_mesh_instance_3d::EnchancedMultiMeshInstance3D, rock_type::RockType}, levels::{level_run_state::LevelRunState, main_level::pathfinding_state::PathfindingState}, maze::{maze::{Maze, Tile}, maze_solver_info::MazeSolverInfo, maze_tile_state::MazeTileState, path_info::PathInfo, reindeer::Reindeer}, options::option_change::OptionChange, player::Player, props::cabin::Cabin, run::{i_has_run::IHasRun, run::Run}, ui::{i_state::IState, pause_menu::{pause_menu_request::PauseMenuRequest, pause_menu_state_machine::PauseMenuStateMachine}}, utility::{bounding_box_utility, node_utility}}, input_map::UI_CANCEL};
@@ -211,6 +211,9 @@ pub struct MainLevel {
     #[init(node = "%MailNotificationSFXPlayer")]
     mail_notification_sfx_player : OnReady<Gd<AudioStreamPlayer>>,
     default_mail_notification_sfx_player_volume : f32,
+
+    #[init(node = "%SnowGPUParticles3D")]
+    snow_particle_spawner : OnReady<Gd<GpuParticles3D>>,
 
 
     #[var(get, set = set_maze)]
@@ -496,6 +499,16 @@ impl MainLevel {
             godot_error!("MainLevel could not find LargeRock MultiMesh??");
             return;
         };
+
+        let Some(raw_snow_particles_material) = self.snow_particle_spawner.get_process_material() else {
+            godot_error!("Snow spawner has no material??");
+            return;
+        };
+        let Ok(mut snow_particles_process_material) = raw_snow_particles_material.try_cast::<ParticleProcessMaterial>() else {
+            godot_error!("SnowParticlesProcessMaterial is not a ParticleProcessMaterial??");
+            return;
+        };
+
 
 
         // Setting maze to None resets spawned maze props.
@@ -1027,8 +1040,8 @@ impl MainLevel {
             // Note that this is done here after everything else.
             // We want the same seed to generate the same cabin and prop variants regardless of forest size.
 
-            let forest_position = &forest_span.position;
-            let forest_size = &forest_span.size;
+            let forest_position = forest_span.position;
+            let forest_size = forest_span.size;
             let n_tree_spawn_attempts = (forest_size.x * &forest_size.y * self.trees_per_square_unit) as usize;
 
             let tree_multimesh_opt =self.tree_spawner.get_multimesh();
@@ -1118,8 +1131,8 @@ impl MainLevel {
             // Instead of expanding the "main" forest, we create "tiles" around the main forest that we populate with seperate forests.
             // Since we are using MultiMeshes all trees are drawn if ANY are visible.
             // Spawning multiple "forests" makes it possible to forego drawing induvidual forests if they are not visible.
-            let super_forest_position = *forest_position - (*forest_size * (forest_rings as f32));
-            let super_forest_size = (forest_rings * 2 + 1) as f32 * *forest_size;
+            let super_forest_position = forest_position - (forest_size * (forest_rings as f32));
+            let super_forest_size = (forest_rings * 2 + 1) as f32 * forest_size;
 
             let super_forest_span = Rect2::new(super_forest_position, super_forest_size);
 
@@ -1138,7 +1151,7 @@ impl MainLevel {
                     let x = x_major * forest_size.x;
                     let y = y_major * forest_size.y;
 
-                    let side_forest_position = *forest_position + Vector2::new(x, y);
+                    let side_forest_position = forest_position + Vector2::new(x, y);
 
                     let tree_mesh_opt = tree_multimesh.get_mesh();
                     let mut tree_multimesh = MultiMesh::new_gd();
@@ -1189,6 +1202,42 @@ impl MainLevel {
                     }
                 }
             }
+
+            // Set snow particle span.
+            const SNOW_PARTICLE_SPAWNER_AABB_HEIGHT : f32 = 20.0;
+            let snow_particles_position = Vector3::new(
+                super_forest_position.x,
+                -SNOW_PARTICLE_SPAWNER_AABB_HEIGHT / 2.0,
+                super_forest_position.y
+            );
+            let snow_particles_size = Vector3::new(
+                super_forest_size.x,
+                SNOW_PARTICLE_SPAWNER_AABB_HEIGHT,
+                super_forest_size.y
+            );
+
+            let snow_particles_aabb = Aabb::new(snow_particles_position, snow_particles_size);
+
+            // Spawner should be located "in center" of the emission box.
+            let snow_emission_box = Vector3::new(
+                snow_particles_size.x / 2.0,
+                1.0,
+                snow_particles_size.z / 2.0
+            );
+
+            // Setting extent to cover whole "super forest".
+            snow_particles_process_material.set_emission_box_extents(snow_emission_box);
+
+            let center_of_super_forest = super_forest_position + super_forest_size / 2.0;
+            let new_snow_particle_position = Vector3::new(
+                center_of_super_forest.x,
+                SNOW_PARTICLE_SPAWNER_AABB_HEIGHT,
+                center_of_super_forest.y
+            );
+
+            let snow_particle_spawner = &mut self.snow_particle_spawner;
+            snow_particle_spawner.set_position(new_snow_particle_position);
+            snow_particle_spawner.set_visibility_aabb(snow_particles_aabb);
             
         } else {
             // If maze == None:
