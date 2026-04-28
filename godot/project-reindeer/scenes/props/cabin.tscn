@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://kpn4fhy8kxca"]
+[gd_scene load_steps=23 format=3 uid="uid://kpn4fhy8kxca"]
 
 [ext_resource type="PackedScene" uid="uid://cdlsasyi87mop" path="res://assets/committed/source/kenney_holiday-kit/Models/FBX format/cabin-door-rotate.fbx" id="1_53y0y"]
 [ext_resource type="PackedScene" uid="uid://c547g2wvp80lj" path="res://assets/committed/source/kenney_holiday-kit/Models/FBX format/cabin-window-a.fbx" id="2_s32dj"]
@@ -21,6 +21,10 @@ size = Vector3(0.7, 1.295, 0.1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_l2m4t"]
 size = Vector3(0.5, 0.7, 0.7)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_r7rgn"]
+noise_type = 0
+frequency = 0.2
 
 [sub_resource type="Curve" id="Curve_bhqa3"]
 _data = [Vector2(0, 0.865893), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
@@ -176,7 +180,8 @@ mesh = SubResource("BoxMesh_r7rgn")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1183255, 1.1690254, -1.386185)
 mesh = SubResource("BoxMesh_l2m4t")
 
-[node name="FireLight" type="OmniLight3D" parent="CabinPivot/Floor/Fireplace"]
+[node name="FireLight" type="FlickeringOmniLight3D" parent="CabinPivot/Floor/Fireplace"]
+noise_texture = SubResource("FastNoiseLite_r7rgn")
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95044625, 0.22622347, -1.3847995)
 light_color = Color(1, 0.5294118, 0.13725491, 1)
