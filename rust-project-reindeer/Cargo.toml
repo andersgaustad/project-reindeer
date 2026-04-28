@@ -1,6 +1,6 @@
 [package]
 name = "rust-project-reindeer"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Anders Gaustad <anders.gaustad@gmail.com>"]
 edition = "2021"
 
