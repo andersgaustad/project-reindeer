@@ -17,6 +17,8 @@ pub fn main() {
 
     let version_files_to_update = file_with_versions_catalog::get_targets();
     for file in version_files_to_update {
-        file.change_version_of_file_at_path(&tag).unwrap();
+        file.change_version_of_file_at_path(&tag).unwrap_or_else(|e| {
+            panic!("Error: {}", e)
+        });
     }
 }

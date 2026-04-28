@@ -21,13 +21,44 @@ pub fn get_targets() -> Vec<Box<dyn IVersionSyncing>> {
     
     let mut targets = Vec::new();
 
+    const ACCEPTED_PATH_DIVIDER_TOKENS : [&str; 2] = [
+        "/",
+        "\\"
+    ];
+
     let path_catalog = include_str!("file_with_versions_catalog.txt").lines();
     for path_str in path_catalog {
         if path_str.is_empty() {
             continue;
         }
 
-        let joined = project_root.join(path_str);
+        let accepted_tokens_iter = ACCEPTED_PATH_DIVIDER_TOKENS.iter();
+        let token_to_split_on_opt = (|| {
+            for token in accepted_tokens_iter{
+                if path_str.contains(token) {
+                    return Some(token);
+                }
+            }
+
+            None
+        })();
+
+        let assembled_path = {
+            let mut assembled_path = PathBuf::new();
+            if let Some(token_to_split_on) = token_to_split_on_opt {
+                let split = path_str.split(token_to_split_on);
+                for segment in split {
+                    assembled_path = assembled_path.join(segment);
+                }
+                
+            } else {
+                assembled_path = assembled_path.join(path_str);
+            };
+
+            assembled_path
+        };
+
+        let joined = project_root.join(assembled_path);
         let boxed = path_to_syncable_file(joined);
         targets.push(boxed);
     }
